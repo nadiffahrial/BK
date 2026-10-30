@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { ThemeToggle } from '../common/ThemeToggle';
+import unsilLogo from '../../assets/logo-unsil.png';
 import { 
   Building2, 
   KeyRound, 
@@ -143,7 +144,7 @@ export const LoginPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="relative flex items-center justify-center shrink-0">
             <img
-              src="/logo-unsil.png"
+              src={unsilLogo}
               alt="Logo Universitas Siliwangi"
               className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow-sm transition-transform hover:scale-105"
             />

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Building, RoomStatus, ViewMode } from '../../types';
 import { ThemeToggle } from '../common/ThemeToggle';
+import unsilLogo from '../../assets/logo-unsil.png';
 
 interface NavbarProps {
   buildings?: Building[];
@@ -45,7 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="relative flex items-center justify-center shrink-0">
               <img
-                src="/logo-unsil.png"
+                src={unsilLogo}
                 alt="Logo Universitas Siliwangi"
                 className="w-9 h-9 sm:w-11 sm:h-11 object-contain drop-shadow-xs transition-transform hover:scale-105"
               />

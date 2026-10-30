@@ -1,5 +1,6 @@
 import React from 'react';
 import { ThemeToggle } from '../common/ThemeToggle';
+import unsilLogo from '../../assets/logo-unsil.png';
 import { 
   Building, 
   Floor, 
@@ -139,7 +140,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
             <div className="flex items-center gap-3">
               <div className="relative flex items-center justify-center shrink-0">
                 <img
-                  src="/logo-unsil.png"
+                  src={unsilLogo}
                   alt="Logo Universitas Siliwangi"
                   className="w-10 h-10 object-contain drop-shadow-xs"
                 />

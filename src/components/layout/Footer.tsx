@@ -1,5 +1,6 @@
 import React from 'react';
 import { GraduationCap, MapPin, Phone, Mail, Globe, Leaf } from 'lucide-react';
+import unsilLogo from '../../assets/logo-unsil.png';
 
 export const Footer: React.FC = () => {
   return (
@@ -11,7 +12,7 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center shrink-0">
               <img
-                src="/logo-unsil.png"
+                src={unsilLogo}
                 alt="Logo Universitas Siliwangi"
                 className="w-8 h-8 object-contain drop-shadow-xs"
               />
