@@ -2,15 +2,22 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo-unsil.png" />
+    <link rel="icon" type="image/png" href="./logo-unsil.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SmartCampus 3D - Universitas Siliwangi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" crossorigin href="./assets/index-BvTnQ1QX.css">
+    <script type="module">
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        import('/src/main.tsx');
+      } else {
+        import('./assets/index-D-C5FtEg.js');
+      }
+    </script>
   </head>
   <body class="bg-[#f8fafc] text-slate-800 antialiased font-['Plus_Jakarta_Sans',sans-serif] selection:bg-emerald-500 selection:text-white overflow-x-hidden">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
