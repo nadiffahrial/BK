@@ -242,10 +242,11 @@ export const App: React.FC = () => {
     scrollTo3DModel();
   };
 
-  // Quick stats for active floor
-  const floorAvailable = activeFloor.rooms.filter(r => r.status === 'available').length;
-  const floorOccupied = activeFloor.rooms.filter(r => r.status === 'occupied').length;
-  const floorReserved = activeFloor.rooms.filter(r => r.status === 'reserved').length;
+  // Quick stats for active floor safely guarded
+  const floorRooms = activeFloor?.rooms || [];
+  const floorAvailable = floorRooms.filter(r => r.status === 'available').length;
+  const floorOccupied = floorRooms.filter(r => r.status === 'occupied').length;
+  const floorReserved = floorRooms.filter(r => r.status === 'reserved').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/30 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] transition-colors duration-300">
@@ -446,7 +447,7 @@ export const App: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-            {activeFloor.rooms.map((room) => {
+            {floorRooms.map((room) => {
               const isSelected = selectedRoom?.id === room.id;
               const isAvail = room.status === 'available';
               const isOcc = room.status === 'occupied';

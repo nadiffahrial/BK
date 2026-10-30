@@ -4,6 +4,7 @@ import { App } from './App';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { GpsProvider } from './context/GpsContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -16,13 +17,15 @@ const root = createRoot(rootElement);
 
 root.render(
   <StrictMode>
-    <ThemeProvider>
-      <AuthProvider>
-        <GpsProvider>
-          <App />
-        </GpsProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <GpsProvider>
+            <App />
+          </GpsProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
 
