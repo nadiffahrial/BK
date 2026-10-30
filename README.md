@@ -49,7 +49,7 @@
 ### 2. Instalasi Dependensi
 ```bash
 # Clone repository
-git clone https://github.com/nadifahriall/BK.git
+git clone https://github.com/nadiffahrial/BK.git
 cd BK
 
 # Install paket frontend & backend
@@ -116,5 +116,6 @@ npm run dev
 ---
 
 ## 👨‍💻 Kontributor
-- **Nadif Ahmad Fahrial** ([@nadifahriall](https://github.com/nadifahriall))
+- **Nadif Ahmad Fahrial** ([@nadiffahrial](https://github.com/nadiffahrial))
 - **Universitas Siliwangi**
+
