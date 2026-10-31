@@ -4,9 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/prep-dev.js && vite",
     "server": "node server/index.js",
+    "prebuild": "node scripts/prep-dev.js",
     "build": "vite build",
+    "postbuild": "node scripts/post-build.js",
     "preview": "vite preview"
   },
   "dependencies": {
