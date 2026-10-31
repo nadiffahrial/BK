@@ -178,27 +178,12 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
               setQuery('');
               inputRef.current?.focus();
             }}
-            className="p-1.5 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="p-1.5 mr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             title="Hapus pencarian"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         )}
-
-        {/* Quick Keyboard Shortcut / Modal Trigger */}
-        <div className="pr-3 flex items-center gap-1.5 shrink-0">
-          {onOpenSearchEngine && (
-            <button
-              type="button"
-              onClick={onOpenSearchEngine}
-              className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-700 text-[10px] font-mono font-bold transition-all border border-slate-200/80 dark:border-slate-700 cursor-pointer"
-              title="Buka Search Engine Lengkap (Ctrl + K)"
-            >
-              <span>Ctrl</span>
-              <span>K</span>
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Interactive Quick Category Pills (Compact & Simple) */}
