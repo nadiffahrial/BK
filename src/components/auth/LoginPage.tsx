@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { CustomerServiceModal } from '../common/CustomerServiceModal';
 import unsilLogo from '../../assets/logo-unsil.png';
 import { 
   Building2, 
@@ -33,6 +34,7 @@ export const LoginPage: React.FC = () => {
   const { isDark } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'quick' | 'form'>('quick');
+  const [isCsModalOpen, setIsCsModalOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -421,38 +423,6 @@ export const LoginPage: React.FC = () => {
               {/* TAB 2: MANUAL SSO & FORM CREDENTIALS */}
               {activeTab === 'form' && (
                 <div className="animate-fade-in">
-                  
-                  {/* Quick Autofill Helper Pills */}
-                  <div className="mb-4 p-3 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60">
-                    <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-1.5 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Isi cepat akun demo terdaftar:</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => fillCredentials('dimas.aditya@student.ac.id')}
-                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-emerald-300 dark:border-slate-700 text-[10px] font-bold transition-all cursor-pointer"
-                      >
-                        🎓 Mahasiswa (Dimas)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => fillCredentials('budi.santoso@dosen.ac.id')}
-                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-emerald-300 dark:border-slate-700 text-[10px] font-bold transition-all cursor-pointer"
-                      >
-                        👨‍🏫 Dosen (Dr. Budi)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => fillCredentials('admin.kampus@smartspace.ac.id')}
-                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-emerald-300 dark:border-slate-700 text-[10px] font-bold transition-all cursor-pointer"
-                      >
-                        🛡️ Admin (Hendra)
-                      </button>
-                    </div>
-                  </div>
-
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Email Input */}
                     <div>
@@ -544,7 +514,14 @@ export const LoginPage: React.FC = () => {
               </span>
 
               <span>
-                Butuh bantuan login? <span className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline cursor-pointer">Layanan BAAK & IT</span>
+                Butuh bantuan login?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsCsModalOpen(true)}
+                  className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline cursor-pointer"
+                >
+                  Layanan BAAK & IT (CS)
+                </button>
               </span>
             </div>
 
@@ -552,6 +529,13 @@ export const LoginPage: React.FC = () => {
 
         </div>
       </main>
+
+      {/* Modal Layanan CS / Helpdesk */}
+      <CustomerServiceModal
+        isOpen={isCsModalOpen}
+        onClose={() => setIsCsModalOpen(false)}
+        isBackendConnected={true}
+      />
 
       {/* Clean Minimalist Bottom Footer */}
       <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400 dark:text-slate-500">

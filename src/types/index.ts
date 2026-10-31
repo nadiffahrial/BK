@@ -115,3 +115,18 @@ export interface SearchResultRoom extends Room {
 }
 
 
+
+export interface CsTicket {
+  id: string;
+  senderName: string;
+  senderEmail: string;
+  senderRole?: 'student' | 'staff' | 'admin' | 'guest';
+  category: string;
+  roomCode?: string;
+  subject: string;
+  message: string;
+  status: 'pending' | 'in_progress' | 'resolved';
+  adminResponse?: string;
+  createdAt: string;
+  updatedAt?: string;
+}

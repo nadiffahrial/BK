@@ -32,7 +32,8 @@ import {
   ArrowRight,
   TrendingUp,
   ChevronRight,
-  Compass
+  Compass,
+  Headphones
 } from 'lucide-react';
 
 interface NavigationMenuDrawerProps {
@@ -55,6 +56,7 @@ interface NavigationMenuDrawerProps {
   logout: () => void;
   isBackendConnected: boolean;
   onOpenSearch?: () => void;
+  onOpenCs?: () => void;
 }
 
 export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
@@ -76,7 +78,8 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
   quickLogin,
   logout,
   isBackendConnected,
-  onOpenSearch
+  onOpenSearch,
+  onOpenCs
 }) => {
   React.useEffect(() => {
     if (!isOpen) return;
@@ -222,6 +225,25 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                     <span>Search Engine Lengkap</span>
                   </div>
                   <kbd className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">Ctrl+K</kbd>
+                </button>
+              )}
+
+              {/* Layanan CS & Pengaduan Kampus Shortcut */}
+              {onOpenCs && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenCs();
+                  }}
+                  className="mt-2 w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2">
+                    <Headphones className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <span>Layanan CS & Pengaduan Kampus</span>
+                  </div>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                    Online
+                  </span>
                 </button>
               )}
             </div>

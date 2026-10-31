@@ -7,6 +7,7 @@ import { Footer } from './components/layout/Footer';
 import { BuildingCardSelector } from './components/layout/BuildingCardSelector';
 import { StudentRoomFinder } from './components/common/StudentRoomFinder';
 import { SearchEngineModal } from './components/common/SearchEngineModal';
+import { CustomerServiceModal } from './components/common/CustomerServiceModal';
 import { FloorMapSvg } from './components/floorplan/FloorMapSvg';
 import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
@@ -28,7 +29,8 @@ import {
   SlidersHorizontal,
   Menu,
   Clock,
-  Compass
+  Compass,
+  Headphones
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -49,6 +51,7 @@ export const App: React.FC = () => {
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [isCsModalOpen, setIsCsModalOpen] = useState<boolean>(false);
 
   // Global shortcut Ctrl+K or Cmd+K to open Search Engine modal
   useEffect(() => {
@@ -127,6 +130,14 @@ export const App: React.FC = () => {
         );
         setRecentNotification(`[Live Node.js] Peminjaman baru untuk ${booking.roomCode}: ${booking.purpose}`);
         setTimeout(() => setRecentNotification(null), 5000);
+      } else if (event.type === 'NEW_CS_TICKET') {
+        const { ticket, message } = event.data;
+        setRecentNotification(`🎧 [Layanan CS] ${message || `Tiket #${ticket?.id} diterima!`}`);
+        setTimeout(() => setRecentNotification(null), 6000);
+      } else if (event.type === 'CS_STATUS_UPDATED') {
+        const { message } = event.data;
+        setRecentNotification(`🎧 [Layanan CS] ${message}`);
+        setTimeout(() => setRecentNotification(null), 6000);
       }
     });
 
@@ -290,6 +301,7 @@ export const App: React.FC = () => {
         logout={logout}
         isBackendConnected={isBackendConnected}
         onOpenSearch={() => setIsSearchModalOpen(true)}
+        onOpenCs={() => setIsCsModalOpen(true)}
       />
 
       {/* 3. Main Workspace Area (Clean & Simple) */}
@@ -500,6 +512,29 @@ export const App: React.FC = () => {
         onClose={() => setIsSearchModalOpen(false)}
         buildings={buildings}
         onNavigateToRoom={handleNavigateFromSearch}
+      />
+
+      {/* 🎧 Floating Customer Service (CS) & Pengaduan Button */}
+      <button
+        type="button"
+        onClick={() => setIsCsModalOpen(true)}
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-700/30 transition-all hover:scale-105 active:scale-95 cursor-pointer group border border-white/20"
+        title="Buka Layanan CS & Pengaduan Kampus"
+      >
+        <Headphones className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
+        <span className="hidden sm:inline">Layanan CS</span>
+        <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+      </button>
+
+      {/* Modal Layanan Customer Service (CS) & Pengaduan Kampus */}
+      <CustomerServiceModal
+        isOpen={isCsModalOpen}
+        onClose={() => setIsCsModalOpen(false)}
+        isBackendConnected={isBackendConnected}
+        onNotificationSent={(msg) => {
+          setRecentNotification(`🎧 [Layanan CS] ${msg}`);
+          setTimeout(() => setRecentNotification(null), 5000);
+        }}
       />
 
       {/* Minimalist Clean Footer */}

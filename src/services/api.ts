@@ -1,4 +1,4 @@
-import { Building, RoomStatus, BookingRequest, User, SearchResultRoom } from '../types';
+import { Building, RoomStatus, BookingRequest, User, SearchResultRoom, CsTicket } from '../types';
 import { BUILDINGS_DATA } from '../data/buildingsData';
 
 const API_BASE = '/api';
@@ -274,5 +274,114 @@ export const apiService = {
     } catch {
       return false;
     }
+  },
+
+  // ========================================================
+  // 🎧 LAYANAN CUSTOMER SERVICE (CS) & PENGADUAN KAMPUS
+  // ========================================================
+
+  // Ambil daftar tiket CS dari Backend
+  async getCsTickets(category?: string, status?: string): Promise<CsTicket[]> {
+    try {
+      let url = `${API_BASE}/cs/tickets`;
+      const params = new URLSearchParams();
+      if (category && category !== 'all') params.append('category', category);
+      if (status && status !== 'all') params.append('status', status);
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        return json.data || [];
+      }
+    } catch {
+      // Local fallback for offline/gh-pages
+      try {
+        const local = localStorage.getItem('smartspace_cs_tickets');
+        if (local) return JSON.parse(local);
+      } catch {}
+    }
+    return [
+      {
+        id: 'CS-1001',
+        senderName: 'Dimas Aditya',
+        senderEmail: 'dimas.aditya@student.ac.id',
+        senderRole: 'student',
+        category: 'Sarana & Fasilitas',
+        roomCode: 'A-102',
+        subject: 'Proyektor Lab Pemrograman redup',
+        message: 'Kabel HDMI proyektor di Lab Pemrograman Lantai 1 agak longgar sehingga gambar berkedip saat praktikum.',
+        status: 'in_progress',
+        adminResponse: 'Tim teknisi sarpras IT sedang menuju lokasi untuk pengecekan kabel proyektor.',
+        createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
+      }
+    ];
+  },
+
+  // Kirim tiket pengaduan / pesan baru ke Layanan CS Backend
+  async createCsTicket(ticketData: {
+    senderName: string;
+    senderEmail?: string;
+    senderRole?: string;
+    category: string;
+    roomCode?: string;
+    subject: string;
+    message: string;
+  }): Promise<{ success: boolean; message: string; data?: CsTicket }> {
+    try {
+      const res = await fetch(`${API_BASE}/cs/tickets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ticketData)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json;
+      }
+    } catch (err: any) {
+      console.warn('Backend offline, saving CS ticket locally:', err.message);
+    }
+
+    // Fallback: simpan di localStorage jika backend offline
+    const newTicket: CsTicket = {
+      id: `CS-${Math.floor(1000 + Math.random() * 9000)}`,
+      senderName: ticketData.senderName,
+      senderEmail: ticketData.senderEmail || 'tamu@unsil.ac.id',
+      senderRole: (ticketData.senderRole as any) || 'student',
+      category: ticketData.category,
+      roomCode: ticketData.roomCode || '-',
+      subject: ticketData.subject,
+      message: ticketData.message,
+      status: 'pending',
+      adminResponse: 'Tiket berhasil diterima sistem lokal. Menunggu sinkronisasi ke server Node.js.',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('smartspace_cs_tickets') || '[]');
+      existing.unshift(newTicket);
+      localStorage.setItem('smartspace_cs_tickets', JSON.stringify(existing));
+    } catch {}
+
+    return {
+      success: true,
+      message: `Tiket bantuan #${newTicket.id} berhasil dicatat di Layanan CS (Mode Offline).`,
+      data: newTicket
+    };
+  },
+
+  // Update status tiket CS (oleh admin)
+  async updateCsTicketStatus(ticketId: string, status: string, adminResponse?: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/cs/tickets/${ticketId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, adminResponse })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+    return { success: false };
   }
 };

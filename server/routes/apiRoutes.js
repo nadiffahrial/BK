@@ -5,6 +5,7 @@ import { getAllRooms, getRoomById, updateRoomStatus, getCampusStats, searchRooms
 import { getAllBookings, createBooking, cancelBooking } from '../controllers/bookingController.js';
 import { getAllBeacons, getBeaconById, locateDevicePosition, calculateNavigationRoute, updateIotTelemetry } from '../controllers/iotController.js';
 import { getCampusProfile, getTodaySchedules, getStudentCategories } from '../controllers/campusController.js';
+import { getAllCsTickets, createCsTicket, updateCsTicketStatus } from '../controllers/csController.js';
 import { addClient } from '../sse.js';
 
 const router = Router();
@@ -20,7 +21,7 @@ router.get('/health', (req, res) => {
   });
 });
 
-// 2. Real-time SSE Stream (Live events for Room Status, IoT Telemetry, & Beacons)
+// 2. Real-time SSE Stream (Live events for Room Status, IoT Telemetry, CS Notifications, & Beacons)
 router.get('/events', addClient);
 
 // 3. Authentication
@@ -45,7 +46,7 @@ router.get('/rooms', getAllRooms);
 router.get('/rooms/:id', getRoomById);
 router.patch('/rooms/:id/status', updateRoomStatus);
 
-// 8. 🛰️ IoT GPS & Indoor Positioning System APIs (BARU)
+// 8. 🛰️ IoT GPS & Indoor Positioning System APIs
 router.get('/iot/beacons', getAllBeacons);
 router.get('/iot/beacons/:id', getBeaconById);
 router.post('/iot/locate', locateDevicePosition);
@@ -57,7 +58,12 @@ router.get('/bookings', getAllBookings);
 router.post('/bookings', createBooking);
 router.delete('/bookings/:id', cancelBooking);
 
-// 10. Campus Statistics
+// 10. 🎧 Layanan Customer Service (CS) & Pengaduan Kampus (BARU)
+router.get('/cs/tickets', getAllCsTickets);
+router.post('/cs/tickets', createCsTicket);
+router.patch('/cs/tickets/:id/status', updateCsTicketStatus);
+
+// 11. Campus Statistics
 router.get('/stats', getCampusStats);
 
 export default router;
