@@ -35,6 +35,11 @@ export interface DeviceLocationState {
   lastUpdate: Date;
   permissionStatus: 'granted' | 'prompt' | 'denied';
   error: string | null;
+  isCompassActive?: boolean;
+  compassSupported?: boolean;
+  compassDirectionName?: string;
+  relativeBearingToTarget?: number | null;
+  relativeTurnInstruction?: string | null;
 }
 
 export interface RouteNavigationStep {
@@ -51,4 +56,3 @@ export interface PathRouteInfo {
   pathPoints: { x: number; y: number }[];
   isSimulatingWalk?: boolean;
 }
-

@@ -13,7 +13,8 @@ import {
   ArrowRight, 
   Leaf,
   Radio,
-  Crosshair
+  Crosshair,
+  Compass
 } from 'lucide-react';
 
 interface FloorMapSvgProps {
@@ -33,7 +34,14 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
   activePathRoomId,
   onTogglePathGuide
 }) => {
-  const { deviceState, setTargetRoom, availableBeacons, routeInfo } = useGps();
+  const { 
+    deviceState, 
+    setTargetRoom, 
+    availableBeacons, 
+    routeInfo,
+    requestCompassPermission,
+    setManualHeading
+  } = useGps();
   const [zoomLevel, setZoomLevel] = useState(1);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
 
@@ -139,6 +147,40 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
         {/* Subtle Green Blueprint Grid Pattern */}
         <div className="absolute inset-0 bg-grid-blueprint opacity-60 pointer-events-none" />
 
+        {/* Floating Real-Time Compass Rose (Top-Right of Map) */}
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-2xl border border-emerald-200/80 dark:border-slate-700 shadow-sm transition-all">
+          <button
+            type="button"
+            onClick={() => {
+              if (deviceState.isCompassActive) {
+                setManualHeading(0);
+              } else {
+                requestCompassPermission();
+              }
+            }}
+            className="relative w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-transform active:scale-95"
+            title={`Arah Kompas: ${deviceState.heading}° (${deviceState.compassDirectionName}) - Klik untuk atur`}
+          >
+            {/* Rotating Needle */}
+            <div 
+              className="absolute inset-0 flex items-center justify-center transition-transform duration-200"
+              style={{ transform: `rotate(${-deviceState.heading}deg)` }}
+            >
+              <div className="w-1 h-3 bg-rose-500 rounded-t-xs" />
+              <div className="w-1 h-3 bg-slate-300 dark:bg-slate-500 rounded-b-xs" />
+            </div>
+            <span className="absolute top-0.5 text-[6.5px] font-black text-rose-500">N</span>
+            <div className="w-1 h-1 rounded-full bg-slate-800 dark:bg-white z-10" />
+          </button>
+
+          <div className="text-[10px] font-mono font-black text-slate-800 dark:text-slate-100 leading-none">
+            <div>{deviceState.heading}°</div>
+            <div className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              {deviceState.compassDirectionName.split(' ')[0]}
+            </div>
+          </div>
+        </div>
+
         <div 
           className="mx-auto transition-transform duration-300 origin-center"
           style={{ transform: `scale(${zoomLevel})` }}
@@ -158,6 +200,13 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                 <feGaussianBlur stdDeviation="6" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
+
+              {/* Flashlight / Vision Cone Gradient for Real-Time Compass Navigation */}
+              <radialGradient id="user-flashlight-beam" cx="50%" cy="100%" r="100%">
+                <stop offset="0%" stopColor="#0284c7" stopOpacity="0.55" />
+                <stop offset="45%" stopColor="#38bdf8" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+              </radialGradient>
             </defs>
 
             {/* Building Outer Wall Outline (Forest Green Tint) */}
@@ -369,24 +418,33 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
             {/* Live IoT GPS User Marker (All Devices: Phone, Tablet, PC) */}
             {deviceState.floorNumber === floor.floorNumber && (
               <g transform={`translate(${deviceState.canvasX}, ${deviceState.canvasY})`} className="transition-all duration-300">
+                {/* Flashlight / Vision Cone pointing towards device heading */}
+                <g transform={`rotate(${deviceState.heading})`}>
+                  <path
+                    d="M 0 0 L -38 -76 A 85 85 0 0 1 38 -76 Z"
+                    fill="url(#user-flashlight-beam)"
+                    className="transition-transform duration-150"
+                  />
+                  {/* Sharp Heading Pointer Arrow */}
+                  <polygon
+                    points="0,-22 5.5,-12 -5.5,-12"
+                    fill="#0284c7"
+                    stroke="#ffffff"
+                    strokeWidth="1.5"
+                  />
+                </g>
+
                 {/* Radar pulse rings */}
                 <circle r="22" fill="#0284c7" opacity="0.25" className="animate-ping" />
                 <circle r="13" fill="#0284c7" opacity="0.35" />
                 <circle r="8.5" fill="#0284c7" stroke="#ffffff" strokeWidth="2" filter="drop-shadow(0 2px 5px rgba(2,132,199,0.5))" />
-                {/* Compass Heading Pointer Arrow */}
-                <polygon
-                  points="0,-16 4.5,-9 -4.5,-9"
-                  fill="#0284c7"
-                  stroke="#ffffff"
-                  strokeWidth="1"
-                  transform={`rotate(${deviceState.heading})`}
-                />
                 <circle r="3.5" fill="#ffffff" />
-                {/* User Location Label */}
+
+                {/* User Location Label with Heading */}
                 <g transform="translate(0, 20)">
-                  <rect x="-35" y="0" width="70" height="15" rx="4" fill="#0369a1" />
-                  <text x="0" y="10.5" textAnchor="middle" fill="#ffffff" fontSize="7.5" fontWeight="bold">
-                    LOKASI ANDA
+                  <rect x="-42" y="0" width="84" height="16" rx="4" fill="#0369a1" />
+                  <text x="0" y="11" textAnchor="middle" fill="#ffffff" fontSize="7.5" fontWeight="bold">
+                    LOKASI ANDA • {deviceState.heading}°
                   </text>
                 </g>
               </g>

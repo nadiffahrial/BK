@@ -15,12 +15,26 @@ interface GpsContextType {
   startSimulatedWalk: () => void;
   stopSimulatedWalk: () => void;
   availableBeacons: IotBeaconNode[];
+  requestCompassPermission: () => Promise<boolean>;
+  setManualHeading: (deg: number) => void;
 }
 
 const GpsContext = createContext<GpsContextType | undefined>(undefined);
 
 // Default initial state (at Lobby anchor)
 const defaultBeacon = IOT_BEACONS[0];
+
+export const getCompassDirectionName = (deg: number): string => {
+  const normalized = ((deg % 360) + 360) % 360;
+  if (normalized >= 337.5 || normalized < 22.5) return 'Utara (N)';
+  if (normalized >= 22.5 && normalized < 67.5) return 'Timur Laut (NE)';
+  if (normalized >= 67.5 && normalized < 112.5) return 'Timur (E)';
+  if (normalized >= 112.5 && normalized < 157.5) return 'Tenggara (SE)';
+  if (normalized >= 157.5 && normalized < 202.5) return 'Selatan (S)';
+  if (normalized >= 202.5 && normalized < 247.5) return 'Barat Daya (SW)';
+  if (normalized >= 247.5 && normalized < 292.5) return 'Barat (W)';
+  return 'Barat Laut (NW)';
+};
 
 const initialDeviceState: DeviceLocationState = {
   isTracking: true,
@@ -29,7 +43,7 @@ const initialDeviceState: DeviceLocationState = {
   latitude: defaultBeacon.latitude,
   longitude: defaultBeacon.longitude,
   accuracy: 1.5,
-  heading: 45,
+  heading: 90, // Default pointing East (along the main corridor)
   speed: 0,
   floorNumber: 1,
   buildingId: 'gedung-a',
@@ -39,7 +53,12 @@ const initialDeviceState: DeviceLocationState = {
   detectedBeacons: IOT_BEACONS.slice(0, 3),
   lastUpdate: new Date(),
   permissionStatus: 'prompt',
-  error: null
+  error: null,
+  isCompassActive: false,
+  compassSupported: typeof window !== 'undefined' && 'DeviceOrientationEvent' in window,
+  compassDirectionName: 'Timur (E)',
+  relativeBearingToTarget: null,
+  relativeTurnInstruction: null
 };
 
 export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -49,6 +68,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const watchIdRef = useRef<number | null>(null);
   const walkIntervalRef = useRef<any>(null);
+  const lastHeadingRef = useRef<number>(90);
 
   // Filter beacons for current building and floor
   const availableBeacons = useMemo(() => {
@@ -57,8 +77,90 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
   }, [deviceState.buildingId, deviceState.floorNumber]);
 
+  // Request Compass Permission (Crucial for iOS 13+ & modern Android)
+  const requestCompassPermission = async (): Promise<boolean> => {
+    try {
+      if (typeof (DeviceOrientationEvent as any)?.requestPermission === 'function') {
+        const permission = await (DeviceOrientationEvent as any).requestPermission();
+        if (permission === 'granted') {
+          setupOrientationListeners();
+          setDeviceState(prev => ({ ...prev, isCompassActive: true, error: null }));
+          return true;
+        } else {
+          setDeviceState(prev => ({ ...prev, isCompassActive: false, error: 'Izin sensor orientasi tidak diberikan.' }));
+          return false;
+        }
+      } else {
+        // Android / non-iOS standard
+        setupOrientationListeners();
+        setDeviceState(prev => ({ ...prev, isCompassActive: true }));
+        return true;
+      }
+    } catch (err: any) {
+      console.warn('Compass permission request failed:', err.message);
+      return false;
+    }
+  };
+
+  // Setup orientation listeners with smoothing
+  const setupOrientationListeners = () => {
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      let rawHeading: number | null = null;
+
+      // 1. iOS Safari true compass heading
+      if ((e as any).webkitCompassHeading !== undefined && (e as any).webkitCompassHeading !== null) {
+        rawHeading = (e as any).webkitCompassHeading;
+      } 
+      // 2. Android deviceorientationabsolute or alpha
+      else if (e.alpha !== null && !isNaN(e.alpha)) {
+        // For Android: 360 - alpha aligns with compass heading
+        rawHeading = (360 - (e.alpha as number)) % 360;
+      }
+
+      if (rawHeading !== null && !isNaN(rawHeading)) {
+        // Low-pass filter to smooth out sensor jitter
+        const diff = (rawHeading - lastHeadingRef.current + 540) % 360 - 180;
+        const smoothedHeading = Math.round(((lastHeadingRef.current + diff * 0.35) % 360 + 360) % 360);
+        lastHeadingRef.current = smoothedHeading;
+
+        setDeviceState(prev => ({
+          ...prev,
+          heading: smoothedHeading,
+          isCompassActive: true,
+          compassDirectionName: getCompassDirectionName(smoothedHeading)
+        }));
+      }
+    };
+
+    if ('ondeviceorientationabsolute' in window) {
+      window.addEventListener('deviceorientationabsolute', handleOrientation as any, true);
+    } else if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', handleOrientation, true);
+    }
+  };
+
+  // Auto-init orientation listener on mount if permission not required
+  useEffect(() => {
+    if (typeof (DeviceOrientationEvent as any)?.requestPermission !== 'function') {
+      setupOrientationListeners();
+    }
+  }, []);
+
+  // Manual heading adjustment (useful for PC / desktop testing)
+  const setManualHeading = (deg: number) => {
+    const normalized = ((deg % 360) + 360) % 360;
+    lastHeadingRef.current = normalized;
+    setDeviceState(prev => ({
+      ...prev,
+      heading: normalized,
+      compassDirectionName: getCompassDirectionName(normalized)
+    }));
+  };
+
   // Request actual hardware geolocation (mobile phone, laptop GPS/Wi-Fi)
   const startTracking = (preferredMode: IotTrackingMode = 'device-gps') => {
+    requestCompassPermission();
+
     if (preferredMode === 'device-gps' && 'geolocation' in navigator) {
       setDeviceState(prev => ({
         ...prev,
@@ -67,7 +169,6 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         source: 'Menginisialisasi GPS Perangkat...'
       }));
 
-      // Start watching device GPS
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
@@ -77,12 +178,13 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const { latitude, longitude, accuracy, heading, speed } = pos.coords;
           
           setDeviceState(prev => {
-            // Find nearest IoT beacon to anchor indoors
             const nearest = availableBeacons.reduce((closest, curr) => {
               const d1 = Math.hypot(curr.latitude - latitude, curr.longitude - longitude);
               const d2 = Math.hypot(closest.latitude - latitude, closest.longitude - longitude);
               return d1 < d2 ? curr : closest;
             }, availableBeacons[0] || defaultBeacon);
+
+            const effectiveHeading = heading !== null && !isNaN(heading) ? Math.round(heading) : prev.heading;
 
             return {
               ...prev,
@@ -92,10 +194,11 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               latitude,
               longitude,
               accuracy: Math.round(accuracy * 10) / 10,
-              heading: heading !== null && !isNaN(heading) ? heading : prev.heading,
+              heading: effectiveHeading,
               speed: speed !== null ? Math.round(speed * 10) / 10 : null,
               permissionStatus: 'granted',
               nearestBeacon: nearest,
+              compassDirectionName: getCompassDirectionName(effectiveHeading),
               lastUpdate: new Date(),
               error: null
             };
@@ -119,7 +222,6 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       );
     } else {
-      // Use IoT Beacon Triangulation Mode
       setDeviceState(prev => ({
         ...prev,
         isTracking: true,
@@ -143,28 +245,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }));
   };
 
-  // Device orientation (compass heading sensor for mobile devices)
-  useEffect(() => {
-    const handleOrientation = (e: DeviceOrientationEvent) => {
-      if (e.alpha !== null && !isNaN(e.alpha)) {
-        setDeviceState(prev => ({
-          ...prev,
-          heading: Math.round(e.alpha as number)
-        }));
-      }
-    };
-
-    if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleOrientation);
-    }
-    return () => {
-      if (window.DeviceOrientationEvent) {
-        window.removeEventListener('deviceorientation', handleOrientation);
-      }
-    };
-  }, []);
-
-  // Set user's position to a specific IoT anchor beacon (manual selection or floor switch)
+  // Set user's position to a specific IoT anchor beacon
   const setAnchorBeacon = (beaconId: string) => {
     const targetBeacon = IOT_BEACONS.find(b => b.id === beaconId);
     if (!targetBeacon) return;
@@ -193,7 +274,6 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     stopSimulatedWalk();
     setTargetRoomState(room);
     if (room) {
-      // Ensure current device floor matches room floor for immediate guidance
       if (deviceState.floorNumber !== room.floorNumber) {
         const floorBeacon = IOT_BEACONS.find(
           b => b.buildingId === room.buildingId && b.floorNumber === room.floorNumber
@@ -211,7 +291,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // Calculate route and turn-by-turn guidance
+  // Calculate route and turn-by-turn guidance with device orientation awareness
   const routeInfo = useMemo<PathRouteInfo | null>(() => {
     if (!targetRoom) return null;
 
@@ -229,7 +309,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const roomCenterX = targetRoom.coordinates.x + targetRoom.coordinates.w / 2;
     const roomCenterY = targetRoom.coordinates.y + targetRoom.coordinates.h / 2;
 
-    // Build waypoint coordinates along the architectural grid
+    // Build waypoint coordinates along the corridor
     const pathPoints: { x: number; y: number }[] = [
       { x: startX, y: startY }
     ];
@@ -252,15 +332,47 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     const totalDistanceMeters = Math.max(3, Math.round(totalCanvasUnits * 0.08));
-    // Average walking speed indoors: 1.2 m/s
     const estimatedSeconds = Math.max(5, Math.round(totalDistanceMeters / 1.2));
+
+    // Next waypoint target for orientation
+    const nextWaypoint = pathPoints[1] || pathPoints[0];
+    const dx = nextWaypoint.x - startX;
+    const dy = nextWaypoint.y - startY;
+    // In canvas: 0° is North (up), 90° East (right), 180° South (down), 270° West (left)
+    const targetBearing = Math.round((Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360);
+
+    // Relative angle between where user is currently facing and where they should go
+    const relativeAngle = ((targetBearing - deviceState.heading + 540) % 360) - 180;
+
+    let relativeTurn = 'Lurus ke depan';
+    if (relativeAngle > 25 && relativeAngle <= 70) relativeTurn = 'Serong kanan';
+    else if (relativeAngle > 70 && relativeAngle <= 120) relativeTurn = 'Belok kanan';
+    else if (relativeAngle > 120 && relativeAngle <= 165) relativeTurn = 'Tajam ke kanan';
+    else if (relativeAngle < -25 && relativeAngle >= -70) relativeTurn = 'Serong kiri';
+    else if (relativeAngle < -70 && relativeAngle >= -120) relativeTurn = 'Belok kiri';
+    else if (relativeAngle < -120 && relativeAngle >= -165) relativeTurn = 'Tajam ke kiri';
+    else if (Math.abs(relativeAngle) > 165) relativeTurn = 'Putar balik ke belakang';
+
+    // Update relative bearing in deviceState
+    setTimeout(() => {
+      setDeviceState(prev => {
+        if (prev.relativeBearingToTarget === relativeAngle && prev.relativeTurnInstruction === relativeTurn) {
+          return prev;
+        }
+        return {
+          ...prev,
+          relativeBearingToTarget: relativeAngle,
+          relativeTurnInstruction: relativeTurn
+        };
+      });
+    }, 0);
 
     // Generate turn-by-turn steps
     const steps: RouteNavigationStep[] = [];
     const fromZone = deviceState.nearestBeacon?.zone || 'Posisi Awal';
 
     steps.push({
-      instruction: `Mulai navigasi dari ${fromZone}`,
+      instruction: `Mulai dari ${fromZone} (Arahkan perangkat: ${relativeTurn})`,
       distanceMeters: 0,
       iconName: 'arrive'
     });
@@ -270,7 +382,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     if (corridorDist > 2) {
       steps.push({
-        instruction: `Berjalan lurus di koridor tengah ke arah ${isMovingEast ? 'Timur' : 'Barat'} (${corridorDist} m)`,
+        instruction: `Berjalan lurus di koridor ke arah ${isMovingEast ? 'Timur' : 'Barat'} (${corridorDist} m)`,
         distanceMeters: corridorDist,
         iconName: 'straight'
       });
@@ -278,7 +390,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const isNorthRoom = targetRoom.coordinates.y < corridorY;
     steps.push({
-      instruction: `Belok ${isNorthRoom ? 'kiri' : 'kanan'} menuju pintu masuk ${targetRoom.code}`,
+      instruction: `Belok ${isNorthRoom ? 'kiri' : 'kanan'} masuk ke ${targetRoom.code}`,
       distanceMeters: 4,
       iconName: isNorthRoom ? 'turn-left' : 'turn-right'
     });
@@ -297,7 +409,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       pathPoints,
       isSimulatingWalk
     };
-  }, [targetRoom, deviceState.canvasX, deviceState.canvasY, deviceState.nearestBeacon, isSimulatingWalk]);
+  }, [targetRoom, deviceState.canvasX, deviceState.canvasY, deviceState.heading, deviceState.nearestBeacon, isSimulatingWalk]);
 
   // Automated simulated walking from current location to target room
   const startSimulatedWalk = () => {
@@ -305,7 +417,7 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setIsSimulatingWalk(true);
 
     let currentSegmentIndex = 0;
-    let t = 0; // Segment interpolation (0 to 1)
+    let t = 0;
 
     if (walkIntervalRef.current) clearInterval(walkIntervalRef.current);
 
@@ -323,14 +435,17 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const currX = p1.x + (p2.x - p1.x) * t;
       const currY = p1.y + (p2.y - p1.y) * t;
 
-      // Calculate heading angle
-      const angleDeg = Math.round((Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180) / Math.PI) + 90;
+      // In canvas: 0° is North (up), 90° East (right), 180° South (down), 270° West (left)
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const angleDeg = Math.round((Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360);
 
       setDeviceState(prev => ({
         ...prev,
         canvasX: Math.round(currX),
         canvasY: Math.round(currY),
-        heading: (angleDeg + 360) % 360,
+        heading: angleDeg,
+        compassDirectionName: getCompassDirectionName(angleDeg),
         speed: 1.2
       }));
 
@@ -338,7 +453,6 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         t = 0;
         currentSegmentIndex += 1;
         if (currentSegmentIndex >= routeInfo.pathPoints.length - 1) {
-          // Arrived at destination!
           stopSimulatedWalk();
         }
       }
@@ -378,7 +492,9 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setTargetRoom,
         startSimulatedWalk,
         stopSimulatedWalk,
-        availableBeacons
+        availableBeacons,
+        requestCompassPermission,
+        setManualHeading
       }}
     >
       {children}
@@ -395,4 +511,3 @@ export const useGps = (): GpsContextType => {
 };
 
 export default GpsProvider;
-
