@@ -18,13 +18,15 @@ interface RoomCardGridProps {
   selectedRoom: Room | null;
   onSelectRoom: (room: Room) => void;
   onNavigateRoom?: (room: Room) => void;
+  onOpenBooking?: (room: Room) => void;
 }
 
 export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
   rooms,
   selectedRoom,
   onSelectRoom,
-  onNavigateRoom
+  onNavigateRoom,
+  onOpenBooking
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'code' | 'capacity' | 'name'>('code');
@@ -179,6 +181,18 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {onOpenBooking && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenBooking(room);
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                      title="Ajukan Reservasi Ruang Ini"
+                    >
+                      Pinjam
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

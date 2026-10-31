@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { CustomerServiceModal } from '../common/CustomerServiceModal';
-import unsilLogo from '../../assets/logo-unsil.png';
+import { CampusLogo } from '../common/CampusLogo';
 import { 
   Building2, 
   KeyRound, 
@@ -144,13 +144,7 @@ export const LoginPage: React.FC = () => {
       {/* Top Floating Navigation Bar */}
       <header className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center shrink-0">
-            <img
-              src={unsilLogo}
-              alt="Logo Universitas Siliwangi"
-              className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow-sm transition-transform hover:scale-105"
-            />
-          </div>
+          <CampusLogo size="md" />
           <div>
             <div className="flex items-center gap-2">
               <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">

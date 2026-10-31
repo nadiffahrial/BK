@@ -1,6 +1,6 @@
 import React from 'react';
 import { GraduationCap, MapPin, Phone, Mail, Globe, Leaf } from 'lucide-react';
-import unsilLogo from '../../assets/logo-unsil.png';
+import { CampusLogo } from '../common/CampusLogo';
 
 export const Footer: React.FC = () => {
   return (
@@ -10,13 +10,7 @@ export const Footer: React.FC = () => {
           
           {/* Brand info */}
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center shrink-0">
-              <img
-                src={unsilLogo}
-                alt="Logo Universitas Siliwangi"
-                className="w-8 h-8 object-contain drop-shadow-xs"
-              />
-            </div>
+            <CampusLogo size="sm" />
             <div>
               <span className="font-extrabold text-xs text-slate-900 dark:text-white">
                 SmartCampus<span className="text-emerald-600 dark:text-emerald-400">3D</span> • Universitas Siliwangi

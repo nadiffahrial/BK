@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeToggle } from '../common/ThemeToggle';
-import unsilLogo from '../../assets/logo-unsil.png';
+import { CampusLogo } from '../common/CampusLogo';
 import { 
   Building, 
   Floor, 
@@ -141,13 +141,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
           {/* Drawer Header */}
           <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-emerald-50/70 dark:from-slate-800/80 via-white dark:via-slate-900 to-slate-50 dark:to-slate-800/60 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="relative flex items-center justify-center shrink-0">
-                <img
-                  src={unsilLogo}
-                  alt="Logo Universitas Siliwangi"
-                  className="w-10 h-10 object-contain drop-shadow-xs"
-                />
-              </div>
+              <CampusLogo size="md" />
               <div>
                 <h2 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
                   Universitas Siliwangi

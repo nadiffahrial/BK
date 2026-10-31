@@ -28,6 +28,7 @@ interface RoomDetailModalProps {
   onTogglePathGuide: (roomId: string) => void;
   isPathActive: boolean;
   onUpdateRoomStatus?: (roomId: string, newStatus: RoomStatus) => void;
+  onOpenBooking?: (room: Room) => void;
 }
 
 export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
@@ -35,7 +36,8 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   onClose,
   onTogglePathGuide,
   isPathActive,
-  onUpdateRoomStatus
+  onUpdateRoomStatus,
+  onOpenBooking
 }) => {
   const { user } = useAuth();
   const { setTargetRoom } = useGps();
@@ -273,21 +275,34 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         </div>
 
         {/* Modal Footer Controls */}
-        <div className="p-6 border-t border-slate-100 bg-slate-50/80 flex flex-wrap items-center justify-between gap-3">
-          <button
-            onClick={() => {
-              onTogglePathGuide(room.id);
-              setTargetRoom(isPathActive ? null : room);
-            }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              isPathActive
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
-            }`}
-          >
-            <Navigation className="w-4 h-4 animate-pulse" />
-            <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan (IoT GPS)'}</span>
-          </button>
+        <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                onTogglePathGuide(room.id);
+                setTargetRoom(isPathActive ? null : room);
+              }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                isPathActive
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
+              }`}
+            >
+              <Navigation className="w-4 h-4 animate-pulse" />
+              <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan (IoT GPS)'}</span>
+            </button>
+
+            {onOpenBooking && (
+              <button
+                type="button"
+                onClick={() => onOpenBooking(room)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Ajukan Peminjaman Ruang</span>
+              </button>
+            )}
+          </div>
 
           <button
             onClick={onClose}

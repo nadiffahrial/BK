@@ -12,6 +12,7 @@ import { FloorMapSvg } from './components/floorplan/FloorMapSvg';
 import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
 import { RoomDetailModal } from './components/floorplan/RoomDetailModal';
+import { BookingModal } from './components/floorplan/BookingModal';
 import { IotGpsControlBar } from './components/navigation/IotGpsControlBar';
 import { useGps } from './context/GpsContext';
 import { BUILDINGS_DATA } from './data/buildingsData';
@@ -46,6 +47,7 @@ export const App: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<RoomStatus | 'all'>('all');
   
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [bookingRoom, setBookingRoom] = useState<Room | null>(null);
   const [activePathRoomId, setActivePathRoomId] = useState<string | null>(null);
   const [recentNotification, setRecentNotification] = useState<string | null>(null);
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
@@ -440,6 +442,7 @@ export const App: React.FC = () => {
             rooms={activeFloor.rooms}
             selectedRoom={selectedRoom}
             onSelectRoom={setSelectedRoom}
+            onOpenBooking={(room) => setBookingRoom(room)}
             onNavigateRoom={(room) => {
               setSelectedRoom(room);
               setActivePathRoomId(room.id);
@@ -503,6 +506,49 @@ export const App: React.FC = () => {
           onTogglePathGuide={handleTogglePathGuide}
           isPathActive={activePathRoomId === selectedRoom.id}
           onUpdateRoomStatus={handleUpdateRoomStatus}
+          onOpenBooking={(room) => setBookingRoom(room)}
+        />
+      )}
+
+      {/* Booking / Room Reservation Modal */}
+      {bookingRoom && (
+        <BookingModal
+          room={bookingRoom}
+          onClose={() => setBookingRoom(null)}
+          onBookingSuccess={(booking) => {
+            setBuildings(prev =>
+              prev.map(b => ({
+                ...b,
+                floors: b.floors.map(f => ({
+                  ...f,
+                  rooms: f.rooms.map(r => {
+                    if (r.id === booking.roomId) {
+                      return {
+                        ...r,
+                        status: 'reserved' as RoomStatus,
+                        schedule: [
+                          ...r.schedule,
+                          {
+                            id: booking.id,
+                            title: booking.purpose,
+                            organizer: booking.userName,
+                            timeRange: `${booking.startTime} - ${booking.endTime}`,
+                            type: 'Reservasi Baru'
+                          }
+                        ]
+                      };
+                    }
+                    return r;
+                  })
+                }))
+              }))
+            );
+            if (selectedRoom?.id === booking.roomId) {
+              setSelectedRoom(prev => prev ? { ...prev, status: 'reserved' } : null);
+            }
+            setRecentNotification(`✅ Reservasi berhasil dicatat: ${booking.roomCode} (${booking.purpose})`);
+            setTimeout(() => setRecentNotification(null), 5000);
+          }}
         />
       )}
 

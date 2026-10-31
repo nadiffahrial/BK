@@ -135,16 +135,35 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
     } catch {}
   };
 
+  // Flatten all rooms from buildings as base dataset
+  const allRoomsFromBuildings: SearchResultRoom[] = useMemo(() => {
+    return (buildings || []).flatMap(b =>
+      (b.floors || []).flatMap(f =>
+        (f.rooms || []).map(r => ({
+          ...r,
+          buildingId: b.id,
+          buildingName: b.name,
+          buildingShortName: b.shortName,
+          floorNumber: f.floorNumber,
+          floorName: f.name
+        }))
+      )
+    );
+  }, [buildings]);
+
   // Filter results by category pills
   const filteredResults = useMemo(() => {
-    if (selectedFilter === 'all') return searchResults;
-    if (selectedFilter === 'gedung-a') return searchResults.filter(r => r.buildingId === 'gedung-a');
-    if (selectedFilter === 'gedung-b') return searchResults.filter(r => r.buildingId === 'gedung-b');
-    if (selectedFilter === 'classroom') return searchResults.filter(r => r.type === 'classroom' || r.type === 'auditorium');
-    if (selectedFilter === 'lab') return searchResults.filter(r => r.type === 'laboratory' || r.name.toLowerCase().includes('lab'));
-    if (selectedFilter === 'dosen') return searchResults.filter(r => r.type === 'office' || r.name.toLowerCase().includes('dekan') || (r.matchReason && r.matchReason.toLowerCase().includes('dosen')));
-    return searchResults;
-  }, [searchResults, selectedFilter]);
+    const baseList = query.trim().length > 0 ? searchResults : allRoomsFromBuildings;
+    if (selectedFilter === 'all') {
+      return query.trim().length > 0 ? baseList : [];
+    }
+    if (selectedFilter === 'gedung-a') return baseList.filter(r => r.buildingId === 'gedung-a');
+    if (selectedFilter === 'gedung-b') return baseList.filter(r => r.buildingId === 'gedung-b');
+    if (selectedFilter === 'classroom') return baseList.filter(r => r.type === 'classroom' || r.type === 'auditorium');
+    if (selectedFilter === 'lab') return baseList.filter(r => r.type === 'laboratory' || r.name.toLowerCase().includes('lab'));
+    if (selectedFilter === 'dosen') return baseList.filter(r => r.type === 'office' || r.name.toLowerCase().includes('dekan') || (r.matchReason && r.matchReason.toLowerCase().includes('dosen')));
+    return baseList;
+  }, [searchResults, allRoomsFromBuildings, selectedFilter, query]);
 
   const handleSelectRoom = (room: SearchResultRoom) => {
     recordSearch(room.code + ' ' + room.name);
@@ -235,14 +254,18 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
           
-          {/* State 1: Typing Query & Results */}
-          {query.trim().length > 0 ? (
+          {/* State 1: Typing Query OR Category Filter Selected */}
+          {query.trim().length > 0 || selectedFilter !== 'all' ? (
             <div>
-              <div className="flex items-center justify-between text-xs font-bold text-slate-500 px-1 mb-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400 px-1 mb-2">
                 <span>
-                  {isLoading ? 'Sedang mencari di sistem kampus...' : `Ditemukan ${filteredResults.length} Ruangan & Fasilitas`}
+                  {isLoading 
+                    ? 'Sedang mencari di sistem kampus...' 
+                    : query.trim().length > 0 
+                      ? `Ditemukan ${filteredResults.length} Ruangan & Fasilitas`
+                      : `Ditemukan ${filteredResults.length} Ruangan dalam Kategori`}
                 </span>
-                <span className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
+                <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                   <CornerDownLeft className="w-3.5 h-3.5" /> Tekan Enter untuk pilih yang teratas
                 </span>
               </div>
@@ -260,8 +283,8 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
                         onClick={() => handleSelectRoom(room)}
                         className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${
                           idx === 0 
-                            ? 'bg-emerald-50/70 border-emerald-300 shadow-xs hover:border-emerald-500' 
-                            : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-emerald-300'
+                            ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 shadow-xs hover:border-emerald-500' 
+                            : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -272,19 +295,19 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
 
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-sm font-extrabold text-slate-900 group-hover:text-emerald-800 transition-colors">
+                              <h4 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-800 dark:group-hover:text-emerald-300 transition-colors">
                                 {room.name}
                               </h4>
                               {room.matchReason && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
-                                  <Sparkles className="w-3 h-3 text-amber-600" />
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                                   {room.matchReason}
                                 </span>
                               )}
                             </div>
 
-                            <div className="text-xs text-slate-500 flex items-center gap-2 mt-1 flex-wrap">
-                              <span className="font-semibold text-slate-700">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-1 flex-wrap">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">
                                 {room.buildingShortName || (room.buildingId === 'gedung-a' ? 'LABTEK 1' : 'FT.1')}
                               </span>
                               <span>•</span>
@@ -296,8 +319,8 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
                             </div>
 
                             {room.currentActivity && (
-                              <div className="mt-1.5 text-[11px] font-medium text-emerald-900 bg-emerald-100/60 px-2 py-0.5 rounded-md inline-flex items-center gap-1.5">
-                                <Clock className="w-3 h-3 text-emerald-700" />
+                              <div className="mt-1.5 text-[11px] font-medium text-emerald-900 dark:text-emerald-200 bg-emerald-100/60 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md inline-flex items-center gap-1.5">
+                                <Clock className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                                 <span>{room.currentActivity.title} ({room.currentActivity.startTime} - {room.currentActivity.endTime})</span>
                               </div>
                             )}
@@ -307,15 +330,15 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
                         {/* Status & Jump Button */}
                         <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
                           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                            isAvail ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                            isOcc ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                            isRes ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                            'bg-slate-200 text-slate-700'
+                            isAvail ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' :
+                            isOcc ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800' :
+                            isRes ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800' :
+                            'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                           }`}>
                             {isAvail ? 'Tersedia' : isOcc ? 'Sedang Digunakan' : isRes ? 'Dipesan' : 'Pemeliharaan'}
                           </span>
 
-                          <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 group-hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all">
+                          <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer">
                             <span>Buka di 3D</span>
                             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                           </button>
@@ -326,11 +349,11 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
                 </div>
               ) : (
                 !isLoading && (
-                  <div className="text-center py-10 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                    <Search className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <h4 className="text-sm font-bold text-slate-700">Ruangan tidak ditemukan</h4>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                      Tidak ada hasil yang sesuai dengan "{query}". Pastikan ejaan benar atau cari berdasarkan kode ruang seperti "A-101", nama dosen, atau lab.
+                  <div className="text-center py-10 px-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                    <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Ruangan tidak ditemukan</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+                      Tidak ada hasil yang sesuai dengan kriteria pencarian.
                     </p>
                   </div>
                 )

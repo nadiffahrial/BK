@@ -4,7 +4,7 @@ import { INITIAL_BUILDINGS, INITIAL_BOOKINGS } from '../data/initialData.js';
 
 dotenv.config();
 
-const DB_HOST = process.env.DB_HOST || 'localhost';
+const DB_HOST = process.env.DB_HOST || '127.0.0.1';
 const DB_USER = process.env.DB_USER || 'root';
 const DB_PASSWORD = process.env.DB_PASSWORD || '';
 const DB_NAME = process.env.DB_NAME || 'smartspace_db';
@@ -167,10 +167,43 @@ const createTables = async () => {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  // Customer Service & Pengaduan Kampus Tickets
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS \`cs_tickets\` (
+      \`id\` VARCHAR(50) NOT NULL PRIMARY KEY,
+      \`sender_name\` VARCHAR(150) NOT NULL,
+      \`sender_email\` VARCHAR(150) NOT NULL,
+      \`sender_role\` VARCHAR(50) DEFAULT 'student',
+      \`category\` VARCHAR(100) NOT NULL,
+      \`room_code\` VARCHAR(50) DEFAULT '-',
+      \`subject\` VARCHAR(255) NOT NULL,
+      \`message\` TEXT NOT NULL,
+      \`status\` ENUM('pending', 'in_progress', 'resolved') DEFAULT 'pending',
+      \`admin_response\` TEXT,
+      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   console.log(`📋 Tabel-tabel MySQL berhasil disinkronkan`);
 };
 
 const seedInitialData = async () => {
+  // Ensure CS tickets are seeded if empty
+  const [csCheck] = await pool.query('SELECT COUNT(*) as cnt FROM `cs_tickets`');
+  if (csCheck[0].cnt === 0) {
+    await pool.query(
+      `INSERT INTO \`cs_tickets\` (id, sender_name, sender_email, sender_role, category, room_code, subject, message, status, admin_response)
+       VALUES 
+       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?),
+       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        'CS-1011', 'Dimas Aditya (21040101)', 'dimas.aditya@student.unsil.ac.id', 'student', 'Sarana & Fasilitas', 'A-101', 'Proyektor HDMI Berkedip saat Kuliah', 'Kabel port HDMI di meja dosen ruang A-101 agak kendor dan layar proyektor berkedip hijau.', 'in_progress', 'Tim teknisi BAAK/Sarpras sudah diberitahu dan kabel HDMI pengganti sedang dipasang.',
+        'CS-1008', 'Dr. Budi Santoso, M.T.', 'budi.santoso@unsil.ac.id', 'staff', 'Jaringan & WiFi Eduroam', 'A-201', 'Koneksi WiFi Lab AI Lambat', 'Koneksi hotspot Access Point di Lab Riset AI sering putus saat mahasiswa menjalankan training model.', 'resolved', 'Access Point telah di-restart dan alokasi bandwidth ditambah oleh UPT TIK.'
+      ]
+    );
+    console.log('✅ Tiket demo CS berhasil di-seed ke MySQL cs_tickets');
+  }
+
   const [bRows] = await pool.query('SELECT COUNT(*) as cnt FROM `buildings`');
   const [sRows] = await pool.query('SELECT COUNT(*) as cnt FROM `room_schedules`');
   if (bRows[0].cnt === INITIAL_BUILDINGS.length && sRows[0].cnt > 0) {
@@ -318,7 +351,46 @@ const seedInitialData = async () => {
     );
   }
 
-  console.log('✅ Seeding data 3 gedung & 66 ruangan ke MySQL phpMyAdmin berhasil selesai!');
+  // 4. Seed CS Tickets if empty
+  const [csRows] = await pool.query('SELECT COUNT(*) as cnt FROM `cs_tickets`');
+  if (csRows[0].cnt === 0) {
+    const initialTickets = [
+      {
+        id: 'CS-1011',
+        sender_name: 'Dimas Aditya (21040101)',
+        sender_email: 'dimas.aditya@student.unsil.ac.id',
+        sender_role: 'student',
+        category: 'Sarana & Fasilitas',
+        room_code: 'A-101',
+        subject: 'Proyektor HDMI Berkedip saat Kuliah',
+        message: 'Kabel port HDMI di meja dosen ruang A-101 agak kendor dan layar proyektor berkedip hijau.',
+        status: 'in_progress',
+        admin_response: 'Tim teknisi BAAK/Sarpras sudah diberitahu dan kabel HDMI pengganti sedang dipasang.'
+      },
+      {
+        id: 'CS-1008',
+        sender_name: 'Dr. Budi Santoso, M.T.',
+        sender_email: 'budi.santoso@unsil.ac.id',
+        sender_role: 'staff',
+        category: 'Jaringan & WiFi Eduroam',
+        room_code: 'A-201',
+        subject: 'Koneksi WiFi Lab AI Lambat',
+        message: 'Koneksi hotspot Access Point di Lab Riset AI sering putus saat mahasiswa menjalankan training model.',
+        status: 'resolved',
+        admin_response: 'Access Point telah di-restart dan alokasi bandwidth ditambah oleh UPT TIK.'
+      }
+    ];
+
+    for (const t of initialTickets) {
+      await pool.query(
+        `INSERT INTO \`cs_tickets\` (id, sender_name, sender_email, sender_role, category, room_code, subject, message, status, admin_response)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [t.id, t.sender_name, t.sender_email, t.sender_role, t.category, t.room_code, t.subject, t.message, t.status, t.admin_response]
+      );
+    }
+  }
+
+  console.log('✅ Seeding data gedung & tiket CS ke MySQL phpMyAdmin berhasil selesai!');
 };
 
 export const getDb = () => pool;
