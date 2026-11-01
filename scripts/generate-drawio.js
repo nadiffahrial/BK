@@ -1,0 +1,294 @@
+import fs from 'fs';
+import path from 'path';
+
+function generateDrawioXml() {
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="${new Date().toISOString()}" agent="SmartCampus3D" version="24.0.0" type="device">
+  <diagram id="smartcampus_use_case" name="Use Case Diagram - SmartCampus3D UNSIL">
+    <mxGraphModel dx="1680" dy="1020" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1120" background="#f8fafc" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================= SYSTEM BOUNDARY ================= -->
+        <mxCell id="sys_box" value="&lt;b&gt;Sistem Tata Ruang &amp;amp; Navigasi Kampus 3D (SmartCampus3D Universitas Siliwangi)&lt;/b&gt;" style="swimlane;startSize=32;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#059669;strokeWidth=2.5;fontColor=#065f46;fontSize=15;rounded=1;arcSize=3;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="40" width="1160" height="1020" as="geometry" />
+        </mxCell>
+
+        <!-- ================= ACTORS (LEFT SIDE: PRIMARY USERS) ================= -->
+        <!-- 1. Mahasiswa -->
+        <mxCell id="act_student" value="&lt;b&gt;Mahasiswa&lt;/b&gt;&lt;br&gt;(Student)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dcfce7;strokeColor=#16a34a;strokeWidth=2;fontSize=12;fontColor=#14532d;" vertex="1" parent="1">
+          <mxGeometry x="80" y="160" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- 2. Dosen / Staff -->
+        <mxCell id="act_lecturer" value="&lt;b&gt;Dosen / Staff&lt;/b&gt;&lt;br&gt;(Academic Staff)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=2;fontSize=12;fontColor=#0369a1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="440" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- 3. Tamu / Pengunjung -->
+        <mxCell id="act_guest" value="&lt;b&gt;Tamu / Publik&lt;/b&gt;&lt;br&gt;(Guest / Visitor)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#fef3c7;strokeColor=#d97706;strokeWidth=2;fontSize=12;fontColor=#78350f;" vertex="1" parent="1">
+          <mxGeometry x="80" y="720" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ================= ACTORS (RIGHT SIDE: ADMIN & SECONDARY SYSTEMS) ================= -->
+        <!-- 4. Administrator Sarpras & IT -->
+        <mxCell id="act_admin" value="&lt;b&gt;Administrator&lt;/b&gt;&lt;br&gt;(Sarpras &amp;amp; BAAK / IT)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffe4e6;strokeColor=#e11d48;strokeWidth=2;fontSize=12;fontColor=#881337;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="240" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- 5. Sensor IoT & ESP32 Beacons -->
+        <mxCell id="act_iot" value="&lt;b&gt;Sensor IoT &amp;amp; Beacon&lt;/b&gt;&lt;br&gt;(BLE / ESP32 Positioning)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f3e8ff;strokeColor=#9333ea;strokeWidth=2;fontSize=12;fontColor=#581c87;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="520" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- 6. Database MySQL & SSE Server -->
+        <mxCell id="act_backend" value="&lt;b&gt;Backend &amp;amp; DB Server&lt;/b&gt;&lt;br&gt;(MySQL smartspace_db)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffedd5;strokeColor=#ea580c;strokeWidth=2;fontSize=12;fontColor=#7c2d12;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="780" width="55" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ================= USE CASES (INSIDE SYSTEM BOUNDARY) ================= -->
+
+        <!-- Kelompok 1: Autentikasi & Akun -->
+        <mxCell id="uc_login" value="&lt;b&gt;UC-01: Login Akun Civitas &amp;amp; Tamu&lt;/b&gt;&lt;br&gt;(SSO Kampus / Quick Access)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#10b981;fontColor=#064e3b;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="40" y="60" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_profile" value="&lt;b&gt;UC-02: Kelola Profil &amp;amp; Ganti Peran&lt;/b&gt;&lt;br&gt;(Role Switcher &amp;amp; Tema)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#10b981;fontColor=#064e3b;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="40" y="140" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Kelompok 2: Eksplorasi Denah & Visual 3D -->
+        <mxCell id="uc_view_map" value="&lt;b&gt;UC-03: Melihat Denah Interaktif&lt;/b&gt;&lt;br&gt;(3D Isometrik, 2D SVG, &amp;amp; Daftar)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#22c55e;fontColor=#14532d;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="310" y="60" width="230" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_switch_building" value="&lt;b&gt;UC-04: Memilih Gedung &amp;amp; Tingkat Lantai&lt;/b&gt;&lt;br&gt;(LABTEK 1 &amp;amp; FT.1 • Lantai 1-2)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#22c55e;fontColor=#14532d;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="310" y="150" width="230" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_room_detail" value="&lt;b&gt;UC-05: Melihat Detail Ruangan &amp;amp; Fasilitas&lt;/b&gt;&lt;br&gt;(Kapasitas, AC, Proyektor, Suhu IoT)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#22c55e;fontColor=#14532d;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="310" y="235" width="230" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_filter_status" value="&lt;b&gt;UC-06: Memfilter Status Ruangan&lt;/b&gt;&lt;br&gt;(Tersedia, Terisi, Reservasi, Servis)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#22c55e;fontColor=#14532d;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="310" y="325" width="230" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Kelompok 3: Pencarian Cepat (Spotlight Search Ctrl+K) -->
+        <mxCell id="uc_search" value="&lt;b&gt;UC-07: Pencarian Cepat Ruangan&lt;/b&gt;&lt;br&gt;(Spotlight Search Engine [Ctrl+K])" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0c4a6e;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="40" y="280" width="220" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_category_filter" value="&lt;b&gt;UC-08: Filter Kategori Ruangan&lt;/b&gt;&lt;br&gt;(Ruang Kuliah, Lab, Dosen/Dekanat)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0c4a6e;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="40" y="380" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Kelompok 4: Navigasi Rute & IoT Positioning -->
+        <mxCell id="uc_route_guide" value="&lt;b&gt;UC-09: Menampilkan Rute Jalan ke Ruangan&lt;/b&gt;&lt;br&gt;(Visual Pathfinding &amp;amp; Turn-by-turn)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontColor=#3b0764;fontSize=11;strokeWidth=2;" vertex="1" parent="sys_box">
+          <mxGeometry x="590" y="130" width="250" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_compass" value="&lt;b&gt;UC-10: Sinkronisasi Sensor Kompas HP&lt;/b&gt;&lt;br&gt;(DeviceOrientation Arah Hadap Real-time)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontColor=#3b0764;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="590" y="225" width="250" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_iot_locate" value="&lt;b&gt;UC-11: Deteksi Posisi Indoor via IoT Beacon&lt;/b&gt;&lt;br&gt;(Trilaterasi ESP32 BLE Anchor)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontColor=#3b0764;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="590" y="320" width="250" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Kelompok 5: Peminjaman Ruang (Booking System) -->
+        <mxCell id="uc_booking_req" value="&lt;b&gt;UC-12: Mengajukan Peminjaman Ruang&lt;/b&gt;&lt;br&gt;(Form Reservasi &amp;amp; Durasi Waktu)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#451a03;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="310" y="470" width="230" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_validate_sched" value="&lt;b&gt;UC-13: Validasi Bentrok Jadwal Ruangan&lt;/b&gt;&lt;br&gt;(Pengecekan Ketersediaan Waktu)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#451a03;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="590" y="470" width="250" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_schedule_view" value="&lt;b&gt;UC-14: Melihat Jadwal Kuliah &amp;amp; Agenda Ruang&lt;/b&gt;&lt;br&gt;(Sinkronisasi Mata Kuliah &amp;amp; Sidang)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#451a03;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="310" y="565" width="230" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_booking_approval" value="&lt;b&gt;UC-15: Verifikasi &amp;amp; Approval Peminjaman&lt;/b&gt;&lt;br&gt;(Setujui / Batalkan Permohonan Ruang)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#451a03;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="880" y="470" width="240" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Kelompok 6: Layanan CS & Pengaduan Fasilitas (Helpdesk) -->
+        <mxCell id="uc_cs_ticket" value="&lt;b&gt;UC-16: Mengirim Pengaduan Fasilitas CS&lt;/b&gt;&lt;br&gt;(Lapor AC, Proyektor HDMI, WiFi Eduroam)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ccfbf1;strokeColor=#0d9488;fontColor=#134e4a;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="310" y="700" width="230" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_cs_manage" value="&lt;b&gt;UC-17: Menindaklanjuti Tiket CS BAAK / IT&lt;/b&gt;&lt;br&gt;(Ubah Status &amp;amp; Beri Respon Petugas)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ccfbf1;strokeColor=#0d9488;fontColor=#134e4a;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="880" y="700" width="240" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_sse_notify" value="&lt;b&gt;UC-18: Siaran Notifikasi Real-time (SSE)&lt;/b&gt;&lt;br&gt;(Status Ruang, Tiket Baru, &amp;amp; Booking)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ccfbf1;strokeColor=#0d9488;fontColor=#134e4a;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="590" y="700" width="250" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Kelompok 7: Master Control & Database -->
+        <mxCell id="uc_master_status" value="&lt;b&gt;UC-19: Master Update Status Ruangan&lt;/b&gt;&lt;br&gt;(Tersedia, Terisi, atau Maintenance)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe4e6;strokeColor=#e11d48;fontColor=#4c0519;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="880" y="160" width="240" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_iot_monitor" value="&lt;b&gt;UC-20: Monitoring Telemetri IoT Ruang&lt;/b&gt;&lt;br&gt;(Sensor Suhu Lingkungan &amp;amp; Okupansi)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe4e6;strokeColor=#e11d48;fontColor=#4c0519;fontSize=11;strokeWidth=1.5;" vertex="1" parent="sys_box">
+          <mxGeometry x="880" y="270" width="240" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_db_sync" value="&lt;b&gt;UC-21: Sinkronisasi Database MySQL&lt;/b&gt;&lt;br&gt;(MariaDB XAMPP smartspace_db)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffedd5;strokeColor=#ea580c;fontColor=#431407;fontSize=11;strokeWidth=1.8;" vertex="1" parent="sys_box">
+          <mxGeometry x="880" y="830" width="240" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- ================= INCLUDE & EXTEND RELATIONSHIPS ================= -->
+        <!-- UC-08 extends UC-07 -->
+        <mxCell id="rel_ext_search" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;strokeColor=#0284c7;strokeWidth=1.5;fontSize=10;fontColor=#0369a1;" edge="1" parent="sys_box" source="uc_category_filter" target="uc_search">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UC-09 includes UC-11 -->
+        <mxCell id="rel_inc_iot" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;strokeColor=#7c3aed;strokeWidth=1.5;fontSize=10;fontColor=#581c87;" edge="1" parent="sys_box" source="uc_route_guide" target="uc_iot_locate">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UC-10 extends UC-09 -->
+        <mxCell id="rel_ext_compass" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;strokeColor=#7c3aed;strokeWidth=1.5;fontSize=10;fontColor=#581c87;" edge="1" parent="sys_box" source="uc_compass" target="uc_route_guide">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UC-12 includes UC-13 -->
+        <mxCell id="rel_inc_booking" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;strokeColor=#d97706;strokeWidth=1.5;fontSize=10;fontColor=#78350f;" edge="1" parent="sys_box" source="uc_booking_req" target="uc_validate_sched">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UC-16 extends UC-18 (Broadcast SSE) -->
+        <mxCell id="rel_ext_cs_sse" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;strokeColor=#0d9488;strokeWidth=1.5;fontSize=10;fontColor=#134e4a;" edge="1" parent="sys_box" source="uc_cs_ticket" target="uc_sse_notify">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UC-17 extends UC-18 (Broadcast SSE) -->
+        <mxCell id="rel_ext_admin_sse" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;strokeColor=#0d9488;strokeWidth=1.5;fontSize=10;fontColor=#134e4a;" edge="1" parent="sys_box" source="uc_cs_manage" target="uc_sse_notify">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= ASSOCIATIONS: ACTOR -> USE CASE ================= -->
+
+        <!-- Mahasiswa (Student) Associations -->
+        <mxCell id="edge_st_login" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#16a34a;" edge="1" parent="1" source="act_student" target="uc_login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_st_map" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#16a34a;" edge="1" parent="1" source="act_student" target="uc_view_map">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_st_search" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#16a34a;" edge="1" parent="1" source="act_student" target="uc_search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_st_route" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#16a34a;" edge="1" parent="1" source="act_student" target="uc_route_guide">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_st_book" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#16a34a;" edge="1" parent="1" source="act_student" target="uc_booking_req">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_st_sched" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#16a34a;" edge="1" parent="1" source="act_student" target="uc_schedule_view">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_st_cs" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#16a34a;" edge="1" parent="1" source="act_student" target="uc_cs_ticket">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Dosen / Staff Associations -->
+        <mxCell id="edge_lc_login" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#0284c7;" edge="1" parent="1" source="act_lecturer" target="uc_login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_lc_map" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#0284c7;" edge="1" parent="1" source="act_lecturer" target="uc_view_map">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_lc_route" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#0284c7;" edge="1" parent="1" source="act_lecturer" target="uc_route_guide">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_lc_book" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#0284c7;" edge="1" parent="1" source="act_lecturer" target="uc_booking_req">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_lc_sched" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#0284c7;" edge="1" parent="1" source="act_lecturer" target="uc_schedule_view">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_lc_status" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#0284c7;" edge="1" parent="1" source="act_lecturer" target="uc_master_status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_lc_cs" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#0284c7;" edge="1" parent="1" source="act_lecturer" target="uc_cs_ticket">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Tamu / Publik (Guest) Associations -->
+        <mxCell id="edge_gt_login" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#d97706;" edge="1" parent="1" source="act_guest" target="uc_login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_gt_map" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#d97706;" edge="1" parent="1" source="act_guest" target="uc_view_map">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_gt_search" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#d97706;" edge="1" parent="1" source="act_guest" target="uc_search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_gt_route" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#d97706;" edge="1" parent="1" source="act_guest" target="uc_route_guide">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_gt_detail" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;strokeColor=#d97706;" edge="1" parent="1" source="act_guest" target="uc_room_detail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Administrator Sarpras Associations -->
+        <mxCell id="edge_ad_approval" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#e11d48;" edge="1" parent="1" source="act_admin" target="uc_booking_approval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ad_cs" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#e11d48;" edge="1" parent="1" source="act_admin" target="uc_cs_manage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ad_master" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#e11d48;" edge="1" parent="1" source="act_admin" target="uc_master_status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ad_monitor" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#e11d48;" edge="1" parent="1" source="act_admin" target="uc_iot_monitor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ad_dbsync" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#e11d48;" edge="1" parent="1" source="act_admin" target="uc_db_sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Sensor IoT & ESP32 Associations -->
+        <mxCell id="edge_iot_locate" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#9333ea;" edge="1" parent="1" source="act_iot" target="uc_iot_locate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_iot_monitor" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#9333ea;" edge="1" parent="1" source="act_iot" target="uc_iot_monitor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Backend & DB Server Associations -->
+        <mxCell id="edge_be_sync" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#ea580c;" edge="1" parent="1" source="act_backend" target="uc_db_sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_be_sse" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#ea580c;" edge="1" parent="1" source="act_backend" target="uc_sse_notify">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_be_validate" style="endArrow=none;html=1;rounded=0;strokeWidth=1.8;strokeColor=#ea580c;" edge="1" parent="1" source="act_backend" target="uc_validate_sched">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>`;
+
+  const docsDir = path.resolve('docs');
+  if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir, { recursive: true });
+
+  const drawioPath = path.join(docsDir, 'use_case_diagram.drawio');
+  const xmlPath = path.join(docsDir, 'use_case_diagram.xml');
+
+  fs.writeFileSync(drawioPath, xml, 'utf8');
+  fs.writeFileSync(xmlPath, xml, 'utf8');
+
+  console.log(`✅ File draw.io berhasil dibuat:`);
+  console.log(`   - ${drawioPath}`);
+  console.log(`   - ${xmlPath}`);
+}
+
+generateDrawioXml();
