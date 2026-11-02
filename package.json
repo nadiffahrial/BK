@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "server": "npm --prefix backend run dev",
-    "build": "npm --prefix frontend run build",
+    "build": "npm --prefix frontend run build && node scripts/post-build.js",
     "preview": "npm --prefix frontend run preview",
     "start:frontend": "npm --prefix frontend run dev",
     "start:backend": "npm --prefix backend start",

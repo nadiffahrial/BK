@@ -115,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Buka Panduan Pengguna (Tujuan & Fitur)"
               >
                 <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span className="hidden sm:inline">Panduan</span>
+                <span className="inline">Panduan</span>
               </button>
             )}
 

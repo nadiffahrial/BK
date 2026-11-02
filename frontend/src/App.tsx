@@ -32,7 +32,8 @@ import {
   Menu,
   Clock,
   Compass,
-  Headphones
+  Headphones,
+  BookOpen
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -282,6 +283,7 @@ export const App: React.FC = () => {
         onSelectRoomById={handleSelectRoomById}
         onOpenMenu={() => setIsMenuOpen(true)}
         onOpenSearch={() => setIsSearchModalOpen(true)}
+        onOpenGuide={() => setIsGuideModalOpen(true)}
       />
 
       {/* 2. Slide-over Navigation Menu Drawer */}
@@ -306,6 +308,7 @@ export const App: React.FC = () => {
         isBackendConnected={isBackendConnected}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCs={() => setIsCsModalOpen(true)}
+        onOpenGuide={() => setIsGuideModalOpen(true)}
       />
 
       {/* 3. Main Workspace Area (Clean & Simple) */}
@@ -562,6 +565,20 @@ export const App: React.FC = () => {
         onNavigateToRoom={handleNavigateFromSearch}
       />
 
+            {/* 📖 Floating Panduan Pengguna Button */}
+      <button
+        type="button"
+        onClick={() => setIsGuideModalOpen(true)}
+        className="fixed bottom-5 right-36 sm:right-40 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-extrabold text-xs shadow-lg shadow-slate-900/10 dark:shadow-black/40 transition-all hover:scale-105 active:scale-95 cursor-pointer group border border-emerald-200 dark:border-slate-700"
+        title="Buka Buku Panduan Pengguna (F1 / ?)"
+      >
+        <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+        <span className="inline font-bold">Panduan</span>
+        <kbd className="hidden md:inline text-[9px] font-mono bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1 py-0.5 rounded border border-slate-200 dark:border-slate-600">
+          F1
+        </kbd>
+      </button>
+
       {/* 🎧 Floating Customer Service (CS) & Pengaduan Button */}
       <button
         type="button"
@@ -591,6 +608,7 @@ export const App: React.FC = () => {
         onClose={() => setIsGuideModalOpen(false)}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCs={() => setIsCsModalOpen(true)}
+        onOpenGuide={() => setIsGuideModalOpen(true)}
       />
 
       {/* Minimalist Clean Footer */}
