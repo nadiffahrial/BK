@@ -5,117 +5,94 @@
 
 ---
 
-## 🌟 Fitur Utama
+## 📁 Struktur Monorepo (Frontend & Backend Terpisah)
 
-- **🏛️ Denah 3D Isometrik & 2D Interaktif:**
-  - Visualisasi arsitektural gedung kampus lengkap dengan tangga sentral, partisi dinding ruangan, pintu, meja kuliah, dan fasilitas.
-  - Multi-lantai: Tingkat 1 & Tingkat 2 untuk Gedung LABTEK 1 dan FT.1.
-  - Quick-switch tombol gedung yang langsung memfokuskan model 3D.
-- **🧭 Navigasi Jalur IoT & Turn-by-Turn Guidance:**
-  - Penentuan posisi pengguna melalui IoT Anchor Beacons (BLE/ESP32) dan fallback GPS perangkat.
-  - Algoritma pencarian rute jalan (*pathfinding*) cerdas dengan estimasi jarak (meter) dan waktu tempuh (detik).
-  - Simulasi langkah dinamis (*Simulate Walk*) langsung di atas canvas denah.
-- **🔍 Pencarian Ruangan Mahasiswa Cepat (Spotlight / Ctrl+K):**
-  - Mesin pencari instan untuk ruang kuliah teori, laboratorium komputer & AI, ruang sidang skripsi, ruang dosen, dan layanan BAAK.
-- **⚡ Status Ruangan & Telemetri Real-Time:**
-  - Ketersediaan ruangan (*Available*, *Occupied*, *Reserved*, *Maintenance*).
-  - Update langsung dengan Server-Sent Events (SSE) dan integrasi database MySQL XAMPP.
-- **🌓 Transisi Fleksibel Dark Mode & Light Mode:**
-  - Tema adaptif dengan palet warna resmi Universitas Siliwangi (Emerald, Gold, Slate).
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend:
-- **Framework:** React 18 with TypeScript
-- **Bundler:** Vite
-- **Styling:** Tailwind CSS & Lucide Icons
-- **State Management:** React Context API (`AuthContext`, `GpsContext`, `ThemeContext`)
-
-### Backend:
-- **Runtime:** Node.js (Express.js)
-- **Database:** MySQL (XAMPP / MariaDB) dengan auto-fallback memory store
-- **Real-Time Communication:** Server-Sent Events (SSE)
+```text
+BK/
+├── 📂 frontend/                 # Aplikasi Frontend (React + Vite + TailwindCSS)
+│   ├── public/                 # Aset statis & logo kampus
+│   ├── src/                    # Komponen, Halaman, Hook, & Data
+│   ├── index.html              # Entry HTML Vite
+│   ├── vite.config.ts          # Konfigurasi Vite & API Proxy
+│   ├── tailwind.config.js      # Konfigurasi Tema & Warna Kampus
+│   ├── tsconfig.json           # Konfigurasi TypeScript
+│   └── package.json            # Dependensi khusus Frontend
+│
+├── 📂 backend/                  # Server Backend (Node.js Express + MySQL)
+│   ├── config/                 # Koneksi MySQL Pool (db.js)
+│   ├── controllers/            # Controller Auth, Ruangan, Booking, CS
+│   ├── data/                   # Initial data & backup SQL
+│   ├── routes/                 # Endpoint REST API & SSE
+│   ├── index.js                # Server Entrypoint (Port 5000)
+│   ├── sse.js                  # Server-Sent Events Real-time
+│   ├── store.js                # In-memory Store Fallback
+│   ├── .env                    # Variabel Lingkungan DB XAMPP
+│   └── package.json            # Dependensi khusus Backend
+│
+├── 📂 database/                 # Script SQL phpMyAdmin (smartspace_db.sql)
+├── 📂 docs/                     # Diagram Use Case (Draw.io & XML)
+└── package.json                # Root Runner & Monorepo Workspaces
+```
 
 ---
 
 ## 🚀 Panduan Menjalankan Proyek
 
-### 1. Prasyarat
-- [Node.js](https://nodejs.org/) (versi 18+ direkomendasikan)
-- [XAMPP](https://www.apachefriends.org/) (untuk Apache & MySQL port 3306)
+### 1. Cara Cepat (Jalankan dari Root Folder)
 
-### 2. Instalasi Dependensi
 ```bash
-# Clone repository
-git clone https://github.com/nadiffahrial/BK.git
-cd BK
+# 1. Jalankan Backend Server (Terminal 1)
+npm run server
 
-# Install paket frontend & backend
-npm install
+# 2. Jalankan Frontend Web (Terminal 2)
+npm run dev
 ```
 
-### 3. Konfigurasi Database
-1. Buka XAMPP Control Panel dan nyalakan **Apache** dan **MySQL**.
-2. Masuk ke **phpMyAdmin** (`http://localhost/phpmyadmin/`).
-3. Buat database bernama `smartspace_db` (skema dan data awal akan otomatis ter-generate saat server backend pertama kali dijalankan dari `database/schema.sql`).
-4. Sesuaikan file `.env`:
+### 2. Cara Mandiri (Folder Masing-masing)
+
+#### Menjalankan Backend:
+```bash
+cd backend
+npm install       # (jika baru pertama kali)
+npm run dev       # berjalan di http://localhost:5000
+```
+
+#### Menjalankan Frontend:
+```bash
+cd frontend
+npm install       # (jika baru pertama kali)
+npm run dev       # berjalan di http://localhost:5173
+```
+
+---
+
+## 🗄️ Konfigurasi Database (MySQL phpMyAdmin)
+
+1. Nyalakan modul **Apache** dan **MySQL** di **XAMPP Control Panel**.
+2. File SQL tersedia di [`database/smartspace_db.sql`](./database/smartspace_db.sql).
+3. Buka `http://localhost/phpmyadmin/`, pilih tab **Impor**, lalu pilih file `smartspace_db.sql` dan klik **Kirim**.
+4. File `.env` di folder `backend/`:
    ```env
    PORT=5000
-   DB_HOST=localhost
+   DB_HOST=127.0.0.1
    DB_USER=root
    DB_PASSWORD=
    DB_NAME=smartspace_db
    DB_PORT=3306
    ```
 
-### 4. Menjalankan Aplikasi
-Buka 2 terminal terpisah:
-
-**Terminal 1 (Backend API Server):**
-```bash
-node server/index.js
-# Backend aktif di: http://localhost:5000
-```
-
-**Terminal 2 (Frontend Client):**
-```bash
-npm run dev
-# Frontend aktif di: http://localhost:5173
-```
-
 ---
 
-## 📁 Struktur Direktori
-```text
-├── database/            # Skema SQL & inisialisasi data MySQL
-├── public/              # Aset statis & logo resmi Universitas Siliwangi
-├── server/
-│   ├── config/          # Koneksi MySQL pool
-│   ├── controllers/     # Controller IoT, navigasi, kampus, ruangan, jadwal, auth
-│   ├── routes/          # Definisi REST API endpoints
-│   ├── index.js         # Entry point server Express & SSE
-│   └── store.js         # In-memory store data gedung & fallback
-├── src/
-│   ├── components/
-│   │   ├── auth/        # Halaman Login & Quick Demo Roles
-│   │   ├── common/      # ThemeToggle, SearchEngineModal, StudentRoomFinder
-│   │   ├── floorplan/   # IsometricView 3D, FloorMapSvg 2D, RoomDetailModal
-│   │   ├── layout/      # Navbar, BuildingCardSelector, NavigationMenuDrawer, Footer
-│   │   └── navigation/  # IotGpsControlBar & panduan rute jalan
-│   ├── context/         # AuthContext, GpsContext, ThemeContext
-│   ├── data/            # Data statis gedung, tingkat lantai, dan IoT Beacons
-│   ├── services/        # API client & SSE EventSource service
-│   ├── types/           # Deklarasi TypeScript interfaces
-│   ├── App.tsx          # Komponen utama aplikasi
-│   └── main.tsx         # Bootstrap React DOM
-└── package.json
-```
+## 🛠️ Tech Stack
 
----
+### Frontend:
+- **Framework:** React 19 with TypeScript
+- **Bundler:** Vite 6
+- **Styling:** Tailwind CSS & Lucide Icons
+- **State Management:** React Context API (`AuthContext`, `GpsContext`, `ThemeContext`)
 
-## 👨‍💻 Kontributor
-- **Nadif Ahmad Fahrial** ([@nadiffahrial](https://github.com/nadiffahrial))
-- **Universitas Siliwangi**
-
+### Backend:
+- **Runtime:** Node.js (Express.js)
+- **Database Driver:** `mysql2/promise` (MariaDB / MySQL XAMPP)
+- **Real-Time Communication:** Server-Sent Events (SSE)
+- **Fallback:** In-Memory Cache saat database offline

@@ -1,15 +1,22 @@
 {
-  "name": "denah-gedung-interaktif",
+  "name": "smartcampus3d-monorepo",
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "node scripts/prep-dev.js && vite",
-    "server": "node server/index.js",
-    "prebuild": "node scripts/prep-dev.js",
-    "build": "vite build",
-    "postbuild": "node scripts/post-build.js",
-    "preview": "vite preview"
+    "dev": "npm --prefix frontend run dev",
+    "server": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "start:frontend": "npm --prefix frontend run dev",
+    "start:backend": "npm --prefix backend start",
+    "install:all": "npm --prefix frontend install && npm --prefix backend install",
+    "export:db": "node scripts/export-db.js",
+    "export:drawio": "node scripts/generate-drawio.js"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",

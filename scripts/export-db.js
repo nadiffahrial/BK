@@ -1,4 +1,4 @@
-import { initDatabase } from '../server/config/db.js';
+import { initDatabase } from '../backend/config/db.js';
 import fs from 'fs';
 import path from 'path';
 

@@ -1,6 +1,10 @@
 import fs from 'fs';
 
-let code = fs.readFileSync('src/data/buildingsData.ts', 'utf8');
+const srcDataPath = fs.existsSync('frontend/src/data/buildingsData.ts')
+  ? 'frontend/src/data/buildingsData.ts'
+  : 'src/data/buildingsData.ts';
+
+let code = fs.readFileSync(srcDataPath, 'utf8');
 code = code.replace(/import { Building } from '\.\.\/types';\r?\n/, '');
 code = code.replace('export const BUILDINGS_DATA: Building[] =', 'export const INITIAL_BUILDINGS =');
 
@@ -55,6 +59,8 @@ export const INITIAL_BOOKINGS = [
 ];
 `;
 
-fs.writeFileSync('server/data/initialData.js', code + bookings, 'utf8');
-console.log('Successfully synced server/data/initialData.js');
-
+fs.writeFileSync('backend/data/initialData.js', code + bookings, 'utf8');
+if (fs.existsSync('server/data/initialData.js')) {
+  fs.writeFileSync('server/data/initialData.js', code + bookings, 'utf8');
+}
+console.log('Successfully synced initialData.js in backend/data');
