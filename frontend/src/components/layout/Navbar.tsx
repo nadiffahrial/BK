@@ -6,7 +6,8 @@ import {
   Box, 
   ListFilter, 
   GraduationCap,
-  Search
+  Search,
+  BookOpen
 } from 'lucide-react';
 import { Building, RoomStatus, ViewMode } from '../../types';
 import { ThemeToggle } from '../common/ThemeToggle';
@@ -27,13 +28,15 @@ interface NavbarProps {
   onSelectRoomById?: (roomId: string) => void;
   onOpenMenu: () => void;
   onOpenSearch?: () => void;
+  onOpenGuide?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   viewMode,
   onChangeViewMode,
   onOpenMenu,
-  onOpenSearch
+  onOpenSearch,
+  onOpenGuide
 }) => {
   const { user } = useAuth();
 
@@ -102,8 +105,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          {/* 3. Search Engine Trigger, Dark Mode Toggle, User Avatar & Prominent Menu Button */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* 3. Guide Trigger, Search Engine Trigger, Dark Mode Toggle, User Avatar & Menu Button */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* 📖 Tombol Panduan Pengguna */}
+            {onOpenGuide && (
+              <button
+                onClick={onOpenGuide}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 text-xs font-bold transition-all cursor-pointer group shadow-2xs"
+                title="Buka Panduan Pengguna (Tujuan & Fitur)"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">Panduan</span>
+              </button>
+            )}
+
             {/* 🔍 Search Engine Trigger Button */}
             {onOpenSearch && (
               <button

@@ -1,7 +1,8 @@
 # SmartCampus3D - Universitas Siliwangi 🏛️📍
 
 > **Sistem Informasi Denah 3D Interaktif & Navigasi Kampus Berbasis IoT GPS**  
-> Kampus Universitas Siliwangi — Gedung LABTEK 1 (Perkuliahan Terpadu) & Gedung FT.1 (Dekanat & Riset).
+> Kampus Universitas Siliwangi — Gedung LABTEK 1 (Perkuliahan Terpadu) & Gedung FT.1 (Dekanat & Riset).  
+> 📖 **Buku Panduan Pengguna Lengkap:** Silakan baca [docs/PANDUAN_PENGGUNA.md](./docs/PANDUAN_PENGGUNA.md) untuk panduan lengkap per peran (Mahasiswa, Dosen, Admin, Tamu).
 
 ---
 
@@ -11,9 +12,9 @@
 BK/
 ├── 📂 frontend/                 # Aplikasi Frontend (React + Vite + TailwindCSS)
 │   ├── public/                 # Aset statis & logo kampus
-│   ├── src/                    # Komponen, Halaman, Hook, & Data
+│   ├── src/                    # Komponen UI, Modal Panduan, Halaman, & Data
 │   ├── index.html              # Entry HTML Vite
-│   ├── vite.config.ts          # Konfigurasi Vite & API Proxy
+│   ├── vite.config.ts          # Konfigurasi Vite & API Proxy (Port 5000)
 │   ├── tailwind.config.js      # Konfigurasi Tema & Warna Kampus
 │   ├── tsconfig.json           # Konfigurasi TypeScript
 │   └── package.json            # Dependensi khusus Frontend
@@ -30,7 +31,10 @@ BK/
 │   └── package.json            # Dependensi khusus Backend
 │
 ├── 📂 database/                 # Script SQL phpMyAdmin (smartspace_db.sql)
-├── 📂 docs/                     # Diagram Use Case (Draw.io & XML)
+├── 📂 docs/                     # Buku Panduan Pengguna & Diagram Use Case
+│   ├── PANDUAN_PENGGUNA.md     # Panduan Peran Civitas & Alur Penggunaan
+│   ├── use_case_diagram.drawio # Diagram Use Case Interaktif Draw.io
+│   └── use_case_diagram.xml    # XML Diagram Use Case
 └── package.json                # Root Runner & Monorepo Workspaces
 ```
 
@@ -48,6 +52,8 @@ npm run server
 npm run dev
 ```
 
+Aplikasi web dapat diakses di: **`http://localhost:5173`**
+
 ### 2. Cara Mandiri (Folder Masing-masing)
 
 #### Menjalankan Backend:
@@ -63,6 +69,19 @@ cd frontend
 npm install       # (jika baru pertama kali)
 npm run dev       # berjalan di http://localhost:5173
 ```
+
+---
+
+## 👥 Panduan Cepat Peran Pengguna (Role-based)
+
+| Peran | Akun Demo Terdaftar | Kebutuhan & Fitur Utama |
+| :--- | :--- | :--- |
+| **🎓 Mahasiswa** | `dimas.aditya@student.ac.id` / `student` | Cari ruang kuliah cepat (`Ctrl+K`), lihat rute jalan 3D, cek kelas kosong, lapor fasilitas via CS. |
+| **👨‍🏫 Dosen / Staff** | `siti.staff@smartspace.ac.id` / `staff` | Cek ketersediaan ruang, ajukan peminjaman ruang sidang/senat, update status kelas. |
+| **🛡️ Administrator** | `admin.kampus@smartspace.ac.id` / `admin` | Approval peminjaman ruang, kelola tiket CS Sarpras/IT, kontrol master status & telemetri IoT. |
+| **👤 Tamu / Publik** | `tamu@external-visitor.com` / `guest` | Navigasi Grand Lobby Dekanat, loket BAAK, Poliklinik mini P3K tanpa tersesat. |
+
+> 💡 **Shortcut Keyboard:** Tekan tombol `F1` atau tombol `?` di web kapan saja untuk membuka **Buku Panduan Pengguna Interaktif**.
 
 ---
 

@@ -8,6 +8,7 @@ import { BuildingCardSelector } from './components/layout/BuildingCardSelector';
 import { StudentRoomFinder } from './components/common/StudentRoomFinder';
 import { SearchEngineModal } from './components/common/SearchEngineModal';
 import { CustomerServiceModal } from './components/common/CustomerServiceModal';
+import { UserGuideModal } from './components/common/UserGuideModal';
 import { FloorMapSvg } from './components/floorplan/FloorMapSvg';
 import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
@@ -54,6 +55,7 @@ export const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
   const [isCsModalOpen, setIsCsModalOpen] = useState<boolean>(false);
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
 
   // Global shortcut Ctrl+K or Cmd+K to open Search Engine modal
   useEffect(() => {
@@ -583,8 +585,16 @@ export const App: React.FC = () => {
         }}
       />
 
+            {/* 📖 Modal Buku Panduan Pengguna Interaktif */}
+      <UserGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
+        onOpenSearch={() => setIsSearchModalOpen(true)}
+        onOpenCs={() => setIsCsModalOpen(true)}
+      />
+
       {/* Minimalist Clean Footer */}
-      <Footer />
+      <Footer onOpenGuide={() => setIsGuideModalOpen(true)} />
     </div>
   );
 };
