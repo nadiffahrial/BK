@@ -296,7 +296,7 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setActiveTab('quick')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`smooth-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       activeTab === 'quick'
                         ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -307,7 +307,7 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setActiveTab('form')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`smooth-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       activeTab === 'form'
                         ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -348,7 +348,7 @@ export const LoginPage: React.FC = () => {
                         <div
                           key={item.role}
                           onClick={() => !isLoading && handleQuick(item.role)}
-                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden ${
+                          className={`modern-card-hover p-3.5 rounded-2xl border transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden ${
                             item.role === 'student'
                               ? 'bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/40 dark:to-slate-800/80 border-emerald-300 dark:border-emerald-700 shadow-xs hover:border-emerald-500 hover:shadow-md'
                               : 'bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-sm'

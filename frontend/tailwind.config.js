@@ -35,35 +35,71 @@ export default {
           950: '#0d2217',
         }
       },
+      transitionTimingFunction: {
+        'spring': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'gentle': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'bounce-soft': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
       animation: {
         'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'float': 'float 4s ease-in-out infinite',
-        'fade-in': 'fadeIn 0.3s ease-in-out forwards',
-        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'float-gentle': 'floatGentle 4s ease-in-out infinite',
+        'fade-in': 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'slide-up': 'slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'slide-down': 'slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'slide-left': 'slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'dash-move': 'dashMove 1.5s linear infinite',
+        'modal-spring': 'modalSpring 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'tab-slide': 'tabSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'pulse-glow': 'pulseGlow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce-subtle': 'bounceSubtle 2.5s ease-in-out infinite',
+        'shimmer': 'shimmer 2.5s infinite linear',
       },
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-6px)' },
         },
+        floatGentle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
         fadeIn: {
-          '0%': { opacity: '0', transform: 'scale(0.98)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
         slideUp: {
           '0%': { opacity: '0', transform: 'translateY(16px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         slideDown: {
-          '0%': { opacity: '0', transform: 'translateY(-20px) scale(0.96)' },
+          '0%': { opacity: '0', transform: 'translateY(-16px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
         slideLeft: {
           '0%': { transform: 'translateX(100%)' },
           '100%': { transform: 'translateX(0)' },
+        },
+        modalSpring: {
+          '0%': { opacity: '0', transform: 'scale(0.94) translateY(14px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        tabSlide: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { opacity: '1', filter: 'drop-shadow(0 0 2px rgba(16, 185, 129, 0.4))' },
+          '50%': { opacity: '0.7', filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.8))' },
+        },
+        bounceSubtle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-3px)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
         dashMove: {
           'to': { strokeDashoffset: '-40' },
@@ -72,7 +108,9 @@ export default {
       boxShadow: {
         'emerald-soft': '0 4px 20px -2px rgba(16, 185, 129, 0.12), 0 2px 6px -1px rgba(16, 185, 129, 0.06)',
         'emerald-lg': '0 10px 25px -3px rgba(16, 185, 129, 0.2), 0 4px 10px -2px rgba(16, 185, 129, 0.1)',
+        'emerald-glow': '0 0 20px -2px rgba(16, 185, 129, 0.35)',
         'card-clean': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+        'card-hover': '0 12px 28px -4px rgba(16, 185, 129, 0.15), 0 4px 12px -2px rgba(0, 0, 0, 0.05)',
       }
     },
   },

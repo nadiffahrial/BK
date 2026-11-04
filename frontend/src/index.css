@@ -42,12 +42,16 @@ html.theme-transitioning *::after {
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
 ::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.4);
-  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.35);
+  border-radius: 6px;
+  transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.7);
+  background: rgba(16, 185, 129, 0.75);
 }
 
 /* Green & White Blueprint grid backgrounds */
@@ -77,13 +81,47 @@ html.theme-transitioning *::after {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
 }
 
-.glass-card-hover {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* ============================================================== */
+/* 🌟 MODERN SMOOTH TRANSITION & MICRO-INTERACTION UTILITIES 🌟 */
+/* ============================================================== */
+
+/* Modern Card Hover: Subtle elevation + soft glow border */
+.modern-card-hover {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              background-color 0.25s ease;
+  will-change: transform, box-shadow;
 }
-.glass-card-hover:hover {
-  border-color: #86efac;
-  box-shadow: 0 8px 25px -4px rgba(16, 185, 129, 0.15);
-  transform: translateY(-2px);
+.modern-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -6px rgba(16, 185, 129, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+}
+.dark .modern-card-hover:hover {
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.5), 0 0 15px -2px rgba(16, 185, 129, 0.15);
+}
+
+/* Smooth Interactive Button: micro-scale on active click */
+.smooth-btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease;
+  will-change: transform;
+}
+.smooth-btn:hover {
+  transform: translateY(-1.5px);
+}
+.smooth-btn:active {
+  transform: translateY(0.5px) scale(0.97);
+}
+
+/* Emerald Soft Glow */
+.glow-emerald {
+  box-shadow: 0 0 16px -2px rgba(16, 185, 129, 0.35);
+}
+.glow-emerald-lg {
+  box-shadow: 0 0 28px -2px rgba(16, 185, 129, 0.45);
 }
 
 /* 3D Isometric container */

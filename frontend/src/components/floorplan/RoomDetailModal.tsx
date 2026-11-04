@@ -28,7 +28,7 @@ interface RoomDetailModalProps {
   onTogglePathGuide: (roomId: string) => void;
   isPathActive: boolean;
   onUpdateRoomStatus?: (roomId: string, newStatus: RoomStatus) => void;
-  onOpenBooking?: (room: Room) => void;
+  onOpenBooking?: (room: Room, initialTime?: { startTime: string; endTime: string }) => void;
 }
 
 export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
@@ -63,7 +63,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
       <div 
-        className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100 dark:border-slate-800 shadow-2xl overflow-y-auto flex flex-col justify-between animate-slide-up text-slate-800 dark:text-slate-100 transition-colors"
+        className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100 dark:border-slate-800 shadow-2xl overflow-y-auto flex flex-col justify-between animate-modal-spring text-slate-800 dark:text-slate-100 transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}

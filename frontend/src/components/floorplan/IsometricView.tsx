@@ -87,7 +87,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={() => setIsExploded(!isExploded)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
+            className={`smooth-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
               isExploded
                 ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-emerald-600/25 ring-2 ring-emerald-500/20'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-700'
@@ -135,7 +135,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
 
         {/* 3D Isometric Stack Container */}
         <div
-          className="relative transition-transform duration-700 ease-out"
+          className="relative transition-transform duration-700 ease-smooth"
           style={{
             transform: `perspective(1200px) rotateX(${tiltAngle}deg) rotateZ(${rotateAngle}deg)`,
             transformStyle: 'preserve-3d',
@@ -218,7 +218,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                 onMouseEnter={() => setHoveredFloor(floor.floorNumber)}
                 onMouseLeave={() => setHoveredFloor(null)}
                 onClick={() => onSelectFloor(floor.floorNumber)}
-                className={`absolute inset-0 rounded-3xl cursor-pointer transition-all duration-700 ease-out ${
+                className={`absolute inset-0 rounded-3xl cursor-pointer transition-all duration-700 ease-smooth ${
                   isSelected
                     ? 'border-2 border-emerald-600 shadow-[0_25px_50px_rgba(16,185,129,0.35)] ring-4 ring-emerald-500/15'
                     : isHovered

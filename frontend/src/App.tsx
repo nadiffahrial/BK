@@ -316,7 +316,7 @@ export const App: React.FC = () => {
         
         {/* Toast Alert Banner if status updated */}
         {recentNotification && (
-          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-xs animate-slide-up">
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-md animate-modal-spring border border-emerald-300 dark:border-emerald-700/60">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>{recentNotification}</span>
@@ -569,7 +569,7 @@ export const App: React.FC = () => {
       <button
         type="button"
         onClick={() => setIsGuideModalOpen(true)}
-        className="fixed bottom-5 right-36 sm:right-40 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-extrabold text-xs shadow-lg shadow-slate-900/10 dark:shadow-black/40 transition-all hover:scale-105 active:scale-95 cursor-pointer group border border-emerald-200 dark:border-slate-700"
+        className="smooth-btn fixed bottom-5 right-36 sm:right-40 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-extrabold text-xs shadow-lg shadow-slate-900/10 dark:shadow-black/40 hover:shadow-emerald-500/20 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer group border border-emerald-200/90 dark:border-slate-700"
         title="Buka Buku Panduan Pengguna (F1 / ?)"
       >
         <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
@@ -583,7 +583,7 @@ export const App: React.FC = () => {
       <button
         type="button"
         onClick={() => setIsCsModalOpen(true)}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-700/30 transition-all hover:scale-105 active:scale-95 cursor-pointer group border border-white/20"
+        className="smooth-btn fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-700/35 hover:shadow-emerald-600/50 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer group border border-white/25"
         title="Buka Layanan CS & Pengaduan Kampus"
       >
         <Headphones className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />

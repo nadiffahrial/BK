@@ -46,14 +46,16 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-14 sm:h-16">
           
           {/* 1. Brand Logo & Campus Name - Universitas Siliwangi */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <CampusLogo size="md" />
+          <div className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer select-none">
+            <div className="transition-transform duration-300 group-hover:scale-105">
+              <CampusLogo size="md" />
+            </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="font-black text-sm sm:text-base tracking-tight text-slate-900 dark:text-white transition-colors leading-tight">
                   SmartCampus<span className="text-emerald-600 dark:text-emerald-400">3D</span>
                 </span>
-                <span className="hidden lg:inline-flex text-[9px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <span className="hidden lg:inline-flex text-[9px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                   Denah 3D
                 </span>
               </div>
@@ -63,13 +65,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* 2. Compact View Mode Switcher (2D / 3D / Daftar) */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 transition-colors">
+          {/* 2. Compact View Mode Switcher (2D / 3D / Daftar) with smooth-btn transitions */}
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 transition-colors shadow-2xs">
             <button
               onClick={() => onChangeViewMode('2d')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`smooth-btn px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === '2d'
-                  ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40'
+                  ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40 scale-[1.02]'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
               title="Tampilan 2D Denah"
@@ -80,9 +82,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => onChangeViewMode('3d')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`smooth-btn px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === '3d'
-                  ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40'
+                  ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40 scale-[1.02]'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
               title="Tampilan 3D Isometrik"
@@ -93,9 +95,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => onChangeViewMode('list')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`smooth-btn px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40'
+                  ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs border border-emerald-200 dark:border-emerald-600/40 scale-[1.02]'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
               title="Direktori Ruangan"
@@ -111,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {onOpenGuide && (
               <button
                 onClick={onOpenGuide}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 text-xs font-bold transition-all cursor-pointer group shadow-2xs"
+                className="smooth-btn flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 text-xs font-bold transition-all cursor-pointer group shadow-2xs hover:shadow-emerald-soft"
                 title="Buka Panduan Pengguna (Tujuan & Fitur)"
               >
                 <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
@@ -123,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {onOpenSearch && (
               <button
                 onClick={onOpenSearch}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500/50 text-xs font-bold transition-all cursor-pointer group"
+                className="smooth-btn flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500/50 text-xs font-bold transition-all cursor-pointer group shadow-2xs"
                 title="Buka Search Engine (Ctrl + K)"
               >
                 <Search className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
@@ -150,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* ⭐ PROMINENT TOMBOL MENU UTAMA ⭐ */}
             <button
               onClick={onOpenMenu}
-              className="flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white shadow-sm shadow-emerald-600/25 transition-all duration-200 cursor-pointer active:scale-95 group font-bold text-xs"
+              className="smooth-btn flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white shadow-sm shadow-emerald-600/25 transition-all duration-200 cursor-pointer active:scale-95 group font-bold text-xs"
               title="Buka Menu Lengkap"
             >
               <Menu className="w-4 h-4 transition-transform group-hover:rotate-90 duration-300" />

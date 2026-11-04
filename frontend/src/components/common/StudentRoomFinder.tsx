@@ -199,7 +199,7 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
                 setIsOpen(true);
                 setSelectedIndex(-1);
               }}
-              className={`px-3 py-1 rounded-xl text-[11px] font-bold shrink-0 transition-all cursor-pointer border ${
+              className={`smooth-btn px-3 py-1 rounded-xl text-[11px] font-bold shrink-0 transition-all cursor-pointer border ${
                 isCatActive
                   ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs scale-102'
                   : 'bg-white dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800'

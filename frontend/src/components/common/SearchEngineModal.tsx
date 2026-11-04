@@ -179,7 +179,7 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
       <div className="fixed inset-0" onClick={onClose} />
 
       {/* Main Search Palette Modal */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-emerald-100 dark:border-slate-800 overflow-hidden z-10 animate-slide-down flex flex-col max-h-[85vh] text-slate-800 dark:text-slate-100 transition-colors">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-emerald-100 dark:border-slate-800 overflow-hidden z-10 animate-modal-spring flex flex-col max-h-[85vh] text-slate-800 dark:text-slate-100 transition-colors">
         
         {/* Top Search Header Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-b from-emerald-50/50 dark:from-slate-800/80 to-white dark:to-slate-900">

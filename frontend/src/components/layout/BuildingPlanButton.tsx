@@ -36,7 +36,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
         }
       }}
       title={`Ketuk untuk langsung beralih ke Denah 3D Multi-Lantai ${building.name}`}
-      className={`relative cursor-pointer transition-all duration-300 ease-out transform select-none group flex flex-col items-center focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-2xl p-2 ${
+      className={`relative cursor-pointer transition-all duration-300 ease-smooth transform select-none group flex flex-col items-center focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-2xl p-2 ${
         isActive
           ? 'scale-[1.02] -translate-y-1'
           : 'hover:scale-[1.03] hover:-translate-y-1.5 opacity-90 hover:opacity-100'

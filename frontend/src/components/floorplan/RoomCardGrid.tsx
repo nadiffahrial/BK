@@ -72,7 +72,7 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
             <button
               key={tab.id}
               onClick={() => setFilterType(tab.id)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`smooth-btn px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 filterType === tab.id
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-800'
@@ -106,7 +106,7 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
             <div
               key={room.id}
               onClick={() => onSelectRoom(room)}
-              className={`p-5 rounded-2xl bg-white border transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:-translate-y-1 shadow-sm ${
+              className={`modern-card-hover p-5 rounded-2xl bg-white dark:bg-slate-800 border transition-all duration-200 flex flex-col justify-between cursor-pointer group shadow-sm ${
                 isSelected
                   ? 'border-emerald-600 ring-2 ring-emerald-600/30 shadow-md'
                   : 'border-slate-200/90 hover:border-emerald-400 hover:shadow-md'
@@ -187,7 +187,7 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
                         e.stopPropagation();
                         onOpenBooking(room);
                       }}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                      className="smooth-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs transition-all cursor-pointer"
                       title="Ajukan Reservasi Ruang Ini"
                     >
                       Pinjam
@@ -198,7 +198,7 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
                       e.stopPropagation();
                       onSelectRoom(room);
                     }}
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all active:scale-95 cursor-pointer"
+                    className="smooth-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer"
                   >
                     Pilih Ruang
                   </button>

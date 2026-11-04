@@ -37,7 +37,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       {/* Total Rooms Card */}
       <div 
         onClick={() => onFilterChange('all')}
-        className={`p-3.5 rounded-2xl bg-white border transition-all cursor-pointer shadow-sm ${
+        className={`modern-card-hover p-3.5 rounded-2xl bg-white dark:bg-slate-800 border transition-all cursor-pointer shadow-sm ${
           activeFilter === 'all'
             ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/40'
             : 'border-slate-200/80 hover:border-emerald-300 hover:shadow-md'
@@ -54,7 +54,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       {/* Available Rooms Card */}
       <div 
         onClick={() => onFilterChange('available')}
-        className={`p-3.5 rounded-2xl bg-white border transition-all cursor-pointer shadow-sm ${
+        className={`modern-card-hover p-3.5 rounded-2xl bg-white dark:bg-slate-800 border transition-all cursor-pointer shadow-sm ${
           activeFilter === 'available'
             ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/50'
             : 'border-slate-200/80 hover:border-emerald-300 hover:shadow-md'
@@ -71,7 +71,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       {/* Occupied Rooms Card */}
       <div 
         onClick={() => onFilterChange('occupied')}
-        className={`p-3.5 rounded-2xl bg-white border transition-all cursor-pointer shadow-sm ${
+        className={`modern-card-hover p-3.5 rounded-2xl bg-white dark:bg-slate-800 border transition-all cursor-pointer shadow-sm ${
           activeFilter === 'occupied'
             ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/50'
             : 'border-slate-200/80 hover:border-rose-300 hover:shadow-md'
@@ -88,7 +88,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       {/* Reserved Rooms Card */}
       <div 
         onClick={() => onFilterChange('reserved')}
-        className={`p-3.5 rounded-2xl bg-white border transition-all cursor-pointer shadow-sm ${
+        className={`modern-card-hover p-3.5 rounded-2xl bg-white dark:bg-slate-800 border transition-all cursor-pointer shadow-sm ${
           activeFilter === 'reserved'
             ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/50'
             : 'border-slate-200/80 hover:border-amber-300 hover:shadow-md'
@@ -105,7 +105,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       {/* Maintenance Rooms Card */}
       <div 
         onClick={() => onFilterChange('maintenance')}
-        className={`p-3.5 rounded-2xl bg-white border transition-all cursor-pointer shadow-sm ${
+        className={`modern-card-hover p-3.5 rounded-2xl bg-white dark:bg-slate-800 border transition-all cursor-pointer shadow-sm ${
           activeFilter === 'maintenance'
             ? 'border-slate-500 ring-2 ring-slate-500/20 bg-slate-100'
             : 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
@@ -120,7 +120,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       </div>
 
       {/* Estimated Occupants Card */}
-      <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+      <div className="modern-card-hover p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm">
         <div className="flex items-center justify-between text-teal-700 mb-1">
           <span className="text-[11px] font-bold uppercase tracking-wider">Populasi</span>
           <Users className="w-4 h-4 text-teal-600" />
