@@ -28,7 +28,6 @@ interface RoomDetailModalProps {
   onTogglePathGuide: (roomId: string) => void;
   isPathActive: boolean;
   onUpdateRoomStatus?: (roomId: string, newStatus: RoomStatus) => void;
-  onOpenBooking?: (room: Room, initialTime?: { startTime: string; endTime: string }) => void;
 }
 
 export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
@@ -36,8 +35,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   onClose,
   onTogglePathGuide,
   isPathActive,
-  onUpdateRoomStatus,
-  onOpenBooking
+  onUpdateRoomStatus
 }) => {
   const { user } = useAuth();
   const { setTargetRoom } = useGps();
@@ -52,7 +50,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
       case 'occupied':
         return { label: 'Sedang Berlangsung Kegiatan', color: 'bg-rose-100 text-rose-800 border-rose-300' };
       case 'reserved':
-        return { label: 'Sudah Direservasi', color: 'bg-amber-100 text-amber-800 border-amber-300' };
+        return { label: 'Memiliki Jadwal', color: 'bg-amber-100 text-amber-800 border-amber-300' };
       case 'maintenance':
         return { label: 'Dalam Pemeliharaan / Servis', color: 'bg-slate-100 text-slate-800 border-slate-300' };
     }
@@ -291,17 +289,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               <Navigation className="w-4 h-4 animate-pulse" />
               <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan (IoT GPS)'}</span>
             </button>
-
-            {onOpenBooking && (
-              <button
-                type="button"
-                onClick={() => onOpenBooking(room)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 transition-all cursor-pointer"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Ajukan Peminjaman Ruang</span>
-              </button>
-            )}
           </div>
 
           <button

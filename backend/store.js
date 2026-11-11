@@ -1,9 +1,8 @@
-import { INITIAL_BUILDINGS, INITIAL_BOOKINGS } from './data/initialData.js';
+import { INITIAL_BUILDINGS } from './data/initialData.js';
 
 // In-memory data store for live modifications during server runtime
 export const state = {
   buildings: JSON.parse(JSON.stringify(INITIAL_BUILDINGS)),
-  bookings: JSON.parse(JSON.stringify(INITIAL_BOOKINGS)),
   csTickets: [
     {
       id: 'CS-1001',

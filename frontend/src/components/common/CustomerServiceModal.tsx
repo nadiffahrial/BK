@@ -38,10 +38,14 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
   initialRoomCode = '',
   onNotificationSent
 }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'create' | 'history' | 'contact'>('create');
   const [tickets, setTickets] = useState<CsTicket[]>([]);
+  const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
+  const [editedStatus, setEditedStatus] = useState<string>('pending');
+  const [editedResponse, setEditedResponse] = useState<string>('');
+  const [isUpdatingTicket, setIsUpdatingTicket] = useState(false);
   const [isLoadingTickets, setIsLoadingTickets] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
@@ -69,16 +73,62 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
     }
   }, [initialRoomCode]);
 
-  // Load tickets on open or tab change
+  // Load tickets for authenticated administrators
   const fetchTickets = async () => {
+    if (
+      !token ||
+      (user?.role !== 'admin' && user?.role !== 'super_admin')
+    ) {
+      setTickets([]);
+      return;
+    }
+
     setIsLoadingTickets(true);
+
     try {
-      const data = await apiService.getCsTickets();
+      const data = await apiService.getCsTickets(
+        undefined,
+        undefined,
+        token
+      );
+
       setTickets(data);
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error('Gagal mengambil tiket CS:', error);
+      setTickets([]);
     } finally {
       setIsLoadingTickets(false);
+    }
+  };
+
+  // Simpan perubahan status dan tanggapan tiket CS
+  const handleUpdateTicket = async (ticketId: string) => {
+    if (!token) {
+      alert('Sesi login tidak ditemukan. Silakan login kembali.');
+      return;
+    }
+
+    setIsUpdatingTicket(true);
+
+    try {
+      await apiService.updateCsTicketStatus(
+        ticketId,
+        editedStatus,
+        token,
+        editedResponse
+      );
+
+      await fetchTickets();
+
+      setEditingTicketId(null);
+      setEditedResponse('');
+
+      alert('Tiket berhasil diperbarui.');
+    } catch (error) {
+      console.error('Gagal memperbarui tiket:', error);
+      alert('Gagal memperbarui tiket. Silakan coba kembali.');
+    } finally {
+      setIsUpdatingTicket(false);
     }
   };
 
@@ -124,9 +174,12 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
         // Refresh ticket list
         await fetchTickets();
 
-        // Switch to history tab after 1.5 seconds
+        // Arahkan ke riwayat hanya untuk administrator
         setTimeout(() => {
-          setActiveTab('history');
+          if (user?.role === 'admin' || user?.role === 'super_admin') {
+            setActiveTab('history');
+          }
+
           setSubmitSuccess(null);
         }, 1800);
       }
@@ -227,18 +280,20 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
               <span>Kirim Pengaduan</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('history')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                activeTab === 'history'
-                  ? 'bg-white text-emerald-800 shadow-xs'
-                  : 'text-emerald-100 hover:bg-white/10'
-              }`}
-            >
-              <Clock className="w-3.5 h-3.5" />
-              <span>Riwayat Tiket ({tickets.length})</span>
-            </button>
+            {(user?.role === 'admin' || user?.role === 'super_admin') && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('history')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'history'
+                    ? 'bg-white text-emerald-800 shadow-xs'
+                    : 'text-emerald-100 hover:bg-white/10'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Riwayat Tiket ({tickets.length})</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -442,6 +497,78 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
                       <span>Pengirim: <strong className="text-slate-600 dark:text-slate-300">{t.senderName}</strong> ({t.category})</span>
                       <span>{new Date(t.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} WIB</span>
                     </div>
+                    {/* Tombol Kelola Tiket - Admin */}
+                    {(user?.role === 'admin' || user?.role === 'super_admin') && (
+                      <div className="flex justify-end pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingTicketId(t.id);
+                            setEditedStatus(t.status);
+                            setEditedResponse(t.adminResponse || '');
+                          }}
+                          className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                        >
+                          Kelola Tiket
+                        </button>
+                      </div>
+                    )}
+                    {/* Form Pengelolaan Tiket */}
+                    {editingTicketId === t.id && (
+                      <div className="mt-3 p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/20 space-y-3">
+
+                        <div>
+                          <label className="block text-xs font-semibold mb-2">
+                            Status Tiket
+                          </label>
+
+                          <select
+                            value={editedStatus}
+                            onChange={(e) => setEditedStatus(e.target.value)}
+                            className="w-full p-2.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+                          >
+                            <option value="pending">Menunggu Tindak Lanjut</option>
+                            <option value="in_progress">Sedang Ditangani</option>
+                            <option value="resolved">Selesai Ditangani</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold mb-2">
+                            Tanggapan Petugas
+                          </label>
+
+                          <textarea
+                            value={editedResponse}
+                            onChange={(e) => setEditedResponse(e.target.value)}
+                            rows={3}
+                            placeholder="Tuliskan tanggapan untuk pengirim tiket..."
+                            className="w-full p-3 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 resize-none"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setEditingTicketId(null)}
+                            disabled={isUpdatingTicket}
+                            className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700"
+                          >
+                            Batal
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateTicket(t.id)}
+                            disabled={isUpdatingTicket}
+                            className="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            {isUpdatingTicket ? 'Menyimpan...' : 'Simpan Perubahan'}
+                          </button>
+                        </div>
+
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (

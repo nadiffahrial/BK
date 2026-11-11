@@ -1,8 +1,11 @@
+import {
+  authenticateToken,
+  authorizeRoles
+} from '../middleware/authMiddleware.js';
 import { Router } from 'express';
 import { login } from '../controllers/authController.js';
 import { getAllBuildings, getBuildingById, getBuildingFloors } from '../controllers/buildingController.js';
 import { getAllRooms, getRoomById, updateRoomStatus, getCampusStats, searchRoomsEngine } from '../controllers/roomController.js';
-import { getAllBookings, createBooking, cancelBooking } from '../controllers/bookingController.js';
 import { getAllBeacons, getBeaconById, locateDevicePosition, calculateNavigationRoute, updateIotTelemetry } from '../controllers/iotController.js';
 import { getCampusProfile, getTodaySchedules, getStudentCategories } from '../controllers/campusController.js';
 import { getAllCsTickets, createCsTicket, updateCsTicketStatus } from '../controllers/csController.js';
@@ -44,7 +47,12 @@ router.get('/search', searchRoomsEngine);
 // 7. Rooms
 router.get('/rooms', getAllRooms);
 router.get('/rooms/:id', getRoomById);
-router.patch('/rooms/:id/status', updateRoomStatus);
+router.patch(
+  '/rooms/:id/status',
+  authenticateToken,
+  authorizeRoles('admin', 'super_admin'),
+  updateRoomStatus
+);
 
 // 8. 🛰️ IoT GPS & Indoor Positioning System APIs
 router.get('/iot/beacons', getAllBeacons);
@@ -53,15 +61,22 @@ router.post('/iot/locate', locateDevicePosition);
 router.post('/navigation/route', calculateNavigationRoute);
 router.post('/iot/telemetry', updateIotTelemetry);
 
-// 9. Bookings (Backend compatibility)
-router.get('/bookings', getAllBookings);
-router.post('/bookings', createBooking);
-router.delete('/bookings/:id', cancelBooking);
+// 10. Layanan Customer Service (CS) & Pengaduan Kampus
+router.get(
+  '/cs/tickets',
+  authenticateToken,
+  authorizeRoles('admin', 'super_admin'),
+  getAllCsTickets
+);
 
-// 10. 🎧 Layanan Customer Service (CS) & Pengaduan Kampus (BARU)
-router.get('/cs/tickets', getAllCsTickets);
 router.post('/cs/tickets', createCsTicket);
-router.patch('/cs/tickets/:id/status', updateCsTicketStatus);
+
+router.patch(
+  '/cs/tickets/:id/status',
+  authenticateToken,
+  authorizeRoles('admin', 'super_admin'),
+  updateCsTicketStatus
+);
 
 // 11. Campus Statistics
 router.get('/stats', getCampusStats);

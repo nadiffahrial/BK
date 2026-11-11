@@ -83,25 +83,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'staff' | 'student' | 'guest';
+  role: 'admin' | 'super_admin' | 'staff' | 'student' | 'guest';
   department?: string;
   avatarUrl?: string;
-}
-
-export interface BookingRequest {
-  id: string;
-  roomId: string;
-  roomName: string;
-  roomCode: string;
-  userName: string;
-  userEmail: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  purpose: string;
-  participants: number;
-  createdAt: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
 }
 
 export type ViewMode = '2d' | '3d' | 'list';

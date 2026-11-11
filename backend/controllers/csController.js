@@ -155,47 +155,70 @@ export const createCsTicket = async (req, res) => {
   }
 };
 
-// 3. Update status tiket CS (oleh Admin / Staff)
+// 3. Update status tiket CS (oleh Admin / Super Admin)
 export const updateCsTicketStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, adminResponse } = req.body;
 
+    const allowedStatuses = ['pending', 'in_progress', 'resolved'];
+
+    if (status && !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status tiket tidak valid.'
+      });
+    }
+
     const db = getDb();
-    if (db) {
-      try {
-        await db.query(
-          'UPDATE `cs_tickets` SET `status` = COALESCE(?, `status`), `admin_response` = COALESCE(?, `admin_response`) WHERE `id` = ?',
-          [status || null, adminResponse || null, id]
-        );
-      } catch (dbErr) {
-        console.error('MySQL update error for cs_tickets:', dbErr.message);
-      }
+
+    if (!db) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database MySQL tidak tersedia.'
+      });
     }
 
-    const ticket = state.csTickets.find(t => t.id === id);
-    if (ticket) {
-      if (status) ticket.status = status;
-      if (adminResponse) ticket.adminResponse = adminResponse;
-      ticket.updatedAt = new Date().toISOString();
+    const [result] = await db.query(
+      `UPDATE cs_tickets
+       SET status = COALESCE(?, status),
+           admin_response = COALESCE(?, admin_response)
+       WHERE id = ?`,
+      [status || null, adminResponse ?? null, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tiket tidak ditemukan.'
+      });
     }
 
-    console.log(`[CS Backend] Status Tiket #${id} diperbarui ke '${status}'.`);
+    const [rows] = await db.query(
+      'SELECT * FROM cs_tickets WHERE id = ?',
+      [id]
+    );
 
-    // Broadcast update
+    const ticket = rows[0];
+
     broadcastEvent('CS_STATUS_UPDATED', {
       ticketId: id,
-      status,
-      adminResponse,
-      message: `Status Tiket #${id} telah diperbarui menjadi '${status}'.`
+      status: ticket.status,
+      adminResponse: ticket.admin_response
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: `Status tiket #${id} berhasil diperbarui di database.`,
-      data: ticket || { id, status, adminResponse }
+      message: `Tiket #${id} berhasil diperbarui.`,
+      data: ticket
     });
+
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Gagal memperbarui status tiket CS', error: err.message });
+    console.error('Gagal memperbarui tiket CS:', err);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Gagal memperbarui status tiket CS.'
+    });
   }
 };

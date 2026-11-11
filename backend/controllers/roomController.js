@@ -188,7 +188,6 @@ export const getCampusStats = async (req, res) => {
       const [totalRow] = await db.query('SELECT COUNT(*) as total FROM `rooms`');
       const [statusRows] = await db.query('SELECT status, COUNT(*) as cnt FROM `rooms` GROUP BY status');
       const [peopleRow] = await db.query('SELECT SUM(current_occupancy) as total_people FROM `rooms`');
-      const [bookingCount] = await db.query('SELECT COUNT(*) as total_bookings FROM `bookings`');
       const [bldgCount] = await db.query('SELECT COUNT(*) as total_bldgs FROM `buildings`');
 
       const counts = { available: 0, occupied: 0, reserved: 0, maintenance: 0 };
@@ -208,7 +207,6 @@ export const getCampusStats = async (req, res) => {
           maintenanceRooms: counts.maintenance,
           occupancyPercentage: total > 0 ? Math.round((counts.occupied / total) * 100) : 0,
           totalPeopleInCampus: peopleRow[0].total_people || 0,
-          activeBookingsCount: bookingCount[0].total_bookings,
           serverTime: new Date().toISOString()
         }
       });
@@ -231,7 +229,6 @@ export const getCampusStats = async (req, res) => {
       maintenanceRooms: allRooms.filter(r => r.status === 'maintenance').length,
       occupancyPercentage: 35,
       totalPeopleInCampus: 350,
-      activeBookingsCount: state.bookings.length,
       serverTime: new Date().toISOString()
     }
   });

@@ -1,6 +1,6 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
-import { INITIAL_BUILDINGS, INITIAL_BOOKINGS } from '../data/initialData.js';
+import { INITIAL_BUILDINGS } from '../data/initialData.js';
 
 dotenv.config();
 
@@ -45,7 +45,7 @@ export const initDatabase = async () => {
     await createTables();
 
     // 4. Seed initial data if tables are empty
-    await seedInitialData();
+    // await seedInitialData();
 
     return pool;
   } catch (error) {
@@ -63,7 +63,7 @@ const createTables = async () => {
       \`name\` VARCHAR(150) NOT NULL,
       \`email\` VARCHAR(150) NOT NULL UNIQUE,
       \`password\` VARCHAR(255) DEFAULT '123456',
-      \`role\` ENUM('admin', 'staff', 'student', 'guest') DEFAULT 'staff',
+      \`role\` ENUM('admin', 'super_admin', 'staff', 'student', 'guest') DEFAULT 'staff',
       \`department\` VARCHAR(150) DEFAULT NULL,
       \`avatar_url\` VARCHAR(255) DEFAULT NULL,
       \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -147,26 +147,6 @@ const createTables = async () => {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
-  // Bookings
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS \`bookings\` (
-      \`id\` VARCHAR(50) NOT NULL PRIMARY KEY,
-      \`room_id\` VARCHAR(50) NOT NULL,
-      \`room_name\` VARCHAR(150) NOT NULL,
-      \`room_code\` VARCHAR(50) NOT NULL,
-      \`user_name\` VARCHAR(150) NOT NULL,
-      \`user_email\` VARCHAR(150) NOT NULL,
-      \`booking_date\` DATE NOT NULL,
-      \`start_time\` VARCHAR(10) NOT NULL,
-      \`end_time\` VARCHAR(10) NOT NULL,
-      \`purpose\` TEXT NOT NULL,
-      \`participants\` INT DEFAULT 1,
-      \`status\` ENUM('confirmed', 'pending', 'cancelled') DEFAULT 'confirmed',
-      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (\`room_id\`) REFERENCES \`rooms\`(\`id\`) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-  `);
-
   // Customer Service & Pengaduan Kampus Tickets
   await pool.query(`
     CREATE TABLE IF NOT EXISTS \`cs_tickets\` (
@@ -215,7 +195,6 @@ const seedInitialData = async () => {
   
   // Clear old tables for clean migration
   await pool.query('SET FOREIGN_KEY_CHECKS = 0');
-  await pool.query('TRUNCATE TABLE `bookings`');
   await pool.query('TRUNCATE TABLE `room_schedules`');
   await pool.query('TRUNCATE TABLE `room_facilities`');
   await pool.query('TRUNCATE TABLE `rooms`');
@@ -327,28 +306,6 @@ const seedInitialData = async () => {
         }
       }
     }
-  }
-
-  // 3. Seed Bookings
-  for (const bk of INITIAL_BOOKINGS) {
-    await pool.query(
-      `INSERT INTO \`bookings\` (id, room_id, room_name, room_code, user_name, user_email, booking_date, start_time, end_time, purpose, participants, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        bk.id,
-        bk.roomId,
-        bk.roomName,
-        bk.roomCode,
-        bk.userName,
-        bk.userEmail,
-        bk.date,
-        bk.startTime,
-        bk.endTime,
-        bk.purpose,
-        bk.participants,
-        bk.status
-      ]
-    );
   }
 
   // 4. Seed CS Tickets if empty

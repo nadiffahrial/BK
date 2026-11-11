@@ -19,8 +19,9 @@ import {
   Search, 
   Bell, 
   UserCheck, 
-  LogOut, 
-  ShieldCheck, 
+  LogOut,
+  LogIn,
+  ShieldCheck,
   CheckCircle2, 
   Server, 
   MapPin, 
@@ -53,7 +54,7 @@ interface NavigationMenuDrawerProps {
   onSearchChange: (query: string) => void;
   onSelectRoomById: (roomId: string) => void;
   user: User | null;
-  quickLogin: (role: User['role']) => void;
+  onLoginClick: () => void;
   logout: () => void;
   isBackendConnected: boolean;
   onOpenSearch?: () => void;
@@ -77,7 +78,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
   onSearchChange,
   onSelectRoomById,
   user,
-  quickLogin,
+  onLoginClick,
   logout,
   isBackendConnected,
   onOpenSearch,
@@ -463,44 +464,6 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               </div>
             </div>
 
-            {/* 7. Profil Civitas & Switch Role */}
-            <div className="pt-2 border-t border-slate-100">
-              <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2">
-                Profil Pengguna & Ganti Peran
-              </label>
-
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 mb-3 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center font-bold text-sm text-white shrink-0">
-                  {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{user?.name.charAt(0) || 'U'}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-extrabold text-slate-900 truncate">{user?.name}</div>
-                  <div className="text-[10px] text-slate-500 truncate">{user?.department}</div>
-                  <div className="mt-1">{getRoleBadge(user?.role)}</div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-1.5">
-                {(['admin', 'staff', 'student', 'guest'] as const).map(role => (
-                  <button
-                    key={role}
-                    onClick={() => quickLogin(role)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer text-left ${
-                      user?.role === role
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200'
-                    }`}
-                  >
-                    {role === 'staff' ? 'Dosen' : role}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* 8. Mode Tampilan (Dark / Light Mode) */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between transition-colors">
               <div>
@@ -530,18 +493,31 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
 
           </div>
 
-          {/* Drawer Footer with Logout */}
+          {/* Drawer Footer */}
           <div className="p-4 border-t border-slate-100 bg-white flex items-center justify-between gap-3">
-            <button
-              onClick={() => {
-                logout();
-                onClose();
-              }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors cursor-pointer w-full justify-center"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Keluar (Logout)</span>
-            </button>
+            {user ? (
+              <button
+                onClick={() => {
+                  logout();
+                  onClose();
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors cursor-pointer w-full justify-center"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Keluar (Logout)</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  onLoginClick();
+                  onClose();
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors cursor-pointer w-full justify-center"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Masuk Administrator</span>
+              </button>
+            )}
           </div>
 
         </div>

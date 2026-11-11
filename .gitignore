@@ -38,3 +38,9 @@ pnpm-debug.log*
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Local backup copies
+**/* copy.*
+
+# Generated deployment assets
+/assets/

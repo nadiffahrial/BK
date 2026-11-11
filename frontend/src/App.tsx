@@ -13,7 +13,6 @@ import { FloorMapSvg } from './components/floorplan/FloorMapSvg';
 import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
 import { RoomDetailModal } from './components/floorplan/RoomDetailModal';
-import { BookingModal } from './components/floorplan/BookingModal';
 import { IotGpsControlBar } from './components/navigation/IotGpsControlBar';
 import { useGps } from './context/GpsContext';
 import { BUILDINGS_DATA } from './data/buildingsData';
@@ -37,7 +36,7 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const { isAuthenticated, user, quickLogin, logout } = useAuth();
+  const { isAuthenticated, user, token, logout } = useAuth();
   const { setTargetRoom, deviceState } = useGps();
 
   const [buildings, setBuildings] = useState(BUILDINGS_DATA);
@@ -49,7 +48,7 @@ export const App: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<RoomStatus | 'all'>('all');
   
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-  const [bookingRoom, setBookingRoom] = useState<Room | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
   const [activePathRoomId, setActivePathRoomId] = useState<string | null>(null);
   const [recentNotification, setRecentNotification] = useState<string | null>(null);
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
@@ -104,37 +103,6 @@ export const App: React.FC = () => {
         });
         setRecentNotification(`[Live Node.js] Status ${roomCode} diperbarui ke '${newStatus}'.`);
         setTimeout(() => setRecentNotification(null), 4000);
-      } else if (event.type === 'NEW_BOOKING_CREATED') {
-        const { booking } = event.data;
-        setBuildings(prev =>
-          prev.map(b => ({
-            ...b,
-            floors: b.floors.map(f => ({
-              ...f,
-              rooms: f.rooms.map(r => {
-                if (r.id === booking.roomId) {
-                  return {
-                    ...r,
-                    status: 'reserved',
-                    schedule: [
-                      ...r.schedule,
-                      {
-                        id: booking.id,
-                        title: booking.purpose,
-                        organizer: booking.userName,
-                        timeRange: `${booking.startTime} - ${booking.endTime}`,
-                        type: 'Reservasi Baru'
-                      }
-                    ]
-                  };
-                }
-                return r;
-              })
-            }))
-          }))
-        );
-        setRecentNotification(`[Live Node.js] Peminjaman baru untuk ${booking.roomCode}: ${booking.purpose}`);
-        setTimeout(() => setRecentNotification(null), 5000);
       } else if (event.type === 'NEW_CS_TICKET') {
         const { ticket, message } = event.data;
         setRecentNotification(`🎧 [Layanan CS] ${message || `Tiket #${ticket?.id} diterima!`}`);
@@ -151,10 +119,6 @@ export const App: React.FC = () => {
       unsubscribe();
     };
   }, []);
-
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
 
   const activeBuilding = (buildings && buildings.find(b => b.id === activeBuildingId)) || (buildings && buildings[0]) || BUILDINGS_DATA[0];
   const activeFloor = (activeBuilding && activeBuilding.floors && activeBuilding.floors.find(f => f.floorNumber === activeFloorNumber)) || (activeBuilding && activeBuilding.floors && activeBuilding.floors[0]) || BUILDINGS_DATA[0].floors[0];
@@ -220,7 +184,11 @@ export const App: React.FC = () => {
   };
 
   const handleUpdateRoomStatus = async (roomId: string, newStatus: RoomStatus) => {
-    await apiService.updateRoomStatus(roomId, newStatus);
+    if (!token) {
+      throw new Error('Sesi administrator tidak ditemukan. Silakan login kembali.');
+    }
+
+    await apiService.updateRoomStatus(roomId, newStatus, token);
 
     setBuildings(prevBuildings =>
       prevBuildings.map(b => ({
@@ -303,7 +271,7 @@ export const App: React.FC = () => {
         onSearchChange={setSearchQuery}
         onSelectRoomById={handleSelectRoomById}
         user={user}
-        quickLogin={quickLogin}
+        onLoginClick={() => setShowLogin(true)}
         logout={logout}
         isBackendConnected={isBackendConnected}
         onOpenSearch={() => setIsSearchModalOpen(true)}
@@ -447,7 +415,6 @@ export const App: React.FC = () => {
             rooms={activeFloor.rooms}
             selectedRoom={selectedRoom}
             onSelectRoom={setSelectedRoom}
-            onOpenBooking={(room) => setBookingRoom(room)}
             onNavigateRoom={(room) => {
               setSelectedRoom(room);
               setActivePathRoomId(room.id);
@@ -511,49 +478,6 @@ export const App: React.FC = () => {
           onTogglePathGuide={handleTogglePathGuide}
           isPathActive={activePathRoomId === selectedRoom.id}
           onUpdateRoomStatus={handleUpdateRoomStatus}
-          onOpenBooking={(room) => setBookingRoom(room)}
-        />
-      )}
-
-      {/* Booking / Room Reservation Modal */}
-      {bookingRoom && (
-        <BookingModal
-          room={bookingRoom}
-          onClose={() => setBookingRoom(null)}
-          onBookingSuccess={(booking) => {
-            setBuildings(prev =>
-              prev.map(b => ({
-                ...b,
-                floors: b.floors.map(f => ({
-                  ...f,
-                  rooms: f.rooms.map(r => {
-                    if (r.id === booking.roomId) {
-                      return {
-                        ...r,
-                        status: 'reserved' as RoomStatus,
-                        schedule: [
-                          ...r.schedule,
-                          {
-                            id: booking.id,
-                            title: booking.purpose,
-                            organizer: booking.userName,
-                            timeRange: `${booking.startTime} - ${booking.endTime}`,
-                            type: 'Reservasi Baru'
-                          }
-                        ]
-                      };
-                    }
-                    return r;
-                  })
-                }))
-              }))
-            );
-            if (selectedRoom?.id === booking.roomId) {
-              setSelectedRoom(prev => prev ? { ...prev, status: 'reserved' } : null);
-            }
-            setRecentNotification(`✅ Reservasi berhasil dicatat: ${booking.roomCode} (${booking.purpose})`);
-            setTimeout(() => setRecentNotification(null), 5000);
-          }}
         />
       )}
 
@@ -612,7 +536,14 @@ export const App: React.FC = () => {
       />
 
       {/* Minimalist Clean Footer */}
-      <Footer onOpenGuide={() => setIsGuideModalOpen(true)} />
+              <Footer onOpenGuide={() => setIsGuideModalOpen(true)} />
+
+      {/* Login Administrator */}
+      {showLogin && (
+        <LoginPage
+          onClose={() => setShowLogin(false)}
+        />
+      )}
     </div>
   );
 };
