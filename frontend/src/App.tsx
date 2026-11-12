@@ -532,7 +532,6 @@ export const App: React.FC = () => {
         onClose={() => setIsGuideModalOpen(false)}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCs={() => setIsCsModalOpen(true)}
-        onOpenGuide={() => setIsGuideModalOpen(true)}
       />
 
       {/* Minimalist Clean Footer */}
