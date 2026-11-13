@@ -28,7 +28,6 @@ import {
   Sparkles,
   Server,
   SlidersHorizontal,
-  Menu,
   Clock,
   Compass,
   Headphones,
@@ -226,11 +225,6 @@ export const App: React.FC = () => {
     scrollTo3DModel();
   };
 
-  // Quick stats for active floor safely guarded
-  const floorRooms = activeFloor?.rooms || [];
-  const floorAvailable = floorRooms.filter(r => r.status === 'available').length;
-  const floorOccupied = floorRooms.filter(r => r.status === 'occupied').length;
-  const floorReserved = floorRooms.filter(r => r.status === 'reserved').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/30 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] transition-colors duration-300">
@@ -317,75 +311,6 @@ export const App: React.FC = () => {
 
         {/* 🧭 Panduan Rute Navigasi Aktif (Muncul otomatis dan rapih hanya saat rute jalan aktif) */}
         <IotGpsControlBar />
-
-        {/* Clean, Simple Floor Info & Quick Action Bar */}
-        <div className="mb-4 p-3.5 sm:px-5 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3 transition-colors">
-          
-          {/* Left: Building & Floor Indicator */}
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="font-mono text-xs font-extrabold px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-              Blok {activeBuilding.code} • Tingkat {activeFloorNumber}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
-                {activeFloor.name}
-              </h2>
-            </div>
-            <div className="hidden sm:flex items-center gap-2 text-xs ml-2 border-l border-slate-200 dark:border-slate-700 pl-3">
-              <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                {floorAvailable} Kosong
-              </span>
-              <span className="text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-rose-500" />
-                {floorOccupied} Terisi
-              </span>
-              {floorReserved > 0 && (
-                <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-amber-500" />
-                  {floorReserved} Reservasi
-                </span>
-              )}
-            </div>
-
-            {/* Subtle live location indicator without any bulky IoT menu */}
-            {deviceState && (
-              <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 ml-1 border-l border-slate-200 dark:border-slate-700 pl-3">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Posisi: <strong className="text-slate-700 dark:text-slate-200">{deviceState.nearestBeacon?.zone || 'Lobby Utama'}</strong></span>
-              </div>
-            )}
-          </div>
-
-          {/* Right: Quick Action Controls */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Filter Pill */}
-            <div className="flex items-center gap-1 text-xs">
-              <span className="text-slate-400 font-medium hidden md:inline">Filter:</span>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as RoomStatus | 'all')}
-                className="px-2.5 py-1 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-              >
-                <option value="all">Semua Status</option>
-                <option value="available">Tersedia Saja</option>
-                <option value="occupied">Sedang Kuliah</option>
-                <option value="reserved">Reservasi</option>
-                <option value="maintenance">Servis</option>
-              </select>
-            </div>
-
-            {/* Quick Open Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 hover:text-emerald-800 dark:hover:text-emerald-300 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
-            >
-              <Menu className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Menu Lengkap</span>
-            </button>
-          </div>
-
-        </div>
 
         {/* 4. Interactive Visual Stage */}
         {viewMode === '2d' && (
