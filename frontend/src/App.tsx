@@ -121,6 +121,7 @@ export const App: React.FC = () => {
 
   const activeBuilding = (buildings && buildings.find(b => b.id === activeBuildingId)) || (buildings && buildings[0]) || BUILDINGS_DATA[0];
   const activeFloor = (activeBuilding && activeBuilding.floors && activeBuilding.floors.find(f => f.floorNumber === activeFloorNumber)) || (activeBuilding && activeBuilding.floors && activeBuilding.floors[0]) || BUILDINGS_DATA[0].floors[0];
+  const floorRooms = activeFloor?.rooms || [];
 
   const scrollTo3DModel = () => {
     const tryScroll = () => {
