@@ -220,7 +220,7 @@ export const App: React.FC = () => {
     setSelectedRoom(room);
     setActivePathRoomId(room.id);
     setTargetRoom(room);
-    const bldgName = buildingId === 'gedung-a' ? 'LABTEK 1' : 'FT.1';
+    const bldgName = buildingId === 'gedung-a' ? 'LABKOM 1' : 'FT.1';
     setRecentNotification(`Menavigasi ke ${room.code} - ${room.name} (${bldgName}, Tingkat ${floorNumber})`);
     setTimeout(() => setRecentNotification(null), 4000);
     scrollTo3DModel();

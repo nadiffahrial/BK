@@ -269,7 +269,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
                 fill="#713f12"
                 letterSpacing="0.2"
               >
-                {isGedungA ? 'Gd. LABTEK 1' : 'Gd. FT.1'}
+                {isGedungA ? 'Gd. LABKOM 1' : 'Gd. FT.1'}
               </text>
             </g>
 

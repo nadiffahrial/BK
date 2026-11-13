@@ -292,7 +292,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                     {/* Sekat Tepi Dinding Utara */}
                     <div className="absolute -top-1 left-0 right-0 h-1 bg-emerald-500/30 rounded-t-sm" />
 
-                    <div className="grid grid-cols-3 gap-2 relative">
+                    <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1 scrollbar-none relative">
                       {northRooms.map((room, rIdx) => {
                         const isOcc = room.status === 'occupied';
                         const isAvail = room.status === 'available';
@@ -311,7 +311,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                               onSelectRoom(room);
                               setTargetRoom(room);
                             }}
-                            className={`relative p-2 rounded-xl text-left border-2 transition-all duration-300 cursor-pointer ${
+                            className={`relative min-w-[65px] max-w-[105px] flex-1 shrink-0 p-1.5 rounded-xl text-left border-2 transition-all duration-300 cursor-pointer ${
                               isOcc
                                 ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800'
                                 : isAvail
@@ -383,7 +383,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
 
                   {/* --- SISI SELATAN (SOUTH WING: 3 RUANGAN) --- */}
                   <div className="relative">
-                    <div className="grid grid-cols-3 gap-2 relative">
+                    <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1 scrollbar-none relative">
                       {southRooms.map((room, rIdx) => {
                         const isOcc = room.status === 'occupied';
                         const isAvail = room.status === 'available';
@@ -402,7 +402,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                               onSelectRoom(room);
                               setTargetRoom(room);
                             }}
-                            className={`relative p-2 rounded-xl text-left border-2 transition-all duration-300 cursor-pointer ${
+                            className={`relative min-w-[65px] max-w-[105px] flex-1 shrink-0 p-1.5 rounded-xl text-left border-2 transition-all duration-300 cursor-pointer ${
                               isOcc
                                 ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800'
                                 : isAvail

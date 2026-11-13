@@ -230,7 +230,7 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
           <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-0.5 scrollbar-none">
             {[
               { id: 'all', label: 'Semua Hasil' },
-              { id: 'gedung-a', label: '🏛️ LABTEK 1' },
+              { id: 'gedung-a', label: '🏛️ LABKOM 1' },
               { id: 'gedung-b', label: '🏛️ FT.1' },
               { id: 'classroom', label: '🎓 Ruang Kuliah' },
               { id: 'lab', label: '💻 Lab & Riset' },
@@ -308,7 +308,7 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
 
                             <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-1 flex-wrap">
                               <span className="font-semibold text-slate-700 dark:text-slate-300">
-                                {room.buildingShortName || (room.buildingId === 'gedung-a' ? 'LABTEK 1' : 'FT.1')}
+                                {room.buildingShortName || (room.buildingId === 'gedung-a' ? 'LABKOM 1' : 'FT.1')}
                               </span>
                               <span>•</span>
                               <span>Tingkat {room.floorNumber}</span>
@@ -430,7 +430,7 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
                       Sistem Pencarian Kampus Cerdas
                     </h5>
                     <p className="text-[11px] text-slate-600">
-                      Mencakup 2 Gedung (LABTEK 1 & FT.1), 4 Lantai, 24 Ruangan, Jadwal Kuliah & Ruang Sidang.
+                      Mencakup 2 Gedung (LABKOM 1 & FT.1), 4 Lantai, 24 Ruangan, Jadwal Kuliah & Ruang Sidang.
                     </p>
                   </div>
                 </div>

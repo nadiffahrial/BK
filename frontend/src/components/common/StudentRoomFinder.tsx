@@ -131,11 +131,11 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
   // Quick recommendations when user first focuses
   const recommendations = useMemo(() => {
     return allRooms.filter(r => 
-      r.id === 'labtek1-102' || // Lab Pemrograman
-      r.id === 'labtek1-201' || // Lab AI
-      r.id === 'labtek1-206' || // Ruang Sidang Skripsi
-      r.id === 'labtek1-106' || // BAAK
-      r.id === 'ft1-101'        // Smart Classroom Dekanat
+      r.id === 'labkom1-1a' || // Lab Pemrograman
+      r.id === 'labkom1-2a' || // Lab AI
+      r.id === 'ft1-2f' || // Ruang Sidang Skripsi
+      r.id === 'ft1-1a' || // BAAK
+      r.id === 'ft1-1b'        // Smart Classroom Dekanat
     ).slice(0, 4);
   }, [allRooms]);
 

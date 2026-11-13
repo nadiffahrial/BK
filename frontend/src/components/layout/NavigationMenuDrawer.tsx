@@ -151,7 +151,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                   Universitas Siliwangi
                 </h2>
                 <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                  SmartCampus3D • LABTEK 1 & FT.1
+                  SmartCampus3D • LABKOM 1 & FT.1
                 </p>
               </div>
             </div>

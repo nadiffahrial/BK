@@ -98,7 +98,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onClose }) => {
               </span>
             </div>
             <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hidden sm:block">
-              Universitas Siliwangi • Gedung LABTEK 1 & FT.1
+              Universitas Siliwangi • Gedung LABKOM 1 & FT.1
             </p>
           </div>
         </div>
@@ -170,7 +170,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onClose }) => {
                         <span className="text-[10px] bg-emerald-500/40 text-emerald-100 px-1.5 py-0.2 rounded font-mono">24 Ruang</span>
                       </div>
                       <p className="text-[11px] text-emerald-200/80 mt-0.5">
-                        Gedung LABTEK 1 (Kuliah & BAAK) dan Gedung FT.1 (Dekanat & Riset).
+                        Gedung LABKOM 1 (Kuliah & BAAK) dan Gedung FT.1 (Dekanat & Riset).
                       </p>
                     </div>
                   </div>
@@ -369,7 +369,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onClose }) => {
 
       {/* Clean Minimalist Bottom Footer */}
       <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400 dark:text-slate-500">
-        © {new Date().getFullYear()} SmartCampus3D • Gedung LABTEK 1 & Gedung FT.1 Universitas
+        © {new Date().getFullYear()} SmartCampus3D • Gedung LABKOM 1 & Gedung FT.1 Universitas
       </footer>
 
     </div>

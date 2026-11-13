@@ -269,6 +269,9 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
               const isHovered = hoveredRoom?.id === room.id;
               const matchesFilter = statusFilter === 'all' || room.status === statusFilter;
               const opacity = matchesFilter ? 1 : 0.25;
+              const isStairs = room.code === 'TANGGA';
+              const isCompact = w < 85 || h < 110;
+              const badgeW = isCompact ? Math.min(50, w - 12) : Math.min(58, w - 24);
 
               return (
                 <g
@@ -285,7 +288,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                     y={y}
                     width={w}
                     height={h}
-                    rx="12"
+                    rx="10"
                     fill={getStatusFill(room.status, isSelected)}
                     stroke={getStatusStroke(room.status, isSelected)}
                     strokeWidth={isSelected ? '3.5' : isHovered ? '2.5' : '1.5'}
@@ -295,16 +298,16 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
 
                   {/* Corner Accent Markings */}
                   <path
-                    d={`M ${x + 6} ${y + 14} L ${x + 6} ${y + 6} L ${x + 14} ${y + 6}`}
+                    d={`M ${x + 4} ${y + 10} L ${x + 4} ${y + 4} L ${x + 10} ${y + 4}`}
                     fill="none"
                     stroke={getStatusStroke(room.status, isSelected)}
-                    strokeWidth="1.5"
+                    strokeWidth="1.2"
                   />
                   <path
-                    d={`M ${x + w - 14} ${y + 6} L ${x + w - 6} ${y + 6} L ${x + w - 6} ${y + 14}`}
+                    d={`M ${x + w - 10} ${y + 4} L ${x + w - 4} ${y + 4} L ${x + w - 4} ${y + 10}`}
                     fill="none"
                     stroke={getStatusStroke(room.status, isSelected)}
-                    strokeWidth="1.5"
+                    strokeWidth="1.2"
                   />
 
                   {/* Door Graphic Arc */}
@@ -328,74 +331,106 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                       <line x1="2" y1="0" x2="2" y2="28" stroke="#059669" strokeWidth="2" strokeDasharray="3 2" />
                     </g>
                   )}
+                  {doorPosition === 'right' && (
+                    <g transform={`translate(${x + w - 2}, ${y + h / 2 - 14})`}>
+                      <rect width="4" height="28" fill="#ffffff" />
+                      <line x1="2" y1="0" x2="2" y2="28" stroke="#059669" strokeWidth="2" strokeDasharray="3 2" />
+                    </g>
+                  )}
 
-                  {/* Room Code Badge */}
-                  <g transform={`translate(${x + 14}, ${y + 14})`}>
-                    <rect
-                      width="54"
-                      height="22"
-                      rx="6"
-                      fill="#ffffff"
-                      stroke={getStatusStroke(room.status, isSelected)}
-                      strokeWidth="1.5"
-                    />
-                    <text
-                      x="27"
-                      y="15"
-                      textAnchor="middle"
-                      fill="#0f172a"
-                      fontSize="11"
-                      fontWeight="bold"
-                      fontFamily="monospace"
-                    >
-                      {room.code}
-                    </text>
-                  </g>
+                  {isStairs ? (
+                    /* 🪜 ARCHITECTURAL STAIRCASE HATCHING & CHEVRON DESIGN */
+                    <g pointerEvents="none">
+                      <line x1={x + 4} y1={y + 4} x2={x + w - 4} y2={y + h - 4} stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 2" />
+                      <line x1={x + w - 4} y1={y + 4} x2={x + 4} y2={y + h - 4} stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4 2" />
+                      <path d={`M ${x + w/2 - 12} ${y + h/2 + 6} L ${x + w/2} ${y + h/2 - 8} L ${x + w/2 + 12} ${y + h/2 + 6}`} fill="none" stroke="#059669" strokeWidth="2.5" />
+                      <path d={`M ${x + w/2 - 12} ${y + h/2 + 14} L ${x + w/2} ${y + h/2} L ${x + w/2 + 12} ${y + h/2 + 14}`} fill="none" stroke="#10b981" strokeWidth="2" />
+                      <g transform={`translate(${x + w/2 - 27}, ${y + h - 24})`}>
+                        <rect width="54" height="18" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
+                        <text x="27" y="13" textAnchor="middle" fill="#047857" fontSize="9" fontWeight="bold">
+                          TANGGA
+                        </text>
+                      </g>
+                    </g>
+                  ) : (
+                    /* REGULAR ROOM CONTENT */
+                    <>
+                      {/* Room Code Badge */}
+                      <g transform={`translate(${x + (isCompact ? 6 : 10)}, ${y + 8})`}>
+                        <rect
+                          width={badgeW}
+                          height="20"
+                          rx="5"
+                          fill="#ffffff"
+                          stroke={getStatusStroke(room.status, isSelected)}
+                          strokeWidth="1.5"
+                        />
+                        <text
+                          x={badgeW / 2}
+                          y="14"
+                          textAnchor="middle"
+                          fill="#0f172a"
+                          fontSize={room.code.length > 5 ? "8.5" : "10"}
+                          fontWeight="bold"
+                          fontFamily="monospace"
+                        >
+                          {room.code}
+                        </text>
+                      </g>
 
-                  {/* Status Indicator Dot */}
-                  <circle
-                    cx={x + w - 20}
-                    cy={y + 24}
-                    r="5"
-                    fill={getStatusStroke(room.status, false)}
-                    className={room.status === 'occupied' ? 'animate-pulse' : ''}
-                  />
+                      {/* Status Indicator Dot */}
+                      <circle
+                        cx={x + w - (isCompact ? 10 : 16)}
+                        cy={y + 18}
+                        r="4"
+                        fill={getStatusStroke(room.status, false)}
+                        className={room.status === 'occupied' ? 'animate-pulse' : ''}
+                      />
 
-                  {/* Room Title */}
-                  <foreignObject
-                    x={x + 14}
-                    y={y + 44}
-                    width={w - 28}
-                    height={h - 80}
-                  >
-                    <div className="h-full flex flex-col justify-start overflow-hidden">
-                      <p className="text-slate-900 font-bold text-xs leading-tight line-clamp-2">
-                        {room.name}
-                      </p>
-                      {room.currentActivity && (
-                        <p className="text-amber-700 font-semibold text-[10px] mt-1 truncate">
-                          ▶ {room.currentActivity.title}
-                        </p>
-                      )}
-                    </div>
-                  </foreignObject>
+                      {/* Room Title */}
+                      <foreignObject
+                        x={x + (isCompact ? 6 : 10)}
+                        y={y + 32}
+                        width={w - (isCompact ? 12 : 20)}
+                        height={h - (isCompact ? 56 : 60)}
+                      >
+                        <div className="h-full flex flex-col justify-start overflow-hidden">
+                          <p className={`text-slate-900 font-bold leading-tight ${isCompact ? 'text-[9.5px] line-clamp-2' : 'text-xs line-clamp-2'}`}>
+                            {room.name}
+                          </p>
+                          {!isCompact && room.currentActivity && (
+                            <p className="text-amber-700 font-semibold text-[9.5px] mt-0.5 truncate">
+                              ▶ {room.currentActivity.title}
+                            </p>
+                          )}
+                        </div>
+                      </foreignObject>
 
-                  {/* Room Bottom Meta Icons (Capacity & Temp) */}
-                  <g transform={`translate(${x + 14}, ${y + h - 26})`}>
-                    <rect width={w - 28} height="18" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
-                    <text x="8" y="13" fill="#475569" fontSize="10" fontWeight="bold">
-                      👥 {room.capacity} org
-                    </text>
-                    {room.temperature && (
-                      <text x={w - 60} y="13" fill="#0284c7" fontSize="10" fontWeight="bold">
-                        ❄ {room.temperature}°C
-                      </text>
-                    )}
-                  </g>
+                      {/* Room Bottom Meta Icons (Capacity & Temp) */}
+                      <g transform={`translate(${x + (isCompact ? 6 : 10)}, ${y + h - 22})`}>
+                        <rect width={w - (isCompact ? 12 : 20)} height="16" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
+                        <text
+                          x={isCompact ? (w - 12) / 2 : 6}
+                          y="12"
+                          textAnchor={isCompact ? "middle" : "start"}
+                          fill="#475569"
+                          fontSize="9"
+                          fontWeight="bold"
+                        >
+                          👥 {room.capacity} org
+                        </text>
+                        {!isCompact && room.temperature && (
+                          <text x={w - 55} y="12" fill="#0284c7" fontSize="9" fontWeight="bold">
+                            ❄ {room.temperature}°C
+                          </text>
+                        )}
+                      </g>
+                    </>
+                  )}
 
                   {/* Pulsing Selection Pin if Selected */}
                   {isSelected && (
-                    <g transform={`translate(${x + w / 2 - 12}, ${y + 8})`}>
+                    <g transform={`translate(${x + w / 2 - 12}, ${y + 6})`}>
                       <circle cx="12" cy="12" r="10" fill="#10b981" fillOpacity="0.4" className="animate-ping" />
                       <circle cx="12" cy="12" r="6" fill="#059669" />
                     </g>

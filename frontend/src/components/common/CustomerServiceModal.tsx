@@ -246,7 +246,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-emerald-100/90 mt-0.5 flex items-center gap-2">
-                  <span>Pusat Bantuan Civitas LABTEK 1 & FT.1</span>
+                  <span>Pusat Bantuan Civitas LABKOM 1 & FT.1</span>
                   <span>•</span>
                   <span className="flex items-center gap-1">
                     <span className={`w-2 h-2 rounded-full ${isBackendConnected ? 'bg-emerald-300 animate-ping' : 'bg-amber-300'}`} />
@@ -637,7 +637,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
                     Loket Layanan Fisik Kampus
                   </h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    Gedung LABTEK 1 Lantai 1 (Ruang A-106 BAAK) & Gedung FT.1 Lantai 1
+                    Gedung LABKOM 1 Lantai 1 (Ruang A-106 BAAK) & Gedung FT.1 Lantai 1
                   </p>
                   <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-1">
                     Jam Operasional: Senin - Jumat (08.00 - 16.30 WIB)
