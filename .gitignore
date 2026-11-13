@@ -41,6 +41,3 @@ Thumbs.db
 
 # Local backup copies
 **/* copy.*
-
-# Generated deployment assets
-/assets/
