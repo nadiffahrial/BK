@@ -5,18 +5,17 @@ import { useGps } from '../../context/GpsContext';
 import { 
   Box, 
   Layers, 
-  Eye, 
-  Maximize2, 
-  Sliders, 
-  Sparkles, 
-  ArrowRight, 
   ChevronRight, 
   Leaf,
-  Navigation,
-  Compass,
   Radio,
+  Sparkles,
+  MapPin,
   Users,
-  CheckCircle2
+  CheckCircle2,
+  Tv,
+  Droplets,
+  Zap,
+  Flame
 } from 'lucide-react';
 
 interface IsometricViewProps {
@@ -24,20 +23,22 @@ interface IsometricViewProps {
   activeFloorNumber: number;
   onSelectFloor: (floorNumber: number) => void;
   onSelectRoom: (room: Room) => void;
+  selectedRoom?: Room | null;
 }
 
 export const IsometricView: React.FC<IsometricViewProps> = ({
   building,
   activeFloorNumber,
   onSelectFloor,
-  onSelectRoom
+  onSelectRoom,
+  selectedRoom
 }) => {
   const { isDark } = useTheme();
   const { deviceState, targetRoom: gpsTargetRoom, setTargetRoom } = useGps();
 
   const [isExploded, setIsExploded] = useState<boolean>(true);
   const [tiltAngle, setTiltAngle] = useState<number>(56);
-  const [rotateAngle, setRotateAngle] = useState<number>(-30);
+  const [rotateAngle, setRotateAngle] = useState<number>(-28);
   const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
   const [hoveredRoomId, setHoveredRoomId] = useState<string | null>(null);
 
@@ -50,9 +51,42 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
     return { total, occupied, available, reserved, maintenance };
   };
 
-  // Staircase step count and height calculation
-  const zStepDistance = isExploded ? 145 : 45;
-  const stairStepsCount = 7;
+  const getStatusFill = (status: Room['status'], isSelected: boolean, isHovered: boolean) => {
+    if (isSelected) return isDark ? 'rgba(5, 150, 105, 0.45)' : 'rgba(16, 185, 129, 0.35)';
+    if (isHovered) return isDark ? 'rgba(5, 150, 105, 0.3)' : 'rgba(16, 185, 129, 0.2)';
+    switch (status) {
+      case 'available':
+        return isDark ? 'rgba(16, 185, 129, 0.18)' : '#f0fdf4';
+      case 'occupied':
+        return isDark ? 'rgba(244, 63, 94, 0.22)' : '#fff1f2';
+      case 'reserved':
+        return isDark ? 'rgba(245, 158, 11, 0.2)' : '#fffbeb';
+      case 'maintenance':
+        return isDark ? 'rgba(148, 163, 184, 0.15)' : '#f8fafc';
+      default:
+        return isDark ? '#1e293b' : '#ffffff';
+    }
+  };
+
+  const getStatusStroke = (status: Room['status'], isSelected: boolean, isHovered: boolean) => {
+    if (isSelected) return '#059669';
+    if (isHovered) return '#10b981';
+    switch (status) {
+      case 'available':
+        return '#10b981';
+      case 'occupied':
+        return '#f43f5e';
+      case 'reserved':
+        return '#f59e0b';
+      case 'maintenance':
+        return '#94a3b8';
+      default:
+        return '#cbd5e1';
+    }
+  };
+
+  // Vertical distance between stacked 3D floor slabs
+  const zStepDistance = isExploded ? 180 : 50;
 
   return (
     <div
@@ -60,7 +94,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
       className="relative w-full bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100 dark:border-slate-800 p-4 sm:p-6 shadow-sm overflow-hidden text-slate-800 dark:text-slate-100 transition-colors scroll-mt-20 ring-1 ring-emerald-500/20"
     >
       
-      {/* 1. 3D Header Bar (Matching original user design) */}
+      {/* 1. 3D Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2.5">
@@ -70,14 +104,14 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                  Model 3D Multi-Lantai Isometrik
+                  Model 3D Multi-Lantai Isometrik ({building.shortName})
                 </h3>
                 <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  Simulasi Tangga & Sekat
+                  Denah Arsitektur Asli 3D
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Visualisasi tumpukan arsitektur {building.name} ({building.floorsCount} Lantai) • Universitas Siliwangi
+                Visualisasi 3D cetak biru arsitektur {building.name} ({building.floorsCount} Lantai) • Universitas Siliwangi
               </p>
             </div>
           </div>
@@ -128,78 +162,23 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
       </div>
 
       {/* 2. 3D Staged Canvas with Multi-Lantai Layers */}
-      <div className="relative min-h-[580px] flex items-center justify-center overflow-hidden py-14 perspective-1000 bg-gradient-to-b from-emerald-50/30 via-slate-50/50 to-white dark:from-slate-900/90 dark:via-slate-950 dark:to-slate-900/90 rounded-2xl border border-slate-100 dark:border-slate-800 transition-colors">
+      <div className="relative min-h-[620px] flex items-center justify-center overflow-hidden py-16 perspective-1000 bg-gradient-to-b from-emerald-50/30 via-slate-50/50 to-white dark:from-slate-900/90 dark:via-slate-950 dark:to-slate-900/90 rounded-2xl border border-slate-100 dark:border-slate-800 transition-colors">
         
         {/* Ambient green blur backdrop */}
-        <div className="absolute w-[500px] h-[500px] bg-emerald-300/15 rounded-full blur-[110px] pointer-events-none" />
+        <div className="absolute w-[600px] h-[600px] bg-emerald-300/15 rounded-full blur-[120px] pointer-events-none" />
 
         {/* 3D Isometric Stack Container */}
         <div
           className="relative transition-transform duration-700 ease-smooth"
           style={{
-            transform: `perspective(1200px) rotateX(${tiltAngle}deg) rotateZ(${rotateAngle}deg)`,
+            transform: `perspective(1300px) rotateX(${tiltAngle}deg) rotateZ(${rotateAngle}deg)`,
             transformStyle: 'preserve-3d',
-            width: '520px',
-            height: '320px'
+            width: '780px',
+            height: '355px'
           }}
         >
           {/* ============================================================== */}
-          {/* 🪜 SIMULASI TANGGA PENGHUBUNG 3D (Connecting Stairs Column)   */}
-          {/* ============================================================== */}
-          <div 
-            className="absolute left-1 top-10 w-24 h-60 pointer-events-none transition-all duration-700"
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            {/* Stair Column Foundation Shaft */}
-            <div 
-              className="absolute inset-0 rounded-2xl border-2 border-dashed border-emerald-400/60 dark:border-emerald-600/40 bg-emerald-50/30 dark:bg-emerald-950/20 backdrop-blur-xs flex flex-col justify-between p-2"
-              style={{
-                transform: `translateZ(${zStepDistance / 2}px)`,
-                transformStyle: 'preserve-3d'
-              }}
-            >
-              <div className="text-[9px] font-black text-emerald-800 dark:text-emerald-300 tracking-wider font-mono uppercase text-center bg-white/90 dark:bg-slate-900/90 px-1.5 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-700 shadow-2xs">
-                AKSES TANGGA
-              </div>
-              <div className="text-[8px] text-emerald-600 dark:text-emerald-400 font-bold text-center">
-                Lt 1 ↔ Lt 2
-              </div>
-            </div>
-
-            {/* Stepped Stair Treads (Anak Tangga 3D Bertingkat) */}
-            {Array.from({ length: stairStepsCount }).map((_, stepIdx) => {
-              const currentStepZ = ((stepIdx + 1) * zStepDistance) / (stairStepsCount + 1);
-              const stepY = 25 + stepIdx * 24;
-
-              return (
-                <div
-                  key={stepIdx}
-                  className="absolute left-2.5 w-18 h-4 rounded-md transition-all duration-700 border flex items-center justify-between px-1.5 shadow-sm"
-                  style={{
-                    transform: `translate3d(0, ${stepY}px, ${currentStepZ}px)`,
-                    transformStyle: 'preserve-3d',
-                    backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                    borderColor: '#10b981'
-                  }}
-                >
-                  {/* Step Tread Indicator */}
-                  <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[7.5px] font-mono font-bold text-emerald-700 dark:text-emerald-300">
-                      Tk.{stepIdx + 1}
-                    </span>
-                  </div>
-                  {/* Step Height Notch */}
-                  <span className="text-[6.5px] text-slate-400 font-bold">
-                    ▲
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ============================================================== */}
-          {/* 🏢 RENDERING LEMPENG LANTAI (TINGKAT 1 & TINGKAT 2)           */}
+          {/* 🏢 RENDERING LEMPENG LANTAI CETAK BIRU 3D MULTI-LANTAI         */}
           {/* ============================================================== */}
           {building.floors.map((floor, index) => {
             const isSelected = floor.floorNumber === activeFloorNumber;
@@ -208,47 +187,43 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
             // Height elevation for 3D stacking
             const zDistance = index * zStepDistance;
 
-            // Separate North (Rooms 1-3) and South (Rooms 4-6)
-            const northRooms = floor.rooms.slice(0, 3);
-            const southRooms = floor.rooms.slice(3, 6);
-
             return (
               <div
                 key={floor.floorNumber}
                 onMouseEnter={() => setHoveredFloor(floor.floorNumber)}
                 onMouseLeave={() => setHoveredFloor(null)}
                 onClick={() => onSelectFloor(floor.floorNumber)}
-                className={`absolute inset-0 rounded-3xl cursor-pointer transition-all duration-700 ease-smooth ${
+                className={`absolute inset-0 rounded-2xl cursor-pointer transition-all duration-700 ease-smooth ${
                   isSelected
-                    ? 'border-2 border-emerald-600 shadow-[0_25px_50px_rgba(16,185,129,0.35)] ring-4 ring-emerald-500/15'
+                    ? 'border-2 border-emerald-600 shadow-[0_30px_60px_rgba(16,185,129,0.38)] ring-4 ring-emerald-500/20'
                     : isHovered
-                    ? 'border-2 border-emerald-400 shadow-[0_15px_35px_rgba(16,185,129,0.22)]'
-                    : 'border border-slate-200/90 dark:border-slate-700 shadow-[0_12px_28px_rgba(0,0,0,0.08)]'
+                    ? 'border-2 border-emerald-400 shadow-[0_20px_40px_rgba(16,185,129,0.22)]'
+                    : 'border border-slate-300/90 dark:border-slate-700 shadow-[0_15px_30px_rgba(0,0,0,0.12)]'
                 }`}
                 style={{
                   transform: `translateZ(${zDistance}px)`,
                   transformStyle: 'preserve-3d',
                   backgroundColor: isDark
                     ? isSelected
-                      ? 'rgba(30, 41, 59, 0.98)'
+                      ? 'rgba(15, 23, 42, 0.98)'
                       : isHovered
-                      ? 'rgba(30, 41, 59, 0.92)'
-                      : 'rgba(15, 23, 42, 0.92)'
+                      ? 'rgba(15, 23, 42, 0.92)'
+                      : 'rgba(15, 23, 42, 0.88)'
                     : isSelected
                     ? 'rgba(255, 255, 255, 0.98)'
                     : isHovered
                     ? 'rgba(255, 255, 255, 0.95)'
                     : 'rgba(255, 255, 255, 0.92)',
-                  backdropFilter: 'blur(10px)',
+                  backdropFilter: 'blur(12px)',
                 }}
               >
                 
-                {/* 🏷️ Floor Label Banner on Left (as in user screenshot) */}
+                {/* 🏷️ Floor Label Banner on Left (Outside slab in 3D) */}
                 <div 
-                  className="absolute -left-36 top-3 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-emerald-200 dark:border-slate-700 text-xs shadow-md transition-transform"
-                  style={{ transform: 'translateZ(10px)' }}
+                  className="absolute -left-40 top-3 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-emerald-200 dark:border-slate-700 text-xs shadow-md transition-transform"
+                  style={{ transform: 'translateZ(15px)' }}
                 >
-                  <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-600 animate-ping' : 'bg-slate-400'}`} />
+                  <span className={`w-2.5 h-2.5 rounded-full ${isSelected ? 'bg-emerald-600 animate-ping' : 'bg-slate-400'}`} />
                   <span className="font-extrabold text-slate-800 dark:text-slate-100">
                     Tingkat {floor.floorNumber}
                   </span>
@@ -257,213 +232,222 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                   </span>
                 </div>
 
-                {/* 📋 Floor Details Header */}
+                {/* 📋 Floor Details Header in 3D */}
                 <div 
-                  className="p-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
-                  style={{ transform: 'translateZ(6px)' }}
+                  className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
+                  style={{ transform: 'translateZ(8px)' }}
                 >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[9.5px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
-                        TINGKAT {floor.floorNumber}
-                      </span>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[260px]">
-                        {floor.name}
-                      </h4>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[9.5px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
+                      TINGKAT {floor.floorNumber}
+                    </span>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {floor.name}
+                    </h4>
                   </div>
-                  <span className={`text-[9.5px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                    isSelected ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                  }`}>
-                    {isSelected ? 'Lantai Aktif' : 'Pilih Lantai'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9.5px] text-emerald-700 dark:text-emerald-400 font-bold">
+                      {stats.available} Tersedia • {stats.occupied} Digunakan
+                    </span>
+                    <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                      isSelected ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                    }`}>
+                      {isSelected ? 'Lantai Aktif' : 'Pilih Lantai'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* ============================================================== */}
-                {/* 🧱 SEKAT RUANGAN ARSITEKTURAL 3D (Dividers & Partition Walls) */}
+                {/* 🗺️ ACTUAL ARCHITECTURAL BLUEPRINT SVG PROJECTED IN 3D SLAB   */}
                 {/* ============================================================== */}
                 <div 
-                  className="p-3 flex flex-col justify-between h-[230px]"
+                  className="p-2 relative w-full h-[300px]"
                   style={{ transformStyle: 'preserve-3d' }}
                 >
-                  
-                  {/* --- SISI UTARA (NORTH WING: 3 RUANGAN) --- */}
-                  <div className="relative">
-                    {/* Sekat Tepi Dinding Utara */}
-                    <div className="absolute -top-1 left-0 right-0 h-1 bg-emerald-500/30 rounded-t-sm" />
-
-                    <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1 scrollbar-none relative">
-                      {northRooms.map((room, rIdx) => {
-                        const isOcc = room.status === 'occupied';
-                        const isAvail = room.status === 'available';
-                        const isRes = room.status === 'reserved';
-                        const isRoomHovered = hoveredRoomId === room.id;
-                        const isTargetGps = gpsTargetRoom?.id === room.id;
-
-                        return (
-                          <div
-                            key={room.id}
-                            onMouseEnter={() => setHoveredRoomId(room.id)}
-                            onMouseLeave={() => setHoveredRoomId(null)}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onSelectFloor(floor.floorNumber);
-                              onSelectRoom(room);
-                              setTargetRoom(room);
-                            }}
-                            className={`relative min-w-[65px] max-w-[105px] flex-1 shrink-0 p-1.5 rounded-xl text-left border-2 transition-all duration-300 cursor-pointer ${
-                              isOcc
-                                ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800'
-                                : isAvail
-                                ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-700'
-                                : isRes
-                                ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-700'
-                                : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-                            } ${
-                              isRoomHovered || isTargetGps
-                                ? 'scale-105 shadow-md -translate-y-1 ring-2 ring-emerald-500'
-                                : 'shadow-2xs'
-                            }`}
-                            style={{
-                              transform: `translateZ(${isRoomHovered || isTargetGps ? 14 : 4}px)`,
-                              transformStyle: 'preserve-3d'
-                            }}
-                          >
-                            {/* Sekat Dinding Vertikal Antar Ruangan (Partition Wall Lip) */}
-                            {rIdx < 2 && (
-                              <div className="absolute -right-2 top-0 bottom-0 w-1 bg-slate-300 dark:bg-slate-600 rounded-full opacity-60 pointer-events-none" />
-                            )}
-
-                            {/* Bukaan Kusen Pintu Sisi Koridor */}
-                            <div className="absolute -bottom-1 left-4 w-4 h-1 bg-emerald-500 rounded-sm" title="Pintu Masuk Ruangan" />
-
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-[9px] font-black text-slate-800 dark:text-slate-100">
-                                {room.code}
-                              </span>
-                              <span className={`w-1.5 h-1.5 rounded-full ${
-                                isOcc ? 'bg-rose-500 animate-pulse' :
-                                isAvail ? 'bg-emerald-500' :
-                                isRes ? 'bg-amber-500' : 'bg-slate-400'
-                              }`} />
-                            </div>
-                            <div className="text-[9.5px] text-slate-700 dark:text-slate-200 font-bold truncate mt-0.5">
-                              {room.name}
-                            </div>
-                            <div className="text-[8px] text-slate-400 mt-1 flex items-center justify-between">
-                              <span>{room.capacity} Kursi</span>
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold">Detail →</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* --- 🚶 KORIDOR / SELASAR TENGAH DENGAN DINDING SEKAT --- */}
-                  <div 
-                    className="relative my-1 py-1.5 px-3 rounded-lg bg-emerald-500/10 dark:bg-emerald-950/30 border-y border-dashed border-emerald-300 dark:border-emerald-700/60 flex items-center justify-between"
-                    style={{ transform: 'translateZ(6px)' }}
+                  <svg
+                    viewBox="0 0 1100 500"
+                    className="w-full h-full"
+                    style={{ transform: 'translateZ(4px)' }}
                   >
-                    <div className="flex items-center gap-1.5 text-[8.5px] font-mono font-bold text-emerald-800 dark:text-emerald-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>KORIDOR TENGAH LT {floor.floorNumber}</span>
-                    </div>
+                    <defs>
+                      <linearGradient id={`corridor-grad-${floor.floorNumber}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.1" />
+                        <stop offset="50%" stopColor="#10b981" stopOpacity="0.22" />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.1" />
+                      </linearGradient>
+                    </defs>
 
-                    {/* IoT GPS Beacon on Corridor */}
-                    {deviceState.floorNumber === floor.floorNumber && (
-                      <div className="flex items-center gap-1 text-[8px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 animate-pulse">
-                        <Radio className="w-2.5 h-2.5 text-sky-500" />
-                        <span>LOKASI ANDA</span>
-                      </div>
-                    )}
+                    {/* Outer Building Concrete Walls */}
+                    <rect
+                      x="18"
+                      y="18"
+                      width="1064"
+                      height="464"
+                      rx="14"
+                      fill={isDark ? '#0b1120' : '#ffffff'}
+                      stroke={isSelected ? '#059669' : '#334155'}
+                      strokeWidth="3.5"
+                    />
 
-                    <span className="text-[8px] text-slate-400 font-bold">Selasar Utama</span>
-                  </div>
+                    {/* Central Corridor Hallway */}
+                    <rect
+                      x="28"
+                      y="235"
+                      width="1044"
+                      height="30"
+                      fill={`url(#corridor-grad-${floor.floorNumber})`}
+                      stroke="#10b981"
+                      strokeWidth="1.5"
+                      strokeDasharray="5 3"
+                    />
+                    <text
+                      x="550"
+                      y="254"
+                      textAnchor="middle"
+                      fill={isDark ? '#34d399' : '#065f46'}
+                      fontSize="10"
+                      fontFamily="monospace"
+                      fontWeight="bold"
+                      letterSpacing="3"
+                    >
+                      KORIDOR TENGAH LANTAI {floor.floorNumber}
+                    </text>
 
-                  {/* --- SISI SELATAN (SOUTH WING: 3 RUANGAN) --- */}
-                  <div className="relative">
-                    <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1 scrollbar-none relative">
-                      {southRooms.map((room, rIdx) => {
-                        const isOcc = room.status === 'occupied';
-                        const isAvail = room.status === 'available';
-                        const isRes = room.status === 'reserved';
-                        const isRoomHovered = hoveredRoomId === room.id;
-                        const isTargetGps = gpsTargetRoom?.id === room.id;
+                    {/* All Blueprint Rooms Rendered at exact coordinates */}
+                    {floor.rooms.map((room) => {
+                      const { x, y, w, h, doorPosition } = room.coordinates;
+                      const isRoomSelected = selectedRoom?.id === room.id;
+                      const isRoomHovered = hoveredRoomId === room.id;
+                      const isStairs = room.code === 'TANGGA';
+                      const isCompact = w < 85 || h < 110;
 
-                        return (
-                          <div
-                            key={room.id}
-                            onMouseEnter={() => setHoveredRoomId(room.id)}
-                            onMouseLeave={() => setHoveredRoomId(null)}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onSelectFloor(floor.floorNumber);
-                              onSelectRoom(room);
-                              setTargetRoom(room);
-                            }}
-                            className={`relative min-w-[65px] max-w-[105px] flex-1 shrink-0 p-1.5 rounded-xl text-left border-2 transition-all duration-300 cursor-pointer ${
-                              isOcc
-                                ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800'
-                                : isAvail
-                                ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-700'
-                                : isRes
-                                ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-700'
-                                : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-                            } ${
-                              isRoomHovered || isTargetGps
-                                ? 'scale-105 shadow-md -translate-y-1 ring-2 ring-emerald-500'
-                                : 'shadow-2xs'
-                            }`}
-                            style={{
-                              transform: `translateZ(${isRoomHovered || isTargetGps ? 14 : 4}px)`,
-                              transformStyle: 'preserve-3d'
-                            }}
-                          >
-                            {/* Sekat Dinding Vertikal Antar Ruangan (Partition Wall Lip) */}
-                            {rIdx < 2 && (
-                              <div className="absolute -right-2 top-0 bottom-0 w-1 bg-slate-300 dark:bg-slate-600 rounded-full opacity-60 pointer-events-none" />
-                            )}
+                      return (
+                        <g
+                          key={room.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectFloor(floor.floorNumber);
+                            onSelectRoom(room);
+                            setTargetRoom(room);
+                          }}
+                          onMouseEnter={() => setHoveredRoomId(room.id)}
+                          onMouseLeave={() => setHoveredRoomId(null)}
+                          className="cursor-pointer transition-all duration-200"
+                        >
+                          {/* Room Box */}
+                          <rect
+                            x={x}
+                            y={y}
+                            width={w}
+                            height={h}
+                            rx="8"
+                            fill={getStatusFill(room.status, isRoomSelected, isRoomHovered)}
+                            stroke={getStatusStroke(room.status, isRoomSelected, isRoomHovered)}
+                            strokeWidth={isRoomSelected ? '3.5' : isRoomHovered ? '2.5' : '1.5'}
+                            filter={isRoomSelected ? 'drop-shadow(0 0 8px rgba(16,185,129,0.6))' : undefined}
+                          />
 
-                            {/* Bukaan Kusen Pintu Sisi Koridor */}
-                            <div className="absolute -top-1 left-4 w-4 h-1 bg-emerald-500 rounded-sm" title="Pintu Masuk Ruangan" />
+                          {/* Door indicator */}
+                          {doorPosition === 'bottom' && (
+                            <line x1={x + w / 2 - 12} y1={y + h} x2={x + w / 2 + 12} y2={y + h} stroke="#059669" strokeWidth="2.5" />
+                          )}
+                          {doorPosition === 'top' && (
+                            <line x1={x + w / 2 - 12} y1={y} x2={x + w / 2 + 12} y2={y} stroke="#059669" strokeWidth="2.5" />
+                          )}
+                          {doorPosition === 'left' && (
+                            <line x1={x} y1={y + h / 2 - 12} x2={x} y2={y + h / 2 + 12} stroke="#059669" strokeWidth="2.5" />
+                          )}
+                          {doorPosition === 'right' && (
+                            <line x1={x + w} y1={y + h / 2 - 12} x2={x + w} y2={y + h / 2 + 12} stroke="#059669" strokeWidth="2.5" />
+                          )}
 
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-[9px] font-black text-slate-800 dark:text-slate-100">
+                          {isStairs ? (
+                            /* Architectural Staircase Chevron Cross */
+                            <g pointerEvents="none">
+                              <line x1={x + 3} y1={y + 3} x2={x + w - 3} y2={y + h - 3} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="3 2" />
+                              <line x1={x + w - 3} y1={y + 3} x2={x + 3} y2={y + h - 3} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="3 2" />
+                              <path d={`M ${x + w/2 - 10} ${y + h/2 + 6} L ${x + w/2} ${y + h/2 - 6} L ${x + w/2 + 10} ${y + h/2 + 6}`} fill="none" stroke="#059669" strokeWidth="2.5" />
+                              <text x={x + w / 2} y={y + h - 14} textAnchor="middle" fill="#047857" fontSize="9" fontWeight="bold" fontFamily="monospace">
+                                TANGGA
+                              </text>
+                            </g>
+                          ) : (
+                            /* Regular Room Labels */
+                            <g pointerEvents="none">
+                              {/* Room Code Badge */}
+                              <rect
+                                x={x + (isCompact ? 4 : 8)}
+                                y={y + 6}
+                                width={isCompact ? Math.min(46, w - 8) : Math.min(54, w - 16)}
+                                height="18"
+                                rx="4"
+                                fill={isDark ? '#1e293b' : '#ffffff'}
+                                stroke={getStatusStroke(room.status, isRoomSelected, isRoomHovered)}
+                                strokeWidth="1.2"
+                              />
+                              <text
+                                x={x + (isCompact ? 4 : 8) + (isCompact ? Math.min(46, w - 8) : Math.min(54, w - 16)) / 2}
+                                y={y + 18}
+                                textAnchor="middle"
+                                fill={isDark ? '#f1f5f9' : '#0f172a'}
+                                fontSize={room.code.length > 5 ? "8" : "9.5"}
+                                fontWeight="bold"
+                                fontFamily="monospace"
+                              >
                                 {room.code}
-                              </span>
-                              <span className={`w-1.5 h-1.5 rounded-full ${
-                                isOcc ? 'bg-rose-500 animate-pulse' :
-                                isAvail ? 'bg-emerald-500' :
-                                isRes ? 'bg-amber-500' : 'bg-slate-400'
-                              }`} />
-                            </div>
-                            <div className="text-[9.5px] text-slate-700 dark:text-slate-200 font-bold truncate mt-0.5">
-                              {room.name}
-                            </div>
-                            <div className="text-[8px] text-slate-400 mt-1 flex items-center justify-between">
-                              <span>{room.capacity} Kursi</span>
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold">Detail →</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                              </text>
 
-                    {/* Sekat Tepi Dinding Selatan */}
-                    <div className="absolute -bottom-1 left-0 right-0 h-1 bg-emerald-500/30 rounded-b-sm" />
-                  </div>
+                              {/* Status dot */}
+                              <circle
+                                cx={x + w - (isCompact ? 8 : 12)}
+                                cy={y + 14}
+                                r="3.5"
+                                fill={getStatusStroke(room.status, false, false)}
+                              />
 
+                              {/* Room Name Text */}
+                              <text
+                                x={x + (isCompact ? 4 : 8)}
+                                y={y + 36}
+                                fill={isDark ? '#e2e8f0' : '#1e293b'}
+                                fontSize={isCompact ? "8.5" : "10"}
+                                fontWeight="bold"
+                              >
+                                {room.name.length > 18 ? room.name.substring(0, 16) + '..' : room.name}
+                              </text>
+
+                              {/* Capacity */}
+                              <text
+                                x={x + (isCompact ? 4 : 8)}
+                                y={y + h - 12}
+                                fill="#64748b"
+                                fontSize="8.5"
+                                fontWeight="600"
+                              >
+                                👥 {room.capacity}
+                              </text>
+                            </g>
+                          )}
+                        </g>
+                      );
+                    })}
+                  </svg>
                 </div>
 
-                {/* 📊 Floor Footnotes & Mini Stats */}
+                {/* 📊 Bottom summary bar on slab */}
                 <div 
-                  className="px-3.5 py-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[9.5px] font-bold text-slate-500 dark:text-slate-400"
-                  style={{ transform: 'translateZ(6px)' }}
+                  className="px-4 py-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400"
+                  style={{ transform: 'translateZ(8px)' }}
                 >
-                  <span className="text-emerald-700 dark:text-emerald-400">{stats.available} Ruang Kosong</span>
-                  <span className="text-rose-600 dark:text-rose-400">{stats.occupied} Digunakan</span>
-                  <span className="text-slate-500">{stats.total} Total Ruangan</span>
+                  <span className="text-emerald-700 dark:text-emerald-400">
+                    ✦ Sisi Utara: {floor.rooms.filter(r => r.coordinates.y < 250).length} Ruang
+                  </span>
+                  <span className="text-teal-700 dark:text-teal-400">
+                    ✦ Sisi Selatan: {floor.rooms.filter(r => r.coordinates.y >= 250).length} Ruang
+                  </span>
+                  <span className="text-slate-600 dark:text-slate-300">
+                    Total {floor.rooms.length} Ruang & Fasilitas
+                  </span>
                 </div>
 
               </div>
@@ -478,7 +462,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
         <p className="flex items-center gap-2">
           <Leaf className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>
-            <strong>Tip Interaktif:</strong> Klik langsung pada balok lempeng lantai untuk berpindah tingkat, gunakan slider rotasi untuk memutar sudut pandang 3D, atau klik ruangan di dalam sekat untuk melihat rute jalan.
+            <strong>Denah 3D Arsitektur Presisi:</strong> Model 3D ini memetakan seluruh ruangan ({building.shortName}) di sisi Utara & Selatan sesuai cetak biru asli. Ketuk ruangan manapun di model 3D untuk memilih dan melihat rute.
           </span>
         </p>
         <button

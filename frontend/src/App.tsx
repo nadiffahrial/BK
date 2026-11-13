@@ -407,6 +407,7 @@ export const App: React.FC = () => {
             activeFloorNumber={activeFloorNumber}
             onSelectFloor={(num) => setActiveFloorNumber(num)}
             onSelectRoom={(room) => setSelectedRoom(room)}
+            selectedRoom={selectedRoom}
           />
         )}
 
