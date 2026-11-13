@@ -20,7 +20,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenGuide }) => {
                 SmartCampus<span className="text-emerald-600 dark:text-emerald-400">3D</span> • Universitas Siliwangi
               </span>
               <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                Sistem Tata Ruang Gedung LABTEK 1 & FT.1 • Universitas Siliwangi
+                Sistem Tata Ruang Gedung LABKOM 1 & FT.1 • Universitas Siliwangi
               </p>
             </div>
           </div>
@@ -29,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenGuide }) => {
           <div className="flex items-center gap-4 sm:gap-6 text-[11px] text-slate-500">
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              LABTEK 1 & FT.1
+              LABKOM 1 & FT.1
             </span>
             {onOpenGuide && (
               <button
@@ -41,10 +41,13 @@ export const Footer: React.FC<FooterProps> = ({ onOpenGuide }) => {
                 Panduan Pengguna
               </button>
             )}
-            <span className="hidden sm:flex items-center gap-1.5">
+            <a
+              href="mailto:sarpras@unsil.ac.id"
+              className="hidden sm:flex items-center gap-1.5 hover:text-emerald-600 transition-colors"
+            >
               <Mail className="w-3.5 h-3.5 text-emerald-600" />
-              sarpras@kampus.ac.id
-            </span>
+              sarpras@unsil.ac.id
+            </a>
           </div>
 
           {/* Copyright */}

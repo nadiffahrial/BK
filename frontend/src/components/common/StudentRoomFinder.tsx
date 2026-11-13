@@ -274,12 +274,9 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         isSelected 
                           ? 'bg-white/20 text-white' 
-                          : isAvail ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
-                          : isOcc ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
-                          : isRes ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300'
-                          : 'bg-slate-100 text-slate-600'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                       }`}>
-                        {isAvail ? 'Tersedia' : isOcc ? 'Kuliah' : isRes ? 'Reservasi' : 'Servis'}
+                        👥 {room.capacity} Kursi
                       </span>
                       <ArrowRight className={`w-3.5 h-3.5 transition-transform ${
                         isSelected ? 'text-white translate-x-1' : 'text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600'

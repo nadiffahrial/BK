@@ -24,6 +24,7 @@ interface FloorMapSvgProps {
   statusFilter: string;
   activePathRoomId: string | null;
   onTogglePathGuide: (roomId: string) => void;
+  onOpen3dView?: () => void;
 }
 
 export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
@@ -32,7 +33,8 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
   onSelectRoom,
   statusFilter,
   activePathRoomId,
-  onTogglePathGuide
+  onTogglePathGuide,
+  onOpen3dView
 }) => {
   const { 
     deviceState, 
@@ -548,9 +550,19 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
           <span>Denah Arsitektur Resmi {floor.name}. Ketuk ruangan untuk melihat fasilitas dan panduan rute.</span>
         </div>
 
-        {/* Selected Room Quick Action */}
-        {selectedRoom && (
-          <div className="flex items-center gap-2">
+        {/* Quick Action Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {onOpen3dView && (
+            <button
+              onClick={onOpen3dView}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer bg-slate-100 hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200 dark:border-slate-700"
+            >
+              <Box className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Buka Model 3D</span>
+            </button>
+          )}
+
+          {selectedRoom && (
             <button
               onClick={() => {
                 onTogglePathGuide(selectedRoom.id);
@@ -565,8 +577,8 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
               <Navigation className="w-3.5 h-3.5 animate-pulse" />
               <span>{activePathRoomId === selectedRoom.id ? 'Sembunyikan Jalur' : 'Rute IoT GPS ke Ruangan'}</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
       </div>
 

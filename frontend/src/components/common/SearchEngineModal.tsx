@@ -42,23 +42,24 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('smartspace_recent_searches');
-      return saved ? JSON.parse(saved) : ['A-101', 'Lab AI', 'Sidang Skripsi', 'BAAK'];
+      return saved ? JSON.parse(saved) : ['2A', '1A', '2F', '1D', 'Mushola'];
     } catch {
-      return ['A-101', 'Lab AI', 'Sidang Skripsi', 'BAAK'];
+      return ['2A', '1A', '2F', '1D', 'Mushola'];
     }
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Popular search tags for university students
+  // Popular search tags for university students with real active rooms
   const popularTags = [
-    { label: 'A-101 (Kuliah Teori)', q: 'A-101' },
-    { label: 'A-201 (Lab AI)', q: 'A-201' },
-    { label: 'A-204 (Sidang Skripsi)', q: 'A-204' },
-    { label: 'A-104 (Layanan BAAK)', q: 'BAAK' },
-    { label: 'B-201 (Lab Robotika)', q: 'Robotika' },
-    { label: 'Dr. Budi Santoso', q: 'Budi' },
-    { label: 'Algoritma & Pemrograman', q: 'Algoritma' }
+    { label: '2A (Ruang Kuliah Besar)', q: '2A' },
+    { label: '1A (Lab Dasar Pemrograman)', q: '1A' },
+    { label: '2F (Ruang Sidang Skripsi)', q: '2F' },
+    { label: '1D (Lab Jaringan & IoT)', q: '1D' },
+    { label: '2N (Smart Classroom)', q: '2N' },
+    { label: '1L (Smart Hall)', q: '1L' },
+    { label: 'Mushola Kampus', q: 'Mushola' },
+    { label: 'Toilet & Fasilitas', q: 'Toilet' }
   ];
 
   // Auto focus input when modal opens
@@ -329,13 +330,8 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
 
                         {/* Status & Jump Button */}
                         <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                            isAvail ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' :
-                            isOcc ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800' :
-                            isRes ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800' :
-                            'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                          }`}>
-                            {isAvail ? 'Tersedia' : isOcc ? 'Sedang Digunakan' : isRes ? 'Dipesan' : 'Pemeliharaan'}
+                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            👥 {room.capacity} Kursi
                           </span>
 
                           <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer">

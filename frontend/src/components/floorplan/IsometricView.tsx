@@ -29,6 +29,7 @@ interface IsometricViewProps {
   onSelectFloor: (floorNumber: number) => void;
   onSelectRoom: (room: Room) => void;
   selectedRoom?: Room | null;
+  onChangeViewMode?: (mode: '2d' | '3d' | 'list') => void;
 }
 
 export const IsometricView: React.FC<IsometricViewProps> = ({
@@ -36,7 +37,8 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
   activeFloorNumber,
   onSelectFloor,
   onSelectRoom,
-  selectedRoom
+  selectedRoom,
+  onChangeViewMode
 }) => {
   const { isDark } = useTheme();
   const { deviceState, targetRoom: gpsTargetRoom, setTargetRoom } = useGps();
@@ -880,10 +882,13 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
           </span>
         </p>
         <button
-          onClick={() => onSelectFloor(activeFloorNumber)}
-          className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-bold flex items-center gap-1 cursor-pointer"
+          onClick={() => {
+            onSelectFloor(activeFloorNumber);
+            onChangeViewMode?.('2d');
+          }}
+          className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-bold flex items-center gap-1 cursor-pointer transition-colors"
         >
-          <span>Tampilkan Denah 2D Tingkat {activeFloorNumber}</span>
+          <span>Buka Denah 2D Skematik Tingkat {activeFloorNumber}</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>

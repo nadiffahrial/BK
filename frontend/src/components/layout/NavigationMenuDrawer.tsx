@@ -100,9 +100,9 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
 
   const activeBuilding = buildings.find(b => b.id === activeBuildingId) || buildings[0];
   const allRoomsInActiveBuilding = activeBuilding.floors.flatMap(f => f.rooms);
-  const availableRooms = allRoomsInActiveBuilding.filter(r => r.status === 'available').length;
-  const occupiedRooms = allRoomsInActiveBuilding.filter(r => r.status === 'occupied').length;
-  const reservedRooms = allRoomsInActiveBuilding.filter(r => r.status === 'reserved').length;
+  const classroomRooms = allRoomsInActiveBuilding.filter(r => r.type === 'classroom' || r.type === 'auditorium').length;
+  const labRooms = allRoomsInActiveBuilding.filter(r => r.type === 'laboratory').length;
+  const facilityRooms = allRoomsInActiveBuilding.filter(r => r.type === 'facility').length;
 
   const searchResults = searchQuery.trim().length > 1
     ? buildings.flatMap(b =>
@@ -449,17 +449,17 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3">
-                <div className="p-2 rounded-xl bg-white border border-emerald-100 shadow-xs">
-                  <div className="text-emerald-700 font-extrabold text-sm">{availableRooms}</div>
-                  <div className="text-[10px] text-slate-500 font-medium">Kosong</div>
+                <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-100 dark:border-slate-700 shadow-xs">
+                  <div className="text-emerald-700 dark:text-emerald-400 font-extrabold text-sm">{classroomRooms}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Ruang Kuliah</div>
                 </div>
-                <div className="p-2 rounded-xl bg-white border border-rose-100 shadow-xs">
-                  <div className="text-rose-600 font-extrabold text-sm">{occupiedRooms}</div>
-                  <div className="text-[10px] text-slate-500 font-medium">Terisi</div>
+                <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-teal-100 dark:border-slate-700 shadow-xs">
+                  <div className="text-teal-700 dark:text-teal-400 font-extrabold text-sm">{labRooms}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Laboratorium</div>
                 </div>
-                <div className="p-2 rounded-xl bg-white border border-amber-100 shadow-xs">
-                  <div className="text-amber-600 font-extrabold text-sm">{reservedRooms}</div>
-                  <div className="text-[10px] text-slate-500 font-medium">Reservasi</div>
+                <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
+                  <div className="text-slate-700 dark:text-slate-300 font-extrabold text-sm">{facilityRooms}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Fasilitas & WC</div>
                 </div>
               </div>
             </div>

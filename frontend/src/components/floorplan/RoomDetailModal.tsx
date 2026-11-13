@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Room, RoomStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useGps } from '../../context/GpsContext';
+import { BookingModal } from './BookingModal';
 import { 
   X, 
   Users, 
@@ -39,6 +40,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { setTargetRoom } = useGps();
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   if (!room) return null;
 
   const isAdmin = user?.role === 'admin';
@@ -232,8 +234,8 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                       {fac.spec && <div className="text-[10px] text-slate-500">{fac.spec}</div>}
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded">
-                    Tersedia
+                  <span className="text-[10px] font-mono text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                    Siap Pakai
                   </span>
                 </div>
               ))}
@@ -289,6 +291,15 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               <Navigation className="w-4 h-4 animate-pulse" />
               <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan (IoT GPS)'}</span>
             </button>
+
+            {/* Tombol Ajukan Reservasi Ruangan */}
+            <button
+              onClick={() => setIsBookingOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-600/25 active:scale-95"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Ajukan Peminjaman Ruang</span>
+            </button>
           </div>
 
           <button
@@ -300,6 +311,17 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         </div>
 
       </div>
+
+      {/* Modal Booking / Reservasi Ruangan Digital */}
+      {isBookingOpen && (
+        <BookingModal
+          room={room}
+          onClose={() => setIsBookingOpen(false)}
+          onBookingSuccess={() => {
+            setIsBookingOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

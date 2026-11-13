@@ -90,7 +90,7 @@ export const IotGpsControlBar: React.FC = () => {
                 </h4>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
-                <span>{targetRoom.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'}</span>
+                <span>{targetRoom.buildingId === 'gedung-a' ? 'Gedung LABKOM 1' : 'Gedung FT.1'}</span>
                 <span>•</span>
                 <span>Tingkat {targetRoom.floorNumber}</span>
                 <span>•</span>

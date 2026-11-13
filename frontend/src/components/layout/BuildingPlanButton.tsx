@@ -340,7 +340,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
             <span>Denah 3D</span>
           </button>
           <span className="text-[10.5px] text-slate-400 dark:text-slate-500 font-medium hidden sm:inline">
-            • {availableRooms} Kosong
+            • {allRooms.length} Ruangan
           </span>
         </div>
 

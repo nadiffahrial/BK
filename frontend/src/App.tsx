@@ -323,6 +323,7 @@ export const App: React.FC = () => {
               statusFilter={statusFilter}
               activePathRoomId={activePathRoomId}
               onTogglePathGuide={handleTogglePathGuide}
+              onOpen3dView={() => handleChangeViewMode('3d')}
             />
           </div>
         )}
@@ -334,6 +335,7 @@ export const App: React.FC = () => {
             onSelectFloor={(num) => setActiveFloorNumber(num)}
             onSelectRoom={(room) => setSelectedRoom(room)}
             selectedRoom={selectedRoom}
+            onChangeViewMode={handleChangeViewMode}
           />
         )}
 
