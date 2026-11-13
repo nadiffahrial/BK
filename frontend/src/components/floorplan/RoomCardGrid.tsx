@@ -37,18 +37,6 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
       return a.code.localeCompare(b.code);
     });
 
-  const getStatusBadge = (status: RoomStatus) => {
-    switch (status) {
-      case 'available':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Tersedia</span>;
-      case 'occupied':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">Digunakan</span>;
-      case 'reserved':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">Reservasi</span>;
-      case 'maintenance':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300">Servis</span>;
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -111,12 +99,15 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
               }`}
             >
               <div>
-                {/* Top Code & Status */}
+                {/* Top Code & Capacity */}
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
                     {room.code}
                   </span>
-                  {getStatusBadge(room.status)}
+                  <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{room.capacity} Kursi</span>
+                  </span>
                 </div>
 
                 {/* Title & Description */}

@@ -542,25 +542,10 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
       {/* Floor Plan Legend & Quick Navigation Action */}
       <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs">
         
-        {/* Legend */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <span className="text-slate-500 font-bold">Legenda Warna:</span>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <span className="text-slate-700 font-medium">Tersedia</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-            <span className="text-slate-700 font-medium">Sedang Digunakan</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-            <span className="text-slate-700 font-medium">Reservasi Terjadwal</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-            <span className="text-slate-700 font-medium">Pemeliharaan / Servis</span>
-          </div>
+        {/* Architecture Info */}
+        <div className="flex items-center gap-2 text-slate-500 font-medium">
+          <Leaf className="w-4 h-4 text-emerald-600" />
+          <span>Denah Arsitektur Resmi {floor.name}. Ketuk ruangan untuk melihat fasilitas dan panduan rute.</span>
         </div>
 
         {/* Selected Room Quick Action */}

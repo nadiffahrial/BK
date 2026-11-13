@@ -42,55 +42,20 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
   const { deviceState, targetRoom: gpsTargetRoom, setTargetRoom } = useGps();
 
   const [isExploded, setIsExploded] = useState<boolean>(true);
-  const [tiltAngle, setTiltAngle] = useState<number>(56);
-  const [rotateAngle, setRotateAngle] = useState<number>(-28);
+  const [tiltAngle, setTiltAngle] = useState<number>(30); // Default ke sudut samping yang nyaman
+  const [rotateAngle, setRotateAngle] = useState<number>(-22);
   const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
 
-  const getFloorStats = (floor: Floor) => {
-    const total = floor.rooms.length;
-    const occupied = floor.rooms.filter(r => r.status === 'occupied').length;
-    const available = floor.rooms.filter(r => r.status === 'available').length;
-    const reserved = floor.rooms.filter(r => r.status === 'reserved').length;
-    const maintenance = floor.rooms.filter(r => r.status === 'maintenance').length;
-    return { total, occupied, available, reserved, maintenance };
-  };
+  // Vertical gap between Floor 1 and Floor 2
+  const zGap = isExploded ? 210 : 110;
 
-  const getStatusFill = (status: Room['status'], isSelected: boolean, isHovered: boolean) => {
-    if (isSelected) return isDark ? 'rgba(5, 150, 105, 0.45)' : 'rgba(16, 185, 129, 0.35)';
-    if (isHovered) return isDark ? 'rgba(5, 150, 105, 0.3)' : 'rgba(16, 185, 129, 0.2)';
-    switch (status) {
-      case 'available':
-        return isDark ? 'rgba(16, 185, 129, 0.16)' : '#f0fdf4';
-      case 'occupied':
-        return isDark ? 'rgba(244, 63, 94, 0.22)' : '#fff1f2';
-      case 'reserved':
-        return isDark ? 'rgba(245, 158, 11, 0.2)' : '#fffbeb';
-      case 'maintenance':
-        return isDark ? 'rgba(148, 163, 184, 0.15)' : '#f8fafc';
-      default:
-        return isDark ? '#1e293b' : '#ffffff';
-    }
-  };
+  // Extract all staircases from the building
+  const stairRooms = (building.floors && building.floors[0] && building.floors[0].rooms)
+    ? building.floors[0].rooms.filter(r => r.code === 'TANGGA')
+    : [];
 
-  const getStatusStroke = (status: Room['status'], isSelected: boolean, isHovered: boolean) => {
-    if (isSelected) return '#059669';
-    if (isHovered) return '#10b981';
-    switch (status) {
-      case 'available':
-        return '#10b981';
-      case 'occupied':
-        return '#f43f5e';
-      case 'reserved':
-        return '#f59e0b';
-      case 'maintenance':
-        return '#94a3b8';
-      default:
-        return '#cbd5e1';
-    }
-  };
-
-  // Helper: Pemisahan dan penulisan nama ruangan yang jelas, tegas, dan mudah dibaca
+  // Helper: Pemisahan dan penulisan nama ruangan yang jelas, tegas, dan mudah dibaca (tanpa status)
   const getRoomDisplayNames = (room: Room, isCompact: boolean) => {
     if (room.code === 'TANGGA') return { line1: 'TANGGA', line2: '' };
     if (room.code === 'WC (LK)') return { line1: 'Toilet Pria', line2: 'WC (LK)' };
@@ -136,9 +101,11 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
     };
   };
 
-  // Helper: Visualisasi orang / mahasiswa & dosen di dalam ruangan yang sedang terisi (occupied)
-  const renderPeopleInsideRoom = (room: Room, x: number, y: number, w: number, h: number, isOccupied: boolean) => {
-    if (!isOccupied) return null;
+  // Helper: Visualisasi orang / mahasiswa & dosen di dalam ruangan kuliah / lab
+  const renderPeopleInsideRoom = (room: Room, x: number, y: number, w: number, h: number) => {
+    if (room.code === 'TANGGA' || room.code.startsWith('WC') || room.code === 'WUDHU' || room.code === 'R.panel') {
+      return null;
+    }
 
     const isLarge = w >= 115 && h >= 140;
     const lecturerX = x + w - 24;
@@ -152,7 +119,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
     const stepX = isLarge ? 26 : 22;
     const stepY = isLarge ? 28 : 22;
 
-    const colors = ['#2563eb', '#059669', '#d97706', '#7c3aed', '#e11d48', '#0891b2'];
+    const colors = ['#2563eb', '#059669', '#d97706', '#7c3aed', '#0284c7', '#0891b2'];
 
     for (let i = 0; i < studentCount; i++) {
       const col = i % (isLarge ? 3 : 2);
@@ -164,19 +131,13 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
       }
     }
 
-    const currentOccupants = room.currentOccupancy || Math.round(room.capacity * 0.75);
-
     return (
       <g className="room-people-group" pointerEvents="none">
         {/* 👨‍🏫 Dosen / Pemateri di Depan Ruangan */}
         <g className="lecturer-avatar" transform={`translate(${lecturerX}, ${lecturerY})`}>
-          {/* Meja / Podium Dosen */}
           <rect x="-6" y="6" width="12" height="4" rx="1.5" fill="#3b82f6" opacity="0.85" />
-          {/* Kepala Dosen */}
           <circle cx="0" cy="0" r="3.2" fill="#1e3a8a" />
-          {/* Tubuh Dosen */}
           <path d="M -4 7 L -2 3.5 Q 0 3 2 3.5 L 4 7 Z" fill="#2563eb" />
-          {/* Label Dosen */}
           <rect x="-9" y="-9" width="18" height="6.5" rx="2" fill="#0f172a" opacity="0.9" />
           <text x="0" y="-4" textAnchor="middle" fill="#93c5fd" fontSize="5" fontWeight="bold" fontFamily="sans-serif">
             DOSEN
@@ -186,38 +147,11 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
         {/* 👨‍🎓 Mahasiswa Duduk di Meja Kelas */}
         {students.map((st, idx) => (
           <g key={idx} className="student-avatar" transform={`translate(${st.sx}, ${st.sy})`}>
-            {/* Meja Belajar */}
             <rect x="-7" y="5" width="14" height="4" rx="1.2" fill="#94a3b8" opacity="0.75" />
-            {/* Kepala Mahasiswa */}
             <circle cx="0" cy="0" r="2.8" fill={st.color} />
-            {/* Tubuh / Bahu */}
             <path d="M -3.5 6 L -2 3 Q 0 2.5 2 3 L 3.5 6 Z" fill={st.color} />
           </g>
         ))}
-
-        {/* 🔴 Badge Indikator Jumlah Orang Aktif di Dalam Ruangan */}
-        <g transform={`translate(${x + (w / 2) - 34}, ${y + h - 18})`}>
-          <rect 
-            width="68" 
-            height="14" 
-            rx="7" 
-            fill="rgba(225, 29, 72, 0.95)" 
-            filter="drop-shadow(0 2px 4px rgba(225,29,72,0.3))" 
-          />
-          <circle cx="8" cy="7" r="2.5" fill="#ffffff" className="animate-ping" />
-          <circle cx="8" cy="7" r="2.2" fill="#ffffff" />
-          <text 
-            x="38" 
-            y="10.5" 
-            textAnchor="middle" 
-            fill="#ffffff" 
-            fontSize="7.5" 
-            fontWeight="bold" 
-            fontFamily="monospace"
-          >
-            {currentOccupants} ORANG
-          </text>
-        </g>
       </g>
     );
   };
@@ -240,10 +174,6 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
           6% { opacity: 1; }
           94% { opacity: 1; }
           100% { transform: translateX(80px); opacity: 0; }
-        }
-        @keyframes userRadarPulse {
-          0% { r: 6px; opacity: 0.9; }
-          100% { r: 24px; opacity: 0; }
         }
         .walking-student-east {
           animation: walkEast 18s linear infinite;
@@ -273,11 +203,11 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                 </h3>
                 <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live Simulasi Manusia
+                  Tangga 3D Nyata Menghubungkan Lantai
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Klik lantai manapun untuk mengangkat lantai tersebut ke depan dengan elevasi 3D dinamis
+                Tangga 3D fisik menghubungkan Lantai 1 dan Lantai 2 sesuai cetak biru. Gunakan mode POV Samping untuk melihat struktur tangga dari sisi samping.
               </p>
             </div>
           </div>
@@ -285,8 +215,20 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
 
         {/* 3D Camera & Presentation Presets */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick Camera Angles */}
+          {/* Quick Camera Angles - Termasuk POV Samping Sesuai Permintaan User */}
           <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+            <button
+              onClick={() => { setTiltAngle(26); setRotateAngle(-22); }}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
+                tiltAngle === 26 && rotateAngle === -22
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+              }`}
+              title="Sudut Pandang Samping Nyata (Melihat Tangga 3D Menghubungkan Lantai)"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>POV Samping (Tangga 3D)</span>
+            </button>
             <button
               onClick={() => { setTiltAngle(56); setRotateAngle(-28); }}
               className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
@@ -297,17 +239,6 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
               title="Sudut Pandang Isometrik Standar"
             >
               📐 Isometrik
-            </button>
-            <button
-              onClick={() => { setTiltAngle(40); setRotateAngle(-15); }}
-              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                tiltAngle === 40 && rotateAngle === -15
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Tampak Depan Miring"
-            >
-              🏢 Depan
             </button>
             <button
               onClick={() => { setTiltAngle(72); setRotateAngle(0); }}
@@ -335,6 +266,20 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
             <span>{isExploded ? 'Mode Pisah 3D' : 'Mode Rapat'}</span>
           </button>
 
+          {/* Slider Kemiringan / Tilt */}
+          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+            <span className="text-[11px] font-medium">Kemiringan:</span>
+            <input
+              type="range"
+              min="15"
+              max="75"
+              value={tiltAngle}
+              onChange={(e) => setTiltAngle(Number(e.target.value))}
+              className="w-16 accent-emerald-600 cursor-pointer"
+            />
+            <span className="font-mono text-[10px] text-slate-400 w-6">{tiltAngle}°</span>
+          </div>
+
           {/* Slider Rotasi */}
           <div className="hidden md:flex items-center gap-2 px-2.5 py-1 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
             <span className="text-[11px] font-medium">Rotasi:</span>
@@ -351,17 +296,16 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
         </div>
       </div>
 
-      {/* 2. 3D Staged Canvas with Dynamic Elevation Stacking */}
+      {/* 2. 3D Staged Canvas with Dynamic Elevation & Physical 3D Stairs */}
       <div className="relative min-h-[660px] sm:min-h-[720px] flex items-center justify-center overflow-hidden py-16 bg-gradient-to-b from-emerald-50/40 via-slate-50/50 to-white dark:from-slate-900/90 dark:via-slate-950 dark:to-slate-900/90 rounded-2xl border border-slate-100 dark:border-slate-800 transition-colors">
         
         {/* Ambient atmospheric backdrop */}
         <div className="absolute w-[650px] h-[650px] bg-emerald-400/15 rounded-full blur-[140px] pointer-events-none" />
 
-        {/* 🏷️ Floating Left Tabs for Direct One-Click Floor Elevation (Sesuai Desain Foto) */}
+        {/* 🏷️ Floating Left Tabs for Direct One-Click Floor Selection (Tanpa Status 'Kosong') */}
         <div className="absolute top-6 left-6 z-40 flex flex-col gap-2.5 pointer-events-auto">
           {building.floors.map((fl) => {
             const isFlActive = fl.floorNumber === activeFloorNumber;
-            const stats = getFloorStats(fl);
             return (
               <button
                 key={fl.floorNumber}
@@ -375,9 +319,9 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                 <span className={`w-2 h-2 rounded-full ${isFlActive ? 'bg-white animate-ping' : 'bg-slate-400'}`} />
                 <span>Tingkat {fl.floorNumber}</span>
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
-                  isFlActive ? 'bg-emerald-700 text-white' : 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
+                  isFlActive ? 'bg-emerald-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                 }`}>
-                  {stats.available} kosong
+                  {fl.rooms.length} Ruang
                 </span>
                 {isFlActive && <span className="text-[10px] ml-1">▲ Timbul</span>}
               </button>
@@ -395,27 +339,170 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
             height: '380px'
           }}
         >
+
           {/* ============================================================== */}
-          {/* 🏢 RENDERING LEMPENG LANTAI 3D DINAMIS (TIMBUL HANYA YG DIKLIK) */}
+          {/* 🪜 3D PHYSICAL STAIRWAYS (TANGGA 3D MENYAMBUNGKAN LANTAI)     */}
+          {/* ============================================================== */}
+          {stairRooms.map((stair) => {
+            // Skala koordinat SVG (1100 x 500) ke wadah 3D (820 x 380)
+            const posX = (stair.coordinates.x / 1100) * 820;
+            const posY = (stair.coordinates.y / 500) * 380;
+            const posW = (stair.coordinates.w / 1100) * 820;
+            const posH = (stair.coordinates.h / 500) * 380;
+
+            const stepsCount = 12;
+            const hypot = Math.sqrt(posH * posH + zGap * zGap);
+            const slopeAngle = Math.atan2(zGap, posH) * (180 / Math.PI);
+
+            return (
+              <div
+                key={`3d-staircase-${stair.id}`}
+                className="absolute"
+                style={{
+                  left: `${posX}px`,
+                  top: `${posY}px`,
+                  width: `${posW}px`,
+                  height: `${posH}px`,
+                  transformStyle: 'preserve-3d',
+                  pointerEvents: 'none',
+                  zIndex: 25
+                }}
+              >
+                {/* 12 Anak Tangga 3D Bertingkat Menghubungkan Lantai 1 ke Lantai 2 */}
+                {Array.from({ length: stepsCount }).map((_, stepIdx) => {
+                  const progress = stepIdx / stepsCount;
+                  const stepZ = progress * zGap;
+                  const stepY = progress * posH;
+                  const treadDepth = posH / stepsCount;
+                  const riserHeight = zGap / stepsCount;
+
+                  return (
+                    <React.Fragment key={stepIdx}>
+                      {/* Tapak Datar Anak Tangga (Horizontal Tread) */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: `${stepY}px`,
+                          width: `${posW}px`,
+                          height: `${treadDepth + 1.5}px`,
+                          transform: `translateZ(${stepZ}px)`,
+                          transformStyle: 'preserve-3d',
+                          backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                          border: '1px solid #10b981',
+                          borderBottom: '2.5px solid #059669',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.22)',
+                        }}
+                      >
+                        {/* Garis anti-selip hijau menyala */}
+                        <div className="w-full h-[1.8px] bg-emerald-400 mt-[2px]" />
+                      </div>
+
+                      {/* Tanjakan Tegak Anak Tangga (Vertical Riser) */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: `${stepY + treadDepth}px`,
+                          width: `${posW}px`,
+                          height: `${riserHeight}px`,
+                          transformOrigin: 'top left',
+                          transform: `translateZ(${stepZ}px) rotateX(-90deg)`,
+                          backgroundColor: isDark ? '#0b1120' : '#cbd5e1',
+                          borderLeft: '1.5px solid #059669',
+                          borderRight: '1.5px solid #059669',
+                          boxShadow: 'inset 0 0 5px rgba(0,0,0,0.35)',
+                        }}
+                      />
+                    </React.Fragment>
+                  );
+                })}
+
+                {/* Railing Kaca & Stainless Steel Sisi Kiri Tangga (Tampak Jelas dari POV Samping) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '-2px',
+                    top: 0,
+                    width: '32px',
+                    height: `${hypot}px`,
+                    transformOrigin: 'top left',
+                    transform: `rotateX(-${slopeAngle}deg) rotateY(90deg)`,
+                    background: 'linear-gradient(to right, rgba(16, 185, 129, 0.35), rgba(6, 182, 212, 0.2))',
+                    borderTop: '3.5px solid #10b981',
+                    borderBottom: '1.5px solid rgba(16,185,129,0.4)',
+                    boxShadow: '0 0 12px rgba(16,185,129,0.4)',
+                  }}
+                >
+                  {/* Tiang Baluster Railing */}
+                  {[0.2, 0.4, 0.6, 0.8].map((pos, pIdx) => (
+                    <div
+                      key={pIdx}
+                      className="absolute w-[2px] h-full bg-emerald-400"
+                      style={{ top: `${pos * 100}%` }}
+                    />
+                  ))}
+                </div>
+
+                {/* Railing Kaca & Stainless Steel Sisi Kanan Tangga */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${posW}px`,
+                    top: 0,
+                    width: '32px',
+                    height: `${hypot}px`,
+                    transformOrigin: 'top left',
+                    transform: `rotateX(-${slopeAngle}deg) rotateY(90deg)`,
+                    background: 'linear-gradient(to right, rgba(16, 185, 129, 0.35), rgba(6, 182, 212, 0.2))',
+                    borderTop: '3.5px solid #10b981',
+                    borderBottom: '1.5px solid rgba(16,185,129,0.4)',
+                    boxShadow: '0 0 12px rgba(16,185,129,0.4)',
+                  }}
+                >
+                  {[0.2, 0.4, 0.6, 0.8].map((pos, pIdx) => (
+                    <div
+                      key={pIdx}
+                      className="absolute w-[2px] h-full bg-emerald-400"
+                      style={{ top: `${pos * 100}%` }}
+                    />
+                  ))}
+                </div>
+
+                {/* Tag Tangga 3D Menghubungkan Lt.1 & Lt.2 */}
+                <div
+                  className="absolute hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono text-[7px] font-extrabold shadow-md"
+                  style={{
+                    left: `${posW / 2 - 25}px`,
+                    top: `${posH / 2}px`,
+                    transform: `translateZ(${zGap / 2}px)`,
+                  }}
+                >
+                  <span>🪜 TANGGA 3D</span>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* ============================================================== */}
+          {/* 🏢 RENDERING LEMPENG LANTAI 3D                                 */}
           {/* ============================================================== */}
           {building.floors.map((floor) => {
             const isSelected = floor.floorNumber === activeFloorNumber;
             const isHovered = hoveredFloor === floor.floorNumber;
-            const stats = getFloorStats(floor);
+            const isUpperFloor = floor.floorNumber === 2;
 
-            // LOGIKA ELEVASI 3D:
-            // Hanya lantai yang dipilih (diklik) yang TIMBUL TINGGI (translateZ 240px / 260px)
-            // Lantai yang tidak dipilih turun ke dasar (translateZ 0px / -20px) dan meredup
-            let zElevation = 0;
-            if (isSelected) {
-              zElevation = isExploded ? 240 : 130;
-            } else {
-              zElevation = isExploded ? 0 : -20;
-              if (isHovered) zElevation += 35; // Memberi efek melayang saat mouse mendekat
+            // Ketinggian vertikal fisik: Lantai 1 di dasar (0px), Lantai 2 di atas (zGap px)
+            // Lantai yang dipilih mendapat sorotan 100% dan sedikit pembesaran
+            const zDistance = isUpperFloor ? zGap : 0;
+            const scale = isSelected ? 1.01 : 0.98;
+            
+            // Opasitas: jika lantai 1 aktif, lantai 2 menjadi semi-transparan sehingga tangga terlihat jelas
+            let opacity = 1;
+            if (!isSelected) {
+              opacity = isUpperFloor ? (isDark ? 0.35 : 0.4) : (isDark ? 0.6 : 0.65);
+              if (isHovered) opacity = 0.85;
             }
-
-            const scale = isSelected ? 1.02 : isHovered ? 0.99 : 0.96;
-            const opacity = isSelected ? 1 : isHovered ? 0.8 : (isDark ? 0.45 : 0.38);
 
             return (
               <div
@@ -431,17 +518,17 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                     : 'border border-slate-300 dark:border-slate-700 shadow-[0_10px_25px_rgba(0,0,0,0.08)]'
                 }`}
                 style={{
-                  transform: `translateZ(${zElevation}px) scale(${scale})`,
+                  transform: `translateZ(${zDistance}px) scale(${scale})`,
                   transformStyle: 'preserve-3d',
                   opacity,
                   zIndex: isSelected ? 30 : 10,
                   backgroundColor: isDark
                     ? isSelected
                       ? 'rgba(15, 23, 42, 0.98)'
-                      : 'rgba(15, 23, 42, 0.90)'
+                      : 'rgba(15, 23, 42, 0.85)'
                     : isSelected
                     ? 'rgba(255, 255, 255, 0.98)'
-                    : 'rgba(255, 255, 255, 0.92)',
+                    : 'rgba(255, 255, 255, 0.88)',
                   backdropFilter: 'blur(14px)',
                 }}
               >
@@ -462,11 +549,11 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                   <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                     isSelected ? 'bg-emerald-700 text-white' : 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80'
                   }`}>
-                    {stats.available} kosong
+                    {floor.rooms.length} Ruang
                   </span>
                 </div>
 
-                {/* 📋 Header Atas Lempeng Lantai 3D */}
+                {/* 📋 Header Atas Lempeng Lantai 3D (Bersih Tanpa Status Ruangan) */}
                 <div 
                   className={`px-4 py-2 border-b flex items-center justify-between transition-colors ${
                     isSelected
@@ -488,22 +575,21 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                     </h4>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-extrabold flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      {stats.available} Tersedia • {stats.occupied} Digunakan
+                    <span className="text-[10.5px] text-emerald-800 dark:text-emerald-300 font-extrabold">
+                      Total {floor.rooms.length} Ruangan & Fasilitas
                     </span>
                     <span className={`text-[9.5px] font-mono font-extrabold px-2.5 py-0.5 rounded-full transition-all ${
                       isSelected 
                         ? 'bg-emerald-600 text-white shadow-xs' 
                         : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}>
-                      {isSelected ? 'Lantai Aktif (Timbul)' : 'Klik untuk Angkat'}
+                      {isSelected ? 'Lantai Aktif' : 'Pilih Lantai'}
                     </span>
                   </div>
                 </div>
 
                 {/* ============================================================== */}
-                {/* 🗺️ SVG CETAK BIRU ARSITEKTUR & SIMULASI ORANG / MANUSIA       */}
+                {/* 🗺️ SVG CETAK BIRU ARSITEKTUR & SIMULASI ORANG                  */}
                 {/* ============================================================== */}
                 <div 
                   className="p-2 relative w-full h-[320px]"
@@ -561,26 +647,17 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                       KORIDOR TENGAH LANTAI {floor.floorNumber}
                     </text>
 
-                    {/* 🚶‍♂️ Simulasi Orang Berjalan di Koridor Tengah (Hanya di Lantai Aktif) */}
+                    {/* 🚶‍♂️ Simulasi Orang Berjalan di Koridor Tengah */}
                     {isSelected && (
                       <g className="corridor-walkers" pointerEvents="none">
-                        {/* Mahasiswa 1 Berjalan ke Arah Timur */}
                         <g className="walking-student-east">
-                          {/* Kepala */}
                           <circle cx="0" cy="245" r="3.2" fill="#059669" />
-                          {/* Tubuh */}
                           <path d="M -3 252 L -1.5 248 Q 0 247 1.5 248 L 3 252 Z" fill="#047857" />
-                          {/* Ransel / Tas Mahasiswa */}
                           <rect x="-4.5" y="247" width="2.2" height="3.8" rx="0.8" fill="#f59e0b" />
                         </g>
-
-                        {/* Mahasiswa 2 Berjalan ke Arah Barat */}
                         <g className="walking-student-west">
-                          {/* Kepala */}
                           <circle cx="0" cy="255" r="3.2" fill="#0284c7" />
-                          {/* Tubuh */}
                           <path d="M -3 262 L -1.5 258 Q 0 257 1.5 258 L 3 262 Z" fill="#0369a1" />
-                          {/* Ransel */}
                           <rect x="2.5" y="257" width="2.2" height="3.8" rx="0.8" fill="#e11d48" />
                         </g>
                       </g>
@@ -604,7 +681,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                     )}
 
                     {/* ============================================================== */}
-                    {/* 🚪 DAFTAR RUANGAN LENGKAP & TEKS NAMA RUANGAN JELAS           */}
+                    {/* 🚪 DAFTAR RUANGAN LENGKAP (BERSIH DARI STATUS WARNA RUANGAN)   */}
                     {/* ============================================================== */}
                     {floor.rooms.map((room) => {
                       const { x, y, w, h, doorPosition } = room.coordinates;
@@ -612,8 +689,20 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                       const isRoomHovered = hoveredRoom?.id === room.id;
                       const isStairs = room.code === 'TANGGA';
                       const isCompact = w < 85 || h < 110;
-                      const isOccupied = room.status === 'occupied';
                       const displayNames = getRoomDisplayNames(room, isCompact);
+
+                      // Desain arsitektural netral dan elegan tanpa status 'Tersedia'/'Digunakan'
+                      const roomFill = isRoomSelected
+                        ? (isDark ? 'rgba(5, 150, 105, 0.45)' : '#d1fae5')
+                        : isRoomHovered
+                        ? (isDark ? 'rgba(5, 150, 105, 0.25)' : '#ecfdf5')
+                        : (isDark ? '#1e293b' : '#f8fafc');
+
+                      const roomStroke = isRoomSelected
+                        ? '#059669'
+                        : isRoomHovered
+                        ? '#10b981'
+                        : (isDark ? '#334155' : '#cbd5e1');
 
                       return (
                         <g
@@ -635,8 +724,8 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                             width={w}
                             height={h}
                             rx="8"
-                            fill={getStatusFill(room.status, isRoomSelected, isRoomHovered)}
-                            stroke={getStatusStroke(room.status, isRoomSelected, isRoomHovered)}
+                            fill={roomFill}
+                            stroke={roomStroke}
                             strokeWidth={isRoomSelected ? '3.5' : isRoomHovered ? '2.5' : '1.8'}
                             filter={isRoomSelected ? 'url(#emerald-glow-3d)' : undefined}
                           />
@@ -656,18 +745,18 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                           )}
 
                           {isStairs ? (
-                            /* 🪜 Gambar Tangga Arsitektural dengan Cross Chevron */
+                            /* 🪜 Gambar Tangga Arsitektural dengan Cross Chevron & Lubang Void */
                             <g pointerEvents="none">
                               <line x1={x + 4} y1={y + 4} x2={x + w - 4} y2={y + h - 4} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="4 2" />
                               <line x1={x + w - 4} y1={y + 4} x2={x + 4} y2={y + h - 4} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="4 2" />
                               <path d={`M ${x + w/2 - 12} ${y + h/2 + 8} L ${x + w/2} ${y + h/2 - 6} L ${x + w/2 + 12} ${y + h/2 + 8}`} fill="none" stroke="#059669" strokeWidth="2.8" />
-                              <rect x={x + w/2 - 26} y={y + h - 22} width="52" height="16" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
-                              <text x={x + w / 2} y={y + h - 10} textAnchor="middle" fill="#047857" fontSize="9.5" fontWeight="800" fontFamily="monospace">
-                                TANGGA
+                              <rect x={x + w/2 - 32} y={y + h - 22} width="64" height="16" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.2" />
+                              <text x={x + w / 2} y={y + h - 10} textAnchor="middle" fill="#047857" fontSize="9" fontWeight="800" fontFamily="monospace">
+                                {isUpperFloor ? 'VOID TANGGA' : 'TANGGA 3D'}
                               </text>
                             </g>
                           ) : (
-                            /* 🏫 Konten Ruangan: Badge Kode, Nama Jelas, Orang, dan Kapasitas */
+                            /* 🏫 Konten Ruangan: Badge Kode, Nama Jelas, Orang, dan Kapasitas (Bersih Tanpa Status) */
                             <g pointerEvents="none">
                               
                               {/* 🏷️ Badge Kode Ruangan (Tegas & Kontras Tinggi) */}
@@ -678,7 +767,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                                 height="20"
                                 rx="5"
                                 fill={isDark ? '#0f172a' : '#ffffff'}
-                                stroke={getStatusStroke(room.status, isRoomSelected, isRoomHovered)}
+                                stroke={roomStroke}
                                 strokeWidth="1.5"
                               />
                               <text
@@ -692,15 +781,6 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                               >
                                 {room.code}
                               </text>
-
-                              {/* Dot Status Warna */}
-                              <circle
-                                cx={x + w - (isCompact ? 8 : 12)}
-                                cy={y + 15}
-                                r="4"
-                                fill={getStatusStroke(room.status, false, false)}
-                                className={isOccupied ? 'animate-pulse' : ''}
-                              />
 
                               {/* 📝 Penulisan Nama Ruangan yang Jelas & Terbaca (2 Baris Rapi) */}
                               <text
@@ -727,21 +807,19 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                                 )}
                               </text>
 
-                              {/* 👥 Simulasi Orang di Dalam Ruangan (Hanya Muncul saat Ruang Terisi) */}
-                              {renderPeopleInsideRoom(room, x, y, w, h, isOccupied)}
+                              {/* 👥 Simulasi Orang di Dalam Ruangan Kuliah / Lab */}
+                              {renderPeopleInsideRoom(room, x, y, w, h)}
 
                               {/* Kapasitas Kursi di Pojok Bawah Ruang */}
-                              {!isOccupied && (
-                                <text
-                                  x={x + (isCompact ? 4 : 8)}
-                                  y={y + h - 10}
-                                  fill="#64748b"
-                                  fontSize="9"
-                                  fontWeight="700"
-                                >
-                                  👥 {room.capacity} Kursi
-                                </text>
-                              )}
+                              <text
+                                x={x + (isCompact ? 4 : 8)}
+                                y={y + h - 10}
+                                fill="#64748b"
+                                fontSize="9"
+                                fontWeight="700"
+                              >
+                                👥 {room.capacity} Kursi
+                              </text>
 
                             </g>
                           )}
@@ -776,7 +854,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
           })}
         </div>
 
-        {/* 💡 Tooltip Preview Ruangan Mengambang Saat Hover di Mode 3D */}
+        {/* 💡 Tooltip Preview Ruangan Mengambang Saat Hover di Mode 3D (Bersih Tanpa Status) */}
         {hoveredRoom && (
           <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-emerald-500/40 flex items-center gap-3 animate-fade-in pointer-events-none">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -785,12 +863,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                 {hoveredRoom.code} • {hoveredRoom.name}
               </p>
               <p className="text-[10px] text-slate-300">
-                {hoveredRoom.status === 'occupied' 
-                  ? `🔴 Sedang Kuliah: ${hoveredRoom.currentOccupancy || 30} Orang (${hoveredRoom.currentActivity?.title || 'Perkuliahan Aktif'})`
-                  : hoveredRoom.status === 'available'
-                  ? `🟢 Tersedia: Kapasitas ${hoveredRoom.capacity} Kursi`
-                  : `🟡 Status: ${hoveredRoom.status}`
-                } • Klik untuk Navigasi Rute
+                Kapasitas {hoveredRoom.capacity} Kursi • {hoveredRoom.description || 'Ruangan Fakultas'} • Klik untuk Navigasi Rute
               </p>
             </div>
           </div>
@@ -803,7 +876,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
         <p className="flex items-center gap-2">
           <Leaf className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>
-            <strong>Denah 3D Interaktif Cerdas:</strong> Nama ruangan ditulis dalam 2 baris tegas dan jelas. Ruangan yang sedang terisi menampilkan dosen di depan kelas dan simulasi mahasiswa. Klik tombol lantai atau lempeng denah untuk mengangkat lantai tersebut ke depan.
+            <strong>Denah 3D Arsitektur Presisi:</strong> Tangga 3D menghubungkan Lantai 1 dan Lantai 2 sesuai cetak biru. Tekan tombol <strong>"POV Samping (Tangga 3D)"</strong> untuk mengamati anak tangga dan railing dari samping.
           </span>
         </p>
         <button

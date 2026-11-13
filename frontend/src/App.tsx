@@ -363,9 +363,6 @@ export const App: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
             {floorRooms.map((room) => {
               const isSelected = selectedRoom?.id === room.id;
-              const isAvail = room.status === 'available';
-              const isOcc = room.status === 'occupied';
-              const isRes = room.status === 'reserved';
               return (
                 <button
                   key={room.id}
@@ -380,11 +377,9 @@ export const App: React.FC = () => {
                     <span className="font-mono text-[10px] font-extrabold text-slate-800 dark:text-slate-100">
                       {room.code}
                     </span>
-                    <span className={`w-2 h-2 rounded-full ${
-                      isAvail ? 'bg-emerald-500' :
-                      isOcc ? 'bg-rose-500' :
-                      isRes ? 'bg-amber-500' : 'bg-slate-400'
-                    }`} />
+                    <span className="text-[9px] font-semibold text-slate-400">
+                      {room.capacity} krs
+                    </span>
                   </div>
                   <div className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 truncate">
                     {room.name}
