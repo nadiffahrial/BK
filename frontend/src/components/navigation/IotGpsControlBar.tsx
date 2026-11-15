@@ -215,7 +215,7 @@ export const IotGpsControlBar: React.FC = () => {
               </div>
               <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white mt-0.5 flex items-center gap-2">
                 <span>{deviceState.relativeTurnInstruction || 'Lurus ke depan ikuti koridor'}</span>
-                {deviceState.relativeBearingToTarget !== null && (
+                {deviceState.relativeBearingToTarget !== null && deviceState.relativeBearingToTarget !== undefined && (
                   <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-semibold">
                     ({deviceState.relativeBearingToTarget > 0 ? `+${deviceState.relativeBearingToTarget}°` : `${deviceState.relativeBearingToTarget}°`})
                   </span>

@@ -331,6 +331,26 @@ export const apiService = {
       return json;
     },
 
+    // Buat pengajuan peminjaman ruangan
+    async createBooking(bookingData: Partial<any>): Promise<any> {
+      try {
+        const res = await fetch(`${API_BASE}/bookings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(bookingData)
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.data || json;
+        }
+      } catch (e) {
+        console.warn('Backend bookings unavailable, saving locally');
+      }
+      return null;
+    },
+
     // Update status tiket CS (oleh admin)
     async updateCsTicketStatus(
       ticketId: string,

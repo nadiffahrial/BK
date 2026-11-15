@@ -132,10 +132,11 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     };
 
-    if ('ondeviceorientationabsolute' in window) {
-      window.addEventListener('deviceorientationabsolute', handleOrientation as any, true);
-    } else if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleOrientation, true);
+    const win = window as any;
+    if ('ondeviceorientationabsolute' in win) {
+      win.addEventListener('deviceorientationabsolute', handleOrientation as any, true);
+    } else if ('DeviceOrientationEvent' in win) {
+      win.addEventListener('deviceorientation', handleOrientation as any, true);
     }
   };
 

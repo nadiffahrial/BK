@@ -14,7 +14,8 @@ import {
   Leaf,
   Radio,
   Crosshair,
-  Compass
+  Compass,
+  Box
 } from 'lucide-react';
 
 interface FloorMapSvgProps {
@@ -178,7 +179,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
           <div className="text-[10px] font-mono font-black text-slate-800 dark:text-slate-100 leading-none">
             <div>{deviceState.heading}°</div>
             <div className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-              {deviceState.compassDirectionName.split(' ')[0]}
+              {(deviceState.compassDirectionName || 'UTARA').split(' ')[0]}
             </div>
           </div>
         </div>
