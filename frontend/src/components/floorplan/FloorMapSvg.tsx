@@ -15,7 +15,8 @@ import {
   Radio,
   Crosshair,
   Compass,
-  Box
+  Box,
+  Smartphone
 } from 'lucide-react';
 
 interface FloorMapSvgProps {
@@ -115,6 +116,23 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
 
         {/* Zoom & View Controls */}
         <div className="flex items-center gap-2">
+          {/* Tombol Rotasi Layar Horizontal di Mobile */}
+          <button
+            onClick={async () => {
+              try {
+                const docEl = document.documentElement as any;
+                if (docEl.requestFullscreen) await docEl.requestFullscreen();
+                const scr = screen as any;
+                if (scr.orientation && scr.orientation.lock) await scr.orientation.lock('landscape');
+              } catch {}
+            }}
+            className="flex sm:hidden items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm border border-emerald-400/40 cursor-pointer active:scale-95 transition-transform"
+            title="Putar Layar ke Mode Horizontal (Landscape)"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Putar</span>
+          </button>
+
           <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
             <button
               onClick={() => setZoomLevel(prev => Math.max(0.75, prev - 0.15))}

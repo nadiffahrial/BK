@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building, Floor, Room } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { useGps } from '../../context/GpsContext';
@@ -20,7 +20,8 @@ import {
   Compass,
   Eye,
   SlidersHorizontal,
-  RotateCcw
+  RotateCcw,
+  Smartphone
 } from 'lucide-react';
 
 interface IsometricViewProps {
@@ -48,6 +49,28 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
   const [rotateAngle, setRotateAngle] = useState<number>(-30);
   const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
+  const [canvasScale, setCanvasScale] = useState<number>(1);
+
+  // Responsive scale di layar mobile agar denah 3D pas dan utuh
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 880) {
+        const padding = w < 480 ? 24 : 40;
+        const scale = Math.max(0.40, Math.min(1, (w - padding) / 840));
+        setCanvasScale(scale);
+      } else {
+        setCanvasScale(1);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   // Vertical gap between Floor 1 and Floor 2
   const zGap = isExploded ? 210 : 110;
@@ -268,6 +291,23 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
             <span>{isExploded ? 'Mode Pisah 3D' : 'Mode Rapat'}</span>
           </button>
 
+          {/* Tombol Rotasi Layar Horizontal di Mobile */}
+          <button
+            onClick={async () => {
+              try {
+                const docEl = document.documentElement as any;
+                if (docEl.requestFullscreen) await docEl.requestFullscreen();
+                const scr = screen as any;
+                if (scr.orientation && scr.orientation.lock) await scr.orientation.lock('landscape');
+              } catch {}
+            }}
+            className="flex sm:hidden items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm border border-emerald-400/40 cursor-pointer active:scale-95 transition-transform"
+            title="Putar Layar ke Mode Horizontal (Landscape)"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Putar Horizontal</span>
+          </button>
+
           {/* Slider Kemiringan / Tilt */}
           <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
             <span className="text-[11px] font-medium">Kemiringan:</span>
@@ -331,11 +371,11 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
           })}
         </div>
 
-        {/* 3D Isometric Projection Root */}
+        {/* 3D Isometric Projection Root with Responsive Mobile Scale */}
         <div
-          className="relative transition-transform duration-700 ease-smooth"
+          className="relative transition-transform duration-700 ease-smooth origin-center"
           style={{
-            transform: `perspective(1400px) rotateX(${tiltAngle}deg) rotateZ(${rotateAngle}deg)`,
+            transform: `scale(${canvasScale}) perspective(1400px) rotateX(${tiltAngle}deg) rotateZ(${rotateAngle}deg)`,
             transformStyle: 'preserve-3d',
             width: '820px',
             height: '380px'

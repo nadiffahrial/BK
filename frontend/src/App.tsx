@@ -14,6 +14,7 @@ import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
 import { RoomDetailModal } from './components/floorplan/RoomDetailModal';
 import { IotGpsControlBar } from './components/navigation/IotGpsControlBar';
+import { MobileRotateDisplay } from './components/common/MobileRotateDisplay';
 import { useGps } from './context/GpsContext';
 import { BUILDINGS_DATA } from './data/buildingsData';
 import { Room, RoomStatus, ViewMode } from './types';
@@ -312,6 +313,17 @@ export const App: React.FC = () => {
 
         {/* 🧭 Panduan Rute Navigasi Aktif (Muncul otomatis dan rapih hanya saat rute jalan aktif) */}
         <IotGpsControlBar />
+
+        {/* 📱 Fitur Display Rotate Horizontal di Mobile (Banner, FAB, & Fullscreen Landscape) */}
+        <MobileRotateDisplay
+          building={activeBuilding}
+          activeFloorNumber={activeFloorNumber}
+          onSelectFloor={handleSelectFloor}
+          viewMode={viewMode}
+          onChangeViewMode={handleChangeViewMode}
+          selectedRoom={selectedRoom}
+          onSelectRoom={(room) => setSelectedRoom(room)}
+        />
 
         {/* 4. Interactive Visual Stage */}
         {viewMode === '2d' && (
