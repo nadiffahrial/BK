@@ -44,8 +44,8 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
   const { deviceState, targetRoom: gpsTargetRoom, setTargetRoom } = useGps();
 
   const [isExploded, setIsExploded] = useState<boolean>(true);
-  const [tiltAngle, setTiltAngle] = useState<number>(30); // Default ke sudut samping yang nyaman
-  const [rotateAngle, setRotateAngle] = useState<number>(-22);
+  const [tiltAngle, setTiltAngle] = useState<number>(50); // Default ke sudut Isometrik 3D Modern
+  const [rotateAngle, setRotateAngle] = useState<number>(-30);
   const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
 
@@ -232,13 +232,13 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
               <span>POV Samping (Tangga 3D)</span>
             </button>
             <button
-              onClick={() => { setTiltAngle(56); setRotateAngle(-28); }}
+              onClick={() => { setTiltAngle(50); setRotateAngle(-30); }}
               className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                tiltAngle === 56 && rotateAngle === -28
+                tiltAngle === 50 && rotateAngle === -30
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
               }`}
-              title="Sudut Pandang Isometrik Standar"
+              title="Sudut Pandang Isometrik Standar (Lantai Aktif Timbul)"
             >
               📐 Isometrik
             </button>
@@ -353,8 +353,10 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
             const posH = (stair.coordinates.h / 500) * 380;
 
             const stepsCount = 12;
-            const hypot = Math.sqrt(posH * posH + zGap * zGap);
-            const slopeAngle = Math.atan2(zGap, posH) * (180 / Math.PI);
+            const isSidePov = tiltAngle <= 28;
+            const stairHeight = isSidePov ? zGap : (isExploded ? 240 : 190);
+            const hypot = Math.sqrt(posH * posH + stairHeight * stairHeight);
+            const slopeAngle = Math.atan2(stairHeight, posH) * (180 / Math.PI);
 
             return (
               <div
@@ -367,16 +369,17 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                   height: `${posH}px`,
                   transformStyle: 'preserve-3d',
                   pointerEvents: 'none',
-                  zIndex: 25
+                  zIndex: 25,
+                  transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
               >
                 {/* 12 Anak Tangga 3D Bertingkat Menghubungkan Lantai 1 ke Lantai 2 */}
                 {Array.from({ length: stepsCount }).map((_, stepIdx) => {
                   const progress = stepIdx / stepsCount;
-                  const stepZ = progress * zGap;
+                  const stepZ = progress * stairHeight;
                   const stepY = progress * posH;
                   const treadDepth = posH / stepsCount;
-                  const riserHeight = zGap / stepsCount;
+                  const riserHeight = stairHeight / stepsCount;
 
                   return (
                     <React.Fragment key={stepIdx}>
@@ -477,7 +480,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                   style={{
                     left: `${posW / 2 - 25}px`,
                     top: `${posH / 2}px`,
-                    transform: `translateZ(${zGap / 2}px)`,
+                    transform: `translateZ(${stairHeight / 2}px)`,
                   }}
                 >
                   <span>🪜 TANGGA 3D</span>
@@ -494,16 +497,28 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
             const isHovered = hoveredFloor === floor.floorNumber;
             const isUpperFloor = floor.floorNumber === 2;
 
-            // Ketinggian vertikal fisik: Lantai 1 di dasar (0px), Lantai 2 di atas (zGap px)
-            // Lantai yang dipilih mendapat sorotan 100% dan sedikit pembesaran
-            const zDistance = isUpperFloor ? zGap : 0;
-            const scale = isSelected ? 1.01 : 0.98;
+            // Ketinggian vertikal 3D:
+            // Sesuai permintaan eksplisit user:
+            // "ketika saya klik lantai gedung saya ingin lantai itu timbul lebih jelas hanya lantai gedung yang saya klik"
+            // Lantai yang sedang aktif/diklik SELALU timbul (elevate) ke bidang pandang paling depan (translateZ ~240px)
+            // Lantai yang tidak dipilih turun ke bidang bawah (0px) dengan opasitas redup (0.35)
+            const isSidePov = tiltAngle <= 28;
+            let zDistance = 0;
+            if (isSidePov) {
+              // Dalam mode POV Samping arsitektural, lantai 2 tetap berada di atas lantai 1 dengan tangga yang menghubungkan
+              zDistance = isUpperFloor ? (isSelected ? zGap + 35 : zGap) : (isSelected ? 35 : 0);
+            } else {
+              // Dalam mode Isometrik 3D Interaktif, lempeng lantai yang diklik TIMBUL ke depan paling atas
+              zDistance = isSelected ? (isExploded ? 240 : 190) : (isHovered ? 25 : 0);
+            }
+
+            const scale = isSelected ? 1.02 : (isHovered ? 0.98 : 0.95);
             
-            // Opasitas: jika lantai 1 aktif, lantai 2 menjadi semi-transparan sehingga tangga terlihat jelas
+            // Opasitas: lempeng lantai yang aktif tampil 100% jernih dan tajam
+            // Lempeng lantai yang pasif redup semi-transparan seperti kaca di bawahnya
             let opacity = 1;
             if (!isSelected) {
-              opacity = isUpperFloor ? (isDark ? 0.35 : 0.4) : (isDark ? 0.6 : 0.65);
-              if (isHovered) opacity = 0.85;
+              opacity = isHovered ? 0.82 : (isDark ? 0.32 : 0.38);
             }
 
             return (
@@ -523,7 +538,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                   transform: `translateZ(${zDistance}px) scale(${scale})`,
                   transformStyle: 'preserve-3d',
                   opacity,
-                  zIndex: isSelected ? 30 : 10,
+                  zIndex: isSelected ? 35 : 10,
                   backgroundColor: isDark
                     ? isSelected
                       ? 'rgba(15, 23, 42, 0.98)'
