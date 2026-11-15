@@ -100,22 +100,6 @@ export interface SearchResultRoom extends Room {
 
 
 
-export interface BookingRequest {
-  id: string;
-  roomId: string;
-  roomName: string;
-  roomCode: string;
-  userName: string;
-  userEmail: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  purpose: string;
-  participants: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  createdAt: string;
-}
-
 export interface CsTicket {
   id: string;
   senderName: string;

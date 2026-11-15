@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Room, RoomStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useGps } from '../../context/GpsContext';
-import { BookingModal } from './BookingModal';
 import { 
   X, 
   Users, 
@@ -40,7 +39,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { setTargetRoom } = useGps();
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
   if (!room) return null;
 
   const isAdmin = user?.role === 'admin';
@@ -291,15 +289,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               <Navigation className="w-4 h-4 animate-pulse" />
               <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan (IoT GPS)'}</span>
             </button>
-
-            {/* Tombol Ajukan Reservasi Ruangan */}
-            <button
-              onClick={() => setIsBookingOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-600/25 active:scale-95"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>Ajukan Peminjaman Ruang</span>
-            </button>
           </div>
 
           <button
@@ -311,17 +300,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         </div>
 
       </div>
-
-      {/* Modal Booking / Reservasi Ruangan Digital */}
-      {isBookingOpen && (
-        <BookingModal
-          room={room}
-          onClose={() => setIsBookingOpen(false)}
-          onBookingSuccess={() => {
-            setIsBookingOpen(false);
-          }}
-        />
-      )}
     </div>
   );
 };

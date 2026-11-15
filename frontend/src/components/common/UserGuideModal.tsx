@@ -135,7 +135,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                       Tujuan Utama Website SmartCampus3D
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      Aplikasi ini dirancang khusus untuk mempermudah seluruh civitas akademika Universitas Siliwangi dalam menemukan lokasi ruangan, melihat fasilitas gedung secara interaktif 3D & 2D, mengajukan reservasi ruang kuliah/sidang, hingga melaporkan gangguan fasilitas secara cepat dan terintegrasi.
+                      Aplikasi ini dirancang khusus untuk mempermudah seluruh civitas akademika Universitas Siliwangi dalam menemukan lokasi ruangan, melihat fasilitas gedung secara interaktif 3D & 2D, mengetahui agenda penggunaan ruangan, hingga melaporkan gangguan fasilitas secara cepat dan terintegrasi.
                     </p>
                   </div>
                 </div>
@@ -280,7 +280,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                     Panduan untuk Dosen & Staff Akademik
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Kelola jadwal mengajar, bimbingan mahasiswa, dan reservasi ruang sidang
+                    Kelola jadwal mengajar, bimbingan mahasiswa, dan informasi ruang sidang
                   </p>
                 </div>
               </div>
@@ -299,10 +299,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 <div className="p-4.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 modern-card-hover group hover:border-blue-300 dark:hover:border-blue-500/40">
                   <h4 className="font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2.5 text-sm mb-1.5">
                     <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold transition-transform duration-300 group-hover:scale-110 shadow-xs">2</span>
-                    Memesan Ruang Sidang Skripsi & Rapat Senat
+                    Melihat Informasi Ruang Sidang Skripsi & Rapat Senat
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-8.5">
-                    Buka <strong>Gedung LABTEK 1 Lantai 2</strong> (Ruang A-203 Ruang Sidang Skripsi) atau <strong>Gedung FT.1 Lantai 2</strong> (Ruang B-201 Ruang Sidang Senat). Klik tombol reservasi untuk mendaftarkan jadwal sidang agar mahasiswa dan penguji dapat melihatnya di sistem.
+                    Buka <strong>Gedung LABKOM 1 Lantai 2</strong> atau <strong>Gedung FT.1 Lantai 2</strong>. Klik ruangan untuk melihat kapasitas kursi, kelengkapan fasilitas, dan detail agenda kegiatan yang terjadwal.
                   </p>
                 </div>
 
@@ -331,7 +331,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                     Panduan untuk Administrator Sarpras & IT
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Manajemen data ruangan, approval reservasi, tindak lanjut tiket pengaduan, dan database
+                    Manajemen data ruangan, tindak lanjut tiket pengaduan fasilitas, dan pemantauan status gedung
                   </p>
                 </div>
               </div>
