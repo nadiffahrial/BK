@@ -154,7 +154,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                         : 'bg-white hover:bg-emerald-100 text-slate-700 border border-slate-200'
                     }`}
                   >
-                    {st === 'available' ? 'Tersedia' : st === 'occupied' ? 'Digunakan' : st === 'reserved' ? 'Reservasi' : 'Servis'}
+                    {st === 'available' ? 'Tersedia' : st === 'occupied' ? 'Digunakan' : st === 'reserved' ? 'Terjadwal' : 'Servis'}
                   </button>
                 ))}
               </div>
@@ -238,36 +238,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Today's Agenda Timeline */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-teal-600" />
-              Jadwal & Agenda Hari Ini
-            </h4>
-            {room.schedule.length > 0 ? (
-              <div className="space-y-2">
-                {room.schedule.map((item) => (
-                  <div key={item.id} className="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between shadow-sm">
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{item.title}</div>
-                      <div className="text-[11px] text-slate-500">Penyelenggara: {item.organizer}</div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-                        {item.timeRange}
-                      </span>
-                      <div className="text-[10px] text-slate-400 mt-1">{item.type}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
-                Belum ada reservasi terjadwal lainnya untuk hari ini.
-              </div>
-            )}
           </div>
 
         </div>

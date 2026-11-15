@@ -414,7 +414,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                   { id: 'all', label: 'Semua Status' },
                   { id: 'available', label: 'Tersedia', dot: 'bg-emerald-500' },
                   { id: 'occupied', label: 'Kuliah/Terisi', dot: 'bg-rose-500' },
-                  { id: 'reserved', label: 'Reservasi', dot: 'bg-amber-500' },
+                  { id: 'reserved', label: 'Terjadwal', dot: 'bg-amber-500' },
                   { id: 'maintenance', label: 'Servis', dot: 'bg-slate-400' }
                 ].map(item => {
                   const isFilterActive = statusFilter === item.id;

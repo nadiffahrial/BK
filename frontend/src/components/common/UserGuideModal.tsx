@@ -160,10 +160,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                     <Calendar className="w-5 h-5" />
                   </div>
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1.5">
-                    2. Status & Reservasi Ruangan
+                    2. Status & Detail Fasilitas Ruangan
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Cek status real-time (Tersedia, Terisi, Terjadwal) dan ajukan peminjaman ruangan tanpa bentrok jadwal kuliah.
+                    Cek informasi kapasitas, spesifikasi AC, konektivitas WiFi, dan kelengkapan fasilitas di setiap ruangan kelas.
                   </p>
                 </div>
 
@@ -196,7 +196,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 modern-card-hover">
                     <span className="w-3 h-3 rounded-full bg-amber-500 shadow-sm" />
-                    <span className="text-xs font-bold text-amber-800 dark:text-amber-300">Direservasi</span>
+                    <span className="text-xs font-bold text-amber-800 dark:text-amber-300">Terjadwal</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 modern-card-hover">
                     <span className="w-3 h-3 rounded-full bg-slate-500 shadow-sm" />
@@ -343,7 +343,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                     Kontrol Master Status Ruangan
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-8.5">
-                    Administrator dapat mengubah status ruangan mana pun menjadi <em>Tersedia</em>, <em>Terisi</em>, <em>Reservasi</em>, atau <em>Pemeliharaan (Maintenance)</em>. Perubahan status akan langsung tersiar secara real-time melalui Server-Sent Events (SSE).
+                    Administrator dapat mengubah status ruangan mana pun menjadi <em>Tersedia</em>, <em>Terisi</em>, <em>Terjadwal</em>, atau <em>Pemeliharaan (Maintenance)</em>. Perubahan status akan langsung tersiar secara real-time melalui Server-Sent Events (SSE).
                   </p>
                 </div>
 

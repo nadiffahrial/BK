@@ -95,7 +95,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
         }`}
       >
         <div className="flex items-center justify-between text-amber-700 mb-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider">Reservasi</span>
+          <span className="text-[11px] font-bold uppercase tracking-wider">Terjadwal</span>
           <Clock className="w-4 h-4 text-amber-600" />
         </div>
         <div className="text-2xl font-extrabold text-amber-700">{reservedRooms}</div>
