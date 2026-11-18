@@ -54,7 +54,7 @@ router.patch(
   updateRoomStatus
 );
 
-// 8. 🛰️ IoT GPS & Indoor Positioning System APIs
+// 8. Indoor Positioning System APIs
 router.get('/iot/beacons', getAllBeacons);
 router.get('/iot/beacons/:id', getBeaconById);
 router.post('/iot/locate', locateDevicePosition);

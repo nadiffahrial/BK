@@ -1,7 +1,6 @@
 import React from 'react';
 import { Room, RoomStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
-import { useGps } from '../../context/GpsContext';
 import { 
   X, 
   Users, 
@@ -38,7 +37,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   onUpdateRoomStatus
 }) => {
   const { user } = useAuth();
-  const { setTargetRoom } = useGps();
   if (!room) return null;
 
   const isAdmin = user?.role === 'admin';
@@ -248,7 +246,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
             <button
               onClick={() => {
                 onTogglePathGuide(room.id);
-                setTargetRoom(isPathActive ? null : room);
               }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 isPathActive

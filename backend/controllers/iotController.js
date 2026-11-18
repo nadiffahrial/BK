@@ -187,7 +187,7 @@ export const locateDevicePosition = (req, res) => {
     locatedBeacon = IOT_BEACONS_DATA.find(b => b.id === strongest.beaconId) || IOT_BEACONS_DATA[0];
     estimatedAccuracy = Math.max(1.0, Math.min(5.0, Math.round(Math.abs(strongest.rssi + 50) * 0.1 * 10) / 10));
   } else if (latitude && longitude) {
-    // Find closest GPS anchor
+    // Find closest anchor node
     locatedBeacon = IOT_BEACONS_DATA.reduce((closest, curr) => {
       const d1 = Math.hypot(curr.latitude - latitude, curr.longitude - longitude);
       const d2 = Math.hypot(closest.latitude - latitude, closest.longitude - longitude);

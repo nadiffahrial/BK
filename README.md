@@ -1,6 +1,6 @@
 # SmartCampus3D - Universitas Siliwangi 🏛️📍
 
-> **Sistem Informasi Denah 3D Interaktif & Navigasi Kampus Berbasis IoT GPS**  
+> **Sistem Informasi Denah 3D Interaktif & Navigasi Kampus**  
 > Kampus Universitas Siliwangi — Gedung LABTEK 1 (Perkuliahan Terpadu) & Gedung FT.1 (Dekanat & Riset).  
 > 📖 **Buku Panduan Pengguna Lengkap:** Silakan baca [docs/PANDUAN_PENGGUNA.md](./docs/PANDUAN_PENGGUNA.md) untuk panduan lengkap per peran (Mahasiswa, Dosen, Admin, Tamu).
 
@@ -108,7 +108,7 @@ npm run dev       # berjalan di http://localhost:5173
 - **Framework:** React 19 with TypeScript
 - **Bundler:** Vite 6
 - **Styling:** Tailwind CSS & Lucide Icons
-- **State Management:** React Context API (`AuthContext`, `GpsContext`, `ThemeContext`)
+- **State Management:** React Context API (`AuthContext`, `ThemeContext`)
 
 ### Backend:
 - **Runtime:** Node.js (Express.js)

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building, Floor, Room } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
-import { useGps } from '../../context/GpsContext';
 import { 
   Box, 
   Layers, 
@@ -42,7 +41,6 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
   onChangeViewMode
 }) => {
   const { isDark } = useTheme();
-  const { deviceState, targetRoom: gpsTargetRoom, setTargetRoom } = useGps();
 
   const [isExploded, setIsExploded] = useState<boolean>(true);
   const [tiltAngle, setTiltAngle] = useState<number>(50); // Default ke sudut Isometrik 3D Modern
@@ -751,7 +749,6 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                             e.stopPropagation();
                             onSelectFloor(floor.floorNumber);
                             onSelectRoom(room);
-                            setTargetRoom(room);
                           }}
                           onMouseEnter={() => setHoveredRoom(room)}
                           onMouseLeave={() => setHoveredRoom(null)}

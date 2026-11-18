@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { GpsProvider } from './context/GpsContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './index.css';
 
@@ -20,9 +19,7 @@ root.render(
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <GpsProvider>
-            <App />
-          </GpsProvider>
+          <App />
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

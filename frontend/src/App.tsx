@@ -14,7 +14,6 @@ import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
 import { RoomDetailModal } from './components/floorplan/RoomDetailModal';
 import { MobileRotateDisplay } from './components/common/MobileRotateDisplay';
-import { useGps } from './context/GpsContext';
 import { BUILDINGS_DATA } from './data/buildingsData';
 import { Room, RoomStatus, ViewMode } from './types';
 import { apiService } from './services/api';
@@ -36,7 +35,6 @@ import {
 
 export const App: React.FC = () => {
   const { isAuthenticated, user, token, logout } = useAuth();
-  const { setTargetRoom, deviceState } = useGps();
 
   const [buildings, setBuildings] = useState(BUILDINGS_DATA);
   const [activeBuildingId, setActiveBuildingId] = useState<string>('gedung-a');
@@ -172,12 +170,7 @@ export const App: React.FC = () => {
   };
 
   const handleTogglePathGuide = (roomId: string) => {
-    setActivePathRoomId(prev => {
-      const nextId = prev === roomId ? null : roomId;
-      const target = activeBuilding.floors.flatMap(f => f.rooms).find(r => r.id === roomId);
-      setTargetRoom(nextId && target ? target : null);
-      return nextId;
-    });
+    setActivePathRoomId(prev => prev === roomId ? null : roomId);
     if (viewMode !== '2d') {
       setViewMode('2d');
     }
@@ -219,7 +212,6 @@ export const App: React.FC = () => {
     setViewMode('3d');
     setSelectedRoom(room);
     setActivePathRoomId(room.id);
-    setTargetRoom(room);
     const bldgName = buildingId === 'gedung-a' ? 'LABKOM 1' : 'FT.1';
     setRecentNotification(`Menavigasi ke ${room.code} - ${room.name} (${bldgName}, Tingkat ${floorNumber})`);
     setTimeout(() => setRecentNotification(null), 4000);
@@ -355,7 +347,6 @@ export const App: React.FC = () => {
             onNavigateRoom={(room) => {
               setSelectedRoom(room);
               setActivePathRoomId(room.id);
-              setTargetRoom(room);
             }}
           />
         )}

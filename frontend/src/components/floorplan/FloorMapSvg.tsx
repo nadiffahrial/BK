@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Room, Floor } from '../../types';
-import { useGps } from '../../context/GpsContext';
 import { 
   Users, 
   Thermometer, 
@@ -38,13 +37,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
   onTogglePathGuide,
   onOpen3dView
 }) => {
-  const { 
-    deviceState, 
-    setTargetRoom, 
-    routeInfo,
-    requestCompassPermission,
-    setManualHeading
-  } = useGps();
   const [zoomLevel, setZoomLevel] = useState(1);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
 
@@ -84,9 +76,8 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
   };
 
   const getPathToRoom = (room: Room) => {
-    const isSameFloor = deviceState.floorNumber === floor.floorNumber;
-    const startX = isSameFloor ? deviceState.canvasX : entrancePoint.x;
-    const startY = isSameFloor ? deviceState.canvasY : entrancePoint.y;
+    const startX = entrancePoint.x;
+    const startY = entrancePoint.y;
     const rx = room.coordinates.x + room.coordinates.w / 2;
     const ry = room.coordinates.y + room.coordinates.h / 2;
     const midY = 250;
@@ -512,7 +503,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
             <button
               onClick={() => {
                 onTogglePathGuide(selectedRoom.id);
-                setTargetRoom(activePathRoomId === selectedRoom.id ? null : selectedRoom);
               }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
                 activePathRoomId === selectedRoom.id
