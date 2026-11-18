@@ -720,23 +720,6 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                       </g>
                     )}
 
-                    {/* 📍 Sinyal Lokasi Pengguna (IoT GPS Beacon) */}
-                    {isSelected && deviceState && deviceState.floorNumber === floor.floorNumber && (
-                      <g 
-                        className="user-gps-beacon" 
-                        transform={`translate(${deviceState.canvasX || 120}, ${deviceState.canvasY || 250})`}
-                        pointerEvents="none"
-                      >
-                        <circle cx="0" cy="0" r="16" fill="rgba(16, 185, 129, 0.25)" className="animate-ping" />
-                        <circle cx="0" cy="0" r="8" fill="#10b981" />
-                        <circle cx="0" cy="0" r="4" fill="#ffffff" />
-                        <rect x="-35" y="-22" width="70" height="15" rx="4" fill="#0f172a" />
-                        <text x="0" y="-12" textAnchor="middle" fill="#34d399" fontSize="7" fontWeight="bold">
-                          LOKASI ANDA
-                        </text>
-                      </g>
-                    )}
-
                     {/* ============================================================== */}
                     {/* 🚪 DAFTAR RUANGAN LENGKAP (BERSIH DARI STATUS WARNA RUANGAN)   */}
                     {/* ============================================================== */}

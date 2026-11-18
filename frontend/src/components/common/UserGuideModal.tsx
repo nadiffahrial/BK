@@ -248,10 +248,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 <div className="p-4.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 modern-card-hover group hover:border-emerald-300 dark:hover:border-emerald-500/40">
                   <h4 className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2.5 text-sm mb-1.5">
                     <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold transition-transform duration-300 group-hover:scale-110 shadow-xs">3</span>
-                    Mengajukan Peminjaman Ruang untuk Kegiatan Himpunan / Belajar
+                    Melihat Kapasitas & Kelengkapan Fasilitas Ruangan
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-8.5">
-                    Pilih ruangan yang berstatus <strong>Tersedia (Hijau)</strong>, lalu klik tombol <strong>"Ajukan Peminjaman"</strong>. Isi nama peminjam, keperluan kegiatan, dan jam penggunaan. Permohonan Anda akan langsung tercatat di jadwal sistem.
+                    Klik ruangan mana saja di denah untuk membuka informasi detail, mencakup kapasitas kursi mahasiswa, pendingin ruangan (AC), proyektor, papan tulis, hingga status okupansi terkini.
                   </p>
                 </div>
 
@@ -292,7 +292,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                     Cek Ketersediaan Ruangan untuk Kuliah Pengganti / Ujian
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-8.5">
-                    Gunakan filter status di menu utama untuk menampilkan hanya ruangan yang <strong>Tersedia</strong>. Anda dapat melihat kapasitas kursi, unit AC, proyektor laser, dan suhu telemetri IoT ruangan secara akurat sebelum memilih ruang perkuliahan.
+                    Gunakan filter status di menu utama untuk menampilkan hanya ruangan yang <strong>Tersedia</strong>. Anda dapat melihat kapasitas kursi, unit AC, proyektor laser, dan kelengkapan fasilitas ruangan secara akurat sebelum memilih ruang perkuliahan.
                   </p>
                 </div>
 

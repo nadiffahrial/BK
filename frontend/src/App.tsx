@@ -13,7 +13,6 @@ import { FloorMapSvg } from './components/floorplan/FloorMapSvg';
 import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
 import { RoomDetailModal } from './components/floorplan/RoomDetailModal';
-import { IotGpsControlBar } from './components/navigation/IotGpsControlBar';
 import { MobileRotateDisplay } from './components/common/MobileRotateDisplay';
 import { useGps } from './context/GpsContext';
 import { BUILDINGS_DATA } from './data/buildingsData';
@@ -310,9 +309,6 @@ export const App: React.FC = () => {
           onSelectFloor={handleSelectFloor}
           onSelectRoom={(room) => setSelectedRoom(room)}
         />
-
-        {/* 🧭 Panduan Rute Navigasi Aktif (Muncul otomatis dan rapih hanya saat rute jalan aktif) */}
-        <IotGpsControlBar />
 
         {/* 📱 Fitur Display Rotate Horizontal di Mobile (Banner, FAB, & Fullscreen Landscape) */}
         <MobileRotateDisplay

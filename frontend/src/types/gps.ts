@@ -1,6 +1,6 @@
 import { Room } from './index';
 
-export type IotTrackingMode = 'device-gps' | 'iot-beacon' | 'simulated';
+export type IotTrackingMode = 'device-gps' | 'indoor-nav' | 'simulated';
 
 export interface IotBeaconNode {
   id: string;
@@ -11,10 +11,7 @@ export interface IotBeaconNode {
   y: number;
   latitude: number;
   longitude: number;
-  rssi: number; // e.g. -54 dBm
-  txPower: number;
   zone: string;
-  macAddress: string;
 }
 
 export interface DeviceLocationState {
@@ -31,7 +28,7 @@ export interface DeviceLocationState {
   canvasX: number;
   canvasY: number;
   nearestBeacon: IotBeaconNode | null;
-  detectedBeacons: IotBeaconNode[];
+  detectedBeacons?: IotBeaconNode[];
   lastUpdate: Date;
   permissionStatus: 'granted' | 'prompt' | 'denied';
   error: string | null;
@@ -56,3 +53,4 @@ export interface PathRouteInfo {
   pathPoints: { x: number; y: number }[];
   isSimulatingWalk?: boolean;
 }
+

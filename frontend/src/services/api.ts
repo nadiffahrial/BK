@@ -213,26 +213,6 @@ export const apiService = {
     return [];
   },
 
-  // IoT Beacons API
-  async getIotBeacons(buildingId?: string, floorNumber?: number): Promise<any[]> {
-    try {
-      let url = `${API_BASE}/iot/beacons`;
-      const params = new URLSearchParams();
-      if (buildingId) params.append('buildingId', buildingId);
-      if (floorNumber) params.append('floorNumber', String(floorNumber));
-      if (params.toString()) url += `?${params.toString()}`;
-
-      const res = await fetch(url);
-      if (res.ok) {
-        const json = await res.json();
-        return json.data;
-      }
-    } catch {
-      // fallback
-    }
-    return [];
-  },
-
   // Calculate Navigation Route (Turn-by-turn guidance)
   async calculateNavigationRoute(fromX: number, fromY: number, targetRoomId: string): Promise<any> {
     try {
@@ -249,20 +229,6 @@ export const apiService = {
       // fallback
     }
     return null;
-  },
-
-  // Update IoT Environmental Sensor Telemetry
-  async updateIotTelemetry(roomId: string, data: { temperature?: number; currentOccupancy?: number; status?: RoomStatus }): Promise<boolean> {
-    try {
-      const res = await fetch(`${API_BASE}/iot/telemetry`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, ...data })
-      });
-      return res.ok;
-    } catch {
-      return false;
-    }
   },
 
   // ========================================================

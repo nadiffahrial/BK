@@ -55,7 +55,7 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
     { label: '2A (Ruang Kuliah Besar)', q: '2A' },
     { label: '1A (Lab Dasar Pemrograman)', q: '1A' },
     { label: '2F (Ruang Sidang Skripsi)', q: '2F' },
-    { label: '1D (Lab Jaringan & IoT)', q: '1D' },
+    { label: '1D (Lab Jaringan Komputer)', q: '1D' },
     { label: '2N (Smart Classroom)', q: '2N' },
     { label: '1L (Smart Hall)', q: '1L' },
     { label: 'Mushola Kampus', q: 'Mushola' },

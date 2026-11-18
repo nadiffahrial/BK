@@ -257,7 +257,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               }`}
             >
               <Navigation className="w-4 h-4 animate-pulse" />
-              <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan (IoT GPS)'}</span>
+              <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan ke Ruangan'}</span>
             </button>
           </div>
 

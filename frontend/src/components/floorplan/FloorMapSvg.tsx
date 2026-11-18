@@ -41,7 +41,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
   const { 
     deviceState, 
     setTargetRoom, 
-    availableBeacons, 
     routeInfo,
     requestCompassPermission,
     setManualHeading
@@ -168,38 +167,12 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
         {/* Subtle Green Blueprint Grid Pattern */}
         <div className="absolute inset-0 bg-grid-blueprint opacity-60 pointer-events-none" />
 
-        {/* Floating Real-Time Compass Rose (Top-Right of Map) */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-2xl border border-emerald-200/80 dark:border-slate-700 shadow-sm transition-all">
-          <button
-            type="button"
-            onClick={() => {
-              if (deviceState.isCompassActive) {
-                setManualHeading(0);
-              } else {
-                requestCompassPermission();
-              }
-            }}
-            className="relative w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-transform active:scale-95"
-            title={`Arah Kompas: ${deviceState.heading}° (${deviceState.compassDirectionName}) - Klik untuk atur`}
-          >
-            {/* Rotating Needle */}
-            <div 
-              className="absolute inset-0 flex items-center justify-center transition-transform duration-200"
-              style={{ transform: `rotate(${-deviceState.heading}deg)` }}
-            >
-              <div className="w-1 h-3 bg-rose-500 rounded-t-xs" />
-              <div className="w-1 h-3 bg-slate-300 dark:bg-slate-500 rounded-b-xs" />
-            </div>
-            <span className="absolute top-0.5 text-[6.5px] font-black text-rose-500">N</span>
-            <div className="w-1 h-1 rounded-full bg-slate-800 dark:bg-white z-10" />
-          </button>
-
-          <div className="text-[10px] font-mono font-black text-slate-800 dark:text-slate-100 leading-none">
-            <div>{deviceState.heading}°</div>
-            <div className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-              {(deviceState.compassDirectionName || 'UTARA').split(' ')[0]}
-            </div>
+        {/* Architectural North Arrow Indicator */}
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-2xl border border-emerald-200/80 dark:border-slate-700 shadow-sm transition-all pointer-events-none">
+          <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center relative">
+            <span className="text-[9px] font-black text-rose-500 font-mono">⬆</span>
           </div>
+          <span className="text-[10px] font-bold font-mono text-slate-700 dark:text-slate-200">UTARA</span>
         </div>
 
         <div 
@@ -460,52 +433,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
               );
             })}
 
-            {/* IoT BLE Anchor Beacons Installed along the Corridor */}
-            {availableBeacons.map(bcn => (
-              <g key={bcn.id} transform={`translate(${bcn.x}, ${bcn.y})`} className="opacity-80">
-                <circle r="8" fill="#0284c7" opacity="0.15" className="animate-pulse" />
-                <circle r="3.5" fill="#0284c7" stroke="#ffffff" strokeWidth="1" />
-                <text x="0" y="11" textAnchor="middle" fill="#0369a1" fontSize="6" fontWeight="bold">
-                  {bcn.id}
-                </text>
-              </g>
-            ))}
-
-            {/* Live IoT GPS User Marker (All Devices: Phone, Tablet, PC) */}
-            {deviceState.floorNumber === floor.floorNumber && (
-              <g transform={`translate(${deviceState.canvasX}, ${deviceState.canvasY})`} className="transition-all duration-300">
-                {/* Flashlight / Vision Cone pointing towards device heading */}
-                <g transform={`rotate(${deviceState.heading})`}>
-                  <path
-                    d="M 0 0 L -38 -76 A 85 85 0 0 1 38 -76 Z"
-                    fill="url(#user-flashlight-beam)"
-                    className="transition-transform duration-150"
-                  />
-                  {/* Sharp Heading Pointer Arrow */}
-                  <polygon
-                    points="0,-22 5.5,-12 -5.5,-12"
-                    fill="#0284c7"
-                    stroke="#ffffff"
-                    strokeWidth="1.5"
-                  />
-                </g>
-
-                {/* Radar pulse rings */}
-                <circle r="22" fill="#0284c7" opacity="0.25" className="animate-ping" />
-                <circle r="13" fill="#0284c7" opacity="0.35" />
-                <circle r="8.5" fill="#0284c7" stroke="#ffffff" strokeWidth="2" filter="drop-shadow(0 2px 5px rgba(2,132,199,0.5))" />
-                <circle r="3.5" fill="#ffffff" />
-
-                {/* User Location Label with Heading */}
-                <g transform="translate(0, 20)">
-                  <rect x="-42" y="0" width="84" height="16" rx="4" fill="#0369a1" />
-                  <text x="0" y="11" textAnchor="middle" fill="#ffffff" fontSize="7.5" fontWeight="bold">
-                    LOKASI ANDA • {deviceState.heading}°
-                  </text>
-                </g>
-              </g>
-            )}
-
             {/* Animated Walking Path Guide (if active) in vibrant Emerald Green */}
             {activePathRoomId && (() => {
               const target = floor.rooms.find(r => r.id === activePathRoomId);
@@ -594,7 +521,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
               }`}
             >
               <Navigation className="w-3.5 h-3.5 animate-pulse" />
-              <span>{activePathRoomId === selectedRoom.id ? 'Sembunyikan Jalur' : 'Rute IoT GPS ke Ruangan'}</span>
+              <span>{activePathRoomId === selectedRoom.id ? 'Sembunyikan Jalur' : 'Petunjuk Arah ke Ruangan'}</span>
             </button>
           )}
         </div>

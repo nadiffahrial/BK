@@ -38,8 +38,8 @@ export const getCompassDirectionName = (deg: number): string => {
 
 const initialDeviceState: DeviceLocationState = {
   isTracking: true,
-  mode: 'iot-beacon',
-  source: 'IoT Beacon ESP32 (Anchor Lobby)',
+  mode: 'indoor-nav',
+  source: 'Posisi Awal Pintu Lobby',
   latitude: defaultBeacon.latitude,
   longitude: defaultBeacon.longitude,
   accuracy: 1.5,
@@ -206,14 +206,14 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           });
         },
         (err) => {
-          console.warn('Device GPS unavailable or permission denied, fallback to IoT Beacon:', err.message);
+          console.warn('Device GPS unavailable or permission denied:', err.message);
           setDeviceState(prev => ({
             ...prev,
             isTracking: true,
-            mode: 'iot-beacon',
-            source: 'IoT Beacon Triangulasi (Fallback)',
+            mode: 'indoor-nav',
+            source: 'Titik Acuan Koridor Gedung',
             permissionStatus: 'denied',
-            error: 'Izin GPS tidak diberikan. Beralih ke sistem IoT Beacon Indoor.'
+            error: null
           }));
         },
         {
@@ -226,8 +226,8 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setDeviceState(prev => ({
         ...prev,
         isTracking: true,
-        mode: 'iot-beacon',
-        source: 'IoT Beacon ESP32 Active Triangulation',
+        mode: 'indoor-nav',
+        source: 'Navigasi Koridor Gedung',
         accuracy: 1.8,
         error: null
       }));
@@ -255,8 +255,8 @@ export const GpsProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setDeviceState(prev => ({
       ...prev,
-      mode: 'iot-beacon',
-      source: `IoT Anchor (${targetBeacon.zone})`,
+      mode: 'indoor-nav',
+      source: targetBeacon.zone,
       latitude: targetBeacon.latitude,
       longitude: targetBeacon.longitude,
       accuracy: 1.2,

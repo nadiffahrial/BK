@@ -115,7 +115,7 @@ export const BUILDINGS_DATA: Building[] = [
           {
             id: 'labkom1-1d',
             code: '1D',
-            name: 'Lab Komputer 1D (Jaringan Komputer & IoT)',
+            name: 'Lab Komputer 1D (Jaringan Komputer)',
             buildingId: 'gedung-a',
             floorNumber: 1,
             type: 'laboratory',
@@ -126,9 +126,9 @@ export const BUILDINGS_DATA: Building[] = [
             acUnits: 2,
             facilities: [
               { name: 'Cisco Router & Switch Rack', iconName: 'Cpu', available: true },
-              { name: 'IoT Sensor Node Kit', iconName: 'Zap', available: true }
+              { name: 'Server Rack System', iconName: 'Cpu', available: true }
             ],
-            description: 'Laboratorium jaringan komputer, simulasi routing, dan perangkat IoT.',
+            description: 'Laboratorium jaringan komputer, simulasi routing, dan sistem komputasi terdistribusi.',
             currentActivity: {
               title: 'Jaringan Komputer: Switching & Routing',
               personInCharge: 'Laboran Jaringan',
@@ -707,8 +707,8 @@ export const BUILDINGS_DATA: Building[] = [
             currentOccupancy: 28,
             temperature: 22,
             acUnits: 2,
-            facilities: [{ name: 'IoT & Edge Computing Kits', iconName: 'Cpu', available: true }],
-            description: 'Laboratorium pengembangan edge computing, smart device, dan sistem sensor cerdas.',
+            facilities: [{ name: 'Edge Computing Kits', iconName: 'Cpu', available: true }],
+            description: 'Laboratorium pengembangan edge computing, smart device, dan sistem komputasi cerdas.',
             schedule: [],
             coordinates: { x: 655, y: 270, w: 100, h: 195, doorPosition: 'top' }
           },
