@@ -249,9 +249,26 @@ export const PanoramaRoomsModal: React.FC<PanoramaRoomsModalProps> = ({
                           <span className="text-xs px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-600">
                             {room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'} • Tingkat {room.floorNumber}
                           </span>
-                          <span className="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
-                            Tersedia untuk Digunakan
-                          </span>
+                          {room.status === 'available' && (
+                            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
+                              Tersedia untuk Digunakan
+                            </span>
+                          )}
+                          {room.status === 'reserved' && (
+                            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800">
+                              Memiliki Jadwal
+                            </span>
+                          )}
+                          {room.status === 'occupied' && (
+                            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800">
+                              Sedang Digunakan
+                            </span>
+                          )}
+                          {room.status === 'maintenance' && (
+                            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border border-slate-300 dark:border-slate-700">
+                              Pemeliharaan
+                            </span>
+                          )}
                         </div>
 
                         <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-snug">
@@ -265,10 +282,21 @@ export const PanoramaRoomsModal: React.FC<PanoramaRoomsModalProps> = ({
                         {/* Facilities snippet */}
                         <div className="mt-3 flex items-center gap-2 flex-wrap">
                           <span className="text-[11px] font-bold text-slate-400">Fasilitas Utama:</span>
-                          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/60 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1">
-                            <Tv className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                            Graphic Tablet & High Refresh Monitor
-                          </span>
+                          {room.facilities && room.facilities.length > 0 ? (
+                            room.facilities.slice(0, 2).map((fac, fIdx) => (
+                              <span 
+                                key={fIdx}
+                                className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/60 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1"
+                              >
+                                <Tv className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                {fac.name}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/60 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                              Workstation Komputer & AC
+                            </span>
+                          )}
                           <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/60 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
                             Kapasitas: {room.capacity} Mahasiswa
                           </span>

@@ -106,6 +106,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
   const classroomRooms = allRoomsInActiveBuilding.filter(r => r.type === 'classroom' || r.type === 'auditorium').length;
   const labRooms = allRoomsInActiveBuilding.filter(r => r.type === 'laboratory').length;
   const facilityRooms = allRoomsInActiveBuilding.filter(r => r.type === 'facility').length;
+  const total360Rooms = buildings.flatMap(b => b.floors.flatMap(f => f.rooms)).filter(r => Boolean(r.panoramaUrl)).length;
 
   const searchResults = searchQuery.trim().length > 1
     ? buildings.flatMap(b =>
@@ -233,7 +234,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                       <p className="text-[10px] text-emerald-100 font-medium">Tur interaktif Ultra-HD tanpa distorsi</p>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-lg font-mono">1 Ruang</span>
+                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-lg font-mono">{total360Rooms} Ruang</span>
                 </button>
               )}
 

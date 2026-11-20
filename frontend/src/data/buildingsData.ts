@@ -182,6 +182,7 @@ export const BUILDINGS_DATA: Building[] = [
             acUnits: 2,
             facilities: [{ name: 'GPU Workstation RTX 4080', iconName: 'Cpu', available: true }],
             description: 'Laboratorium riset arsitektur komputer, infrastruktur jaringan, dan cloud computing.',
+            panoramaUrl: './panoramas/labkom-1f.jpg',
             schedule: [
               { id: 's-lab1f-1', title: 'Workshop AI & Deep Learning', organizer: 'Riset Informatika', timeRange: '13:00 - 16:30', type: 'Workshop' }
             ],
