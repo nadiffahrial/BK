@@ -76,23 +76,30 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(75, width / height, 1, 1100);
+    const camera = new THREE.PerspectiveCamera(70, width / height, 1, 1100);
     cameraRef.current = camera;
 
-    // 2. Inverted Sphere for 360 Panorama View
-    const geometry = new THREE.SphereGeometry(500, 64, 32);
+    // 2. High-Density Inverted Sphere for Crisp 360 Panorama View
+    const geometry = new THREE.SphereGeometry(500, 128, 64);
     // Invert the sphere so the texture renders on the inner faces
     geometry.scale(-1, 1, 1);
 
-    // 3. WebGL Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // 3. Ultra-HD WebGL Renderer with High DPI & ACES Tone Mapping
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true, 
+      alpha: false, 
+      powerPreference: 'high-performance' 
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
     renderer.setSize(width, height);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     rendererRef.current = renderer;
 
     container.appendChild(renderer.domElement);
 
-    // 4. Load Equirectangular Panorama Texture
+    // 4. Load High-Definition Equirectangular Panorama Texture
     const textureUrl = room.panoramaUrl || './panoramas/labkom-1j.jpg';
     const textureLoader = new THREE.TextureLoader();
 
@@ -100,8 +107,13 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
       textureUrl,
       (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
-        texture.minFilter = THREE.LinearFilter;
-        texture.generateMipmaps = false;
+        texture.generateMipmaps = true;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        // Apply Maximum Anisotropic Filtering supported by hardware (sharpens textures at angles)
+        const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.anisotropy = Math.min(16, maxAnisotropy);
+        texture.needsUpdate = true;
 
         const material = new THREE.MeshBasicMaterial({ map: texture });
         const sphere = new THREE.Mesh(geometry, material);
