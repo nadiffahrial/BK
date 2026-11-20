@@ -15,7 +15,8 @@ import {
   Sparkles,
   Smartphone,
   Eye,
-  Info
+  Info,
+  Layers
 } from 'lucide-react';
 
 interface RoomPanoramaModalProps {
@@ -37,15 +38,23 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
   const [isGyroActive, setIsGyroActive] = useState<boolean>(false);
   const [headingDeg, setHeadingDeg] = useState<number>(0);
   const [showInstructions, setShowInstructions] = useState<boolean>(true);
+  
+  // Projection mode: 'cylinder' (Ultra-HD rectilinear for phone panoramas) vs 'sphere' (classic 360 sphere)
+  const [projectionMode, setProjectionMode] = useState<'cylinder' | 'sphere'>('cylinder');
+  const projectionModeRef = useRef<'cylinder' | 'sphere'>('cylinder');
+  useEffect(() => {
+    projectionModeRef.current = projectionMode;
+  }, [projectionMode]);
 
   // References for Three.js objects
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const sphereRef = useRef<THREE.Mesh | null>(null);
+  const meshRef = useRef<THREE.Mesh | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
+  const aspectRef = useRef<number>(2.605);
 
-  // Coordinate tracking for spherical panorama
+  // Coordinate tracking for panorama camera orientation
   const lonRef = useRef<number>(0);
   const latRef = useRef<number>(0);
   const targetLonRef = useRef<number>(0);
@@ -58,6 +67,31 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
 
   // Touch pinch-to-zoom tracking
   const touchDistanceRef = useRef<number | null>(null);
+
+  // Helper: Create geometry according to projection mode and aspect ratio
+  const createPanoramaGeometry = (mode: 'cylinder' | 'sphere', aspect: number) => {
+    if (mode === 'cylinder') {
+      const radius = 500;
+      // Precision cylindrical height calculated from aspect ratio to preserve 1:1 rectilinear proportion
+      const height = (2 * Math.PI * radius) / Math.max(1.8, aspect);
+      const geometry = new THREE.CylinderGeometry(radius, radius, height, 128, 32, true);
+      geometry.scale(-1, 1, 1);
+      return geometry;
+    } else {
+      // Classic spherical geometry
+      const geometry = new THREE.SphereGeometry(500, 128, 64);
+      geometry.scale(-1, 1, 1);
+      return geometry;
+    }
+  };
+
+  // Switch geometry when projection mode changes
+  useEffect(() => {
+    if (!meshRef.current) return;
+    const oldGeo = meshRef.current.geometry;
+    meshRef.current.geometry = createPanoramaGeometry(projectionMode, aspectRef.current);
+    oldGeo.dispose();
+  }, [projectionMode]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -76,15 +110,10 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(70, width / height, 1, 1100);
+    const camera = new THREE.PerspectiveCamera(70, width / height, 1, 1200);
     cameraRef.current = camera;
 
-    // 2. High-Density Inverted Sphere for Crisp 360 Panorama View
-    const geometry = new THREE.SphereGeometry(500, 128, 64);
-    // Invert the sphere so the texture renders on the inner faces
-    geometry.scale(-1, 1, 1);
-
-    // 3. Ultra-HD WebGL Renderer with High DPI & ACES Tone Mapping
+    // 2. High-Precision WebGL Renderer with High DPI & ACES Filmic Tone Mapping
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true, 
       alpha: false, 
@@ -93,13 +122,13 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
     renderer.setSize(width, height);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.08;
+    renderer.toneMappingExposure = 1.06;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     rendererRef.current = renderer;
 
     container.appendChild(renderer.domElement);
 
-    // 4. Load High-Definition Equirectangular Panorama Texture
+    // 3. Load High-Definition Panorama Texture
     const textureUrl = room.panoramaUrl || './panoramas/labkom-1j.jpg';
     const textureLoader = new THREE.TextureLoader();
 
@@ -110,27 +139,33 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
         texture.generateMipmaps = true;
         texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
-        // Apply Maximum Anisotropic Filtering supported by hardware (sharpens textures at angles)
+        
+        // Apply Maximum Anisotropic Filtering (sharpens textures at angles)
         const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         texture.anisotropy = Math.min(16, maxAnisotropy);
         texture.needsUpdate = true;
 
-        const material = new THREE.MeshBasicMaterial({ map: texture });
-        const sphere = new THREE.Mesh(geometry, material);
-        sphereRef.current = sphere;
-        scene.add(sphere);
+        if (texture.image && texture.image.width && texture.image.height) {
+          aspectRef.current = texture.image.width / texture.image.height;
+        }
+
+        const geometry = createPanoramaGeometry(projectionModeRef.current, aspectRef.current);
+        const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+        const mesh = new THREE.Mesh(geometry, material);
+        meshRef.current = mesh;
+        scene.add(mesh);
 
         setIsLoading(false);
       },
       undefined,
       (err) => {
-        console.error('Failed to load 360 panorama image:', err);
-        setLoadError('Gagal memuat file foto panorama 360°. Periksa ketersediaan gambar.');
+        console.error('Failed to load panorama image:', err);
+        setLoadError('Gagal memuat file foto panorama. Periksa ketersediaan gambar.');
         setIsLoading(false);
       }
     );
 
-    // 5. Animation Loop with Smooth Damping
+    // 4. Animation Loop with Smooth Damping
     const animate = () => {
       animFrameIdRef.current = requestAnimationFrame(animate);
 
@@ -142,8 +177,10 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
       lonRef.current += (targetLonRef.current - lonRef.current) * 0.12;
       latRef.current += (targetLatRef.current - latRef.current) * 0.12;
 
-      // Clamp vertical latitude between -85° and 85° to prevent camera flipping
-      latRef.current = Math.max(-85, Math.min(85, latRef.current));
+      // Clamp vertical latitude according to projection mode
+      // Cylinder mode clamps to ~36° to keep the view cleanly inside the rectilinear photo boundary
+      const maxLat = projectionModeRef.current === 'cylinder' ? 36 : 85;
+      latRef.current = Math.max(-maxLat, Math.min(maxLat, latRef.current));
 
       const phi = THREE.MathUtils.degToRad(90 - latRef.current);
       const theta = THREE.MathUtils.degToRad(lonRef.current);
@@ -162,7 +199,7 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
 
     animate();
 
-    // 6. Handle Window Resize
+    // 5. Handle Window Resize
     const handleResize = () => {
       if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
       const newWidth = containerRef.current.clientWidth || window.innerWidth;
@@ -180,7 +217,7 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
       setShowInstructions(false);
     }, 5000);
 
-    // 7. Cleanup Function
+    // 6. Cleanup Function
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', handleResize);
@@ -191,7 +228,9 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
         rendererRef.current.domElement.remove();
         rendererRef.current.dispose();
       }
-      geometry.dispose();
+      if (meshRef.current) {
+        meshRef.current.geometry.dispose();
+      }
     };
   }, [isOpen, room.panoramaUrl, isAutoRotate, isGyroActive]);
 
@@ -207,9 +246,11 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isPointerDownRef.current) return;
-    const factor = (cameraRef.current?.fov || 75) / 500;
+    const factor = (cameraRef.current?.fov || 70) / 500;
     targetLonRef.current = onPointerDownLonRef.current - (e.clientX - onPointerDownPointerXRef.current) * factor;
-    targetLatRef.current = onPointerDownLatRef.current + (e.clientY - onPointerDownPointerYRef.current) * factor;
+    const maxLat = projectionModeRef.current === 'cylinder' ? 36 : 85;
+    const newLat = onPointerDownLatRef.current + (e.clientY - onPointerDownPointerYRef.current) * factor;
+    targetLatRef.current = Math.max(-maxLat, Math.min(maxLat, newLat));
   };
 
   const handlePointerUp = () => {
@@ -222,7 +263,7 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
     e.preventDefault();
     if (!cameraRef.current) return;
     const newFov = cameraRef.current.fov + e.deltaY * 0.05;
-    cameraRef.current.fov = Math.max(30, Math.min(95, newFov));
+    cameraRef.current.fov = Math.max(25, Math.min(90, newFov));
     cameraRef.current.updateProjectionMatrix();
   };
 
@@ -236,7 +277,7 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
       if (touchDistanceRef.current !== null) {
         const delta = touchDistanceRef.current - dist;
         const newFov = cameraRef.current.fov + delta * 0.15;
-        cameraRef.current.fov = Math.max(30, Math.min(95, newFov));
+        cameraRef.current.fov = Math.max(25, Math.min(90, newFov));
         cameraRef.current.updateProjectionMatrix();
       }
       touchDistanceRef.current = dist;
@@ -246,13 +287,13 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
   // Zoom controls
   const handleZoomIn = () => {
     if (!cameraRef.current) return;
-    cameraRef.current.fov = Math.max(30, cameraRef.current.fov - 10);
+    cameraRef.current.fov = Math.max(25, cameraRef.current.fov - 10);
     cameraRef.current.updateProjectionMatrix();
   };
 
   const handleZoomOut = () => {
     if (!cameraRef.current) return;
-    cameraRef.current.fov = Math.min(95, cameraRef.current.fov + 10);
+    cameraRef.current.fov = Math.min(90, cameraRef.current.fov + 10);
     cameraRef.current.updateProjectionMatrix();
   };
 
@@ -261,7 +302,7 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
     targetLonRef.current = 0;
     targetLatRef.current = 0;
     if (cameraRef.current) {
-      cameraRef.current.fov = 75;
+      cameraRef.current.fov = 70;
       cameraRef.current.updateProjectionMatrix();
     }
   };
@@ -275,6 +316,11 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
       document.exitFullscreen?.().catch(() => {});
       setIsFullscreen(false);
     }
+  };
+
+  // Projection mode toggle (Cylinder HD rectilinear vs 360 Sphere)
+  const toggleProjectionMode = () => {
+    setProjectionMode((prev) => (prev === 'cylinder' ? 'sphere' : 'cylinder'));
   };
 
   // Device orientation / Gyroscope toggle
@@ -307,7 +353,8 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
     const onDeviceOrientation = (e: DeviceOrientationEvent) => {
       if (e.alpha !== null && e.beta !== null) {
         targetLonRef.current = 360 - e.alpha;
-        targetLatRef.current = Math.max(-80, Math.min(80, e.beta - 90));
+        const maxLat = projectionModeRef.current === 'cylinder' ? 36 : 80;
+        targetLatRef.current = Math.max(-maxLat, Math.min(maxLat, e.beta - 90));
       }
     };
 
@@ -330,13 +377,16 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
         onTouchMove={handleTouchMove}
         className="relative w-full h-full cursor-grab active:cursor-grabbing overflow-hidden"
       >
+        {/* Subtle cinematic top-bottom vignette */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/25 z-[1]" />
+
         {/* Loading Spinner */}
         {isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 text-white z-20">
             <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
             <div className="text-base font-extrabold flex items-center gap-2">
               <Eye className="w-5 h-5 text-emerald-400 animate-pulse" />
-              <span>Memuat Panorama 360°...</span>
+              <span>Memuat Panorama Ultra-HD...</span>
             </div>
             <p className="text-xs text-slate-400 mt-1">{room.name}</p>
           </div>
@@ -358,7 +408,7 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
         )}
 
         {/* Top HUD: Room Information & Quick Actions */}
-        <div className="absolute top-0 inset-x-0 p-4 sm:p-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent flex items-start justify-between gap-4 z-10 pointer-events-none">
+        <div className="absolute top-0 inset-x-0 p-4 sm:p-6 bg-gradient-to-b from-black/85 via-black/45 to-transparent flex items-start justify-between gap-4 z-10 pointer-events-none">
           <div className="pointer-events-auto">
             <div className="flex items-center gap-2 flex-wrap mb-1.5">
               <span className="font-mono text-xs font-black px-2.5 py-0.5 rounded-lg bg-emerald-500 text-slate-950 shadow-md">
@@ -367,9 +417,9 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
               <span className="text-xs px-2.5 py-0.5 rounded-lg bg-white/20 backdrop-blur-md text-white font-bold border border-white/20">
                 {room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'} • Tingkat {room.floorNumber}
               </span>
-              <span className="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-950/80 text-emerald-300 font-bold border border-emerald-700 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>360° Panorama Interaktif</span>
+              <span className="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-950/80 text-emerald-300 font-bold border border-emerald-700 flex items-center gap-1.5 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Ultra-HD {projectionMode === 'cylinder' ? 'Silinder (Non-360 HP)' : 'Bola 360°'}</span>
               </span>
             </div>
             <h2 className="text-lg sm:text-2xl font-black text-white drop-shadow-md">
@@ -404,16 +454,16 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
         {showInstructions && !isLoading && !loadError && (
           <div 
             onClick={() => setShowInstructions(false)}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 p-4 rounded-3xl bg-black/75 backdrop-blur-md border border-emerald-500/30 text-white text-center shadow-2xl pointer-events-auto cursor-pointer animate-fade-in max-w-sm"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 p-5 rounded-3xl bg-black/80 backdrop-blur-md border border-emerald-500/30 text-white text-center shadow-2xl pointer-events-auto cursor-pointer animate-fade-in max-w-sm"
           >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 mx-auto flex items-center justify-center mb-2.5 animate-pulse">
               <Eye className="w-6 h-6" />
             </div>
-            <h3 className="font-extrabold text-sm text-white">Eksplorasi Ruangan 360°</h3>
-            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-              <strong>Klik & geser mouse</strong> atau <strong>usap layar HP</strong> untuk melihat sekeliling. Gunakan scroll mouse atau cubit layar untuk zoom in/out.
+            <h3 className="font-extrabold text-sm text-white">Eksplorasi Panorama HD</h3>
+            <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+              <strong>Klik & geser mouse</strong> atau <strong>usap layar HP</strong> untuk melihat ruangan secara jernih dan bebas distorsi lengkung. Scroll atau cubit layar untuk zoom in/out.
             </p>
-            <div className="mt-3 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 py-1 px-3 rounded-full border border-emerald-800 inline-block">
+            <div className="mt-3 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 py-1 px-3.5 rounded-full border border-emerald-800 inline-block">
               Ketuk untuk memulai
             </div>
           </div>
@@ -423,13 +473,15 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
         <div className="absolute bottom-5 inset-x-0 flex flex-col items-center gap-2 z-10 pointer-events-none px-4">
           
           {/* Compass & Angle indicator */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-[11px] font-mono font-bold shadow-md pointer-events-auto">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-white text-[11px] font-mono font-bold shadow-md pointer-events-auto">
             <Compass className="w-3.5 h-3.5 text-emerald-400 animate-spin-slow" />
-            <span>Sudut Pandang: {headingDeg}°</span>
+            <span>Arah Pandang: {headingDeg}°</span>
+            <span className="text-slate-500">|</span>
+            <span className="text-emerald-300 font-sans">{projectionMode === 'cylinder' ? 'Silinder HD' : 'Bola 360°'}</span>
           </div>
 
           {/* Main Control Pill */}
-          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-black/70 backdrop-blur-xl border border-white/20 text-white shadow-2xl pointer-events-auto flex-wrap justify-center">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-black/75 backdrop-blur-xl border border-white/20 text-white shadow-2xl pointer-events-auto flex-wrap justify-center">
             
             {/* Auto Rotate Button */}
             <button
@@ -445,11 +497,25 @@ export const RoomPanoramaModal: React.FC<RoomPanoramaModalProps> = ({
               <span className="hidden sm:inline">{isAutoRotate ? 'Jeda Putar' : 'Putar Otomatis'}</span>
             </button>
 
+            {/* Projection Mode Toggle: Cylinder HD (Phone/Non-360) vs Sphere */}
+            <button
+              onClick={toggleProjectionMode}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                projectionMode === 'cylinder'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
+                  : 'bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30'
+              }`}
+              title="Ganti Mode Proyeksi: Silinder HD (Khusus Kamera HP/Non-360) atau Bola 360°"
+            >
+              <Layers className="w-4 h-4 text-emerald-400" />
+              <span>{projectionMode === 'cylinder' ? 'Mode: Silinder HD' : 'Mode: Bola 360°'}</span>
+            </button>
+
             {/* Reset Angle Button */}
             <button
               onClick={handleResetView}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition-colors cursor-pointer"
-              title="Reset Arah Depan"
+              title="Reset Sudut Depan"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
