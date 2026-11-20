@@ -52,14 +52,14 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
 
   // Popular search tags for university students with real active rooms
   const popularTags = [
-    { label: '2A (Ruang Kuliah Besar)', q: '2A' },
-    { label: '1A (Lab Dasar Pemrograman)', q: '1A' },
-    { label: '2F (Ruang Sidang Skripsi)', q: '2F' },
-    { label: '1D (Lab Jaringan Komputer)', q: '1D' },
-    { label: '2N (Smart Classroom)', q: '2N' },
-    { label: '1L (Smart Hall)', q: '1L' },
+    { label: '1J (R. Seminar Hybrid 360°)', q: '1J' },
+    { label: '1A (R. Prodi Informatika / KK ISI)', q: '1A' },
+    { label: '2F (R. Lab Riset IoT)', q: '2F' },
+    { label: '1D (R. Lab Riset Pembelajaran Mesin)', q: '1D' },
+    { label: '1L (R. Prodi Sistem Informasi)', q: '1L' },
+    { label: '2A (R. Lab Sistem Informasi)', q: '2A' },
     { label: 'Mushola Kampus', q: 'Mushola' },
-    { label: 'Toilet & Fasilitas', q: 'Toilet' }
+    { label: 'Toilet Dosen & Mahasiswa', q: 'Toilet' }
   ];
 
   // Auto focus input when modal opens
