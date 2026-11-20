@@ -285,6 +285,7 @@ export const BUILDINGS_DATA: Building[] = [
             acUnits: 2,
             facilities: [{ name: 'DevOps & Git Server Local', iconName: 'Cpu', available: true }],
             description: 'Laboratorium riset rekayasa perangkat lunak modern, arsitektur data, dan software quality assurance.',
+            panoramaUrl: './panoramas/labkom-1l.jpg',
             schedule: [],
             coordinates: { x: 340, y: 270, w: 105, h: 195, doorPosition: 'top' }
           },
