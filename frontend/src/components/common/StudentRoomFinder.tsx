@@ -10,7 +10,8 @@ import {
   Compass, 
   X,
   Navigation,
-  CornerDownLeft
+  CornerDownLeft,
+  Eye
 } from 'lucide-react';
 
 interface StudentRoomFinderProps {
@@ -49,6 +50,7 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
   // Simple, practical categories
   const categories = [
     { id: 'all', label: 'Semua' },
+    { id: 'panorama', label: '🌐 Ruang 360°', icon: Eye },
     { id: 'classroom', label: 'Kelas Kuliah', icon: GraduationCap },
     { id: 'laboratory', label: 'Lab Komputer & Riset', icon: Laptop },
     { id: 'skripsi', label: 'Ruang Sidang', icon: FileText },
@@ -59,7 +61,9 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
   const filteredRooms = useMemo(() => {
     let result = allRooms;
 
-    if (activeCategory === 'classroom') {
+    if (activeCategory === 'panorama') {
+      result = result.filter(r => Boolean(r.panoramaUrl));
+    } else if (activeCategory === 'classroom') {
       result = result.filter(r => r.type === 'classroom' || r.type === 'auditorium');
     } else if (activeCategory === 'laboratory') {
       result = result.filter(r => r.type === 'laboratory' || r.name.toLowerCase().includes('lab'));

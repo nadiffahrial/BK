@@ -9,6 +9,8 @@ import { StudentRoomFinder } from './components/common/StudentRoomFinder';
 import { SearchEngineModal } from './components/common/SearchEngineModal';
 import { CustomerServiceModal } from './components/common/CustomerServiceModal';
 import { UserGuideModal } from './components/common/UserGuideModal';
+import { PanoramaRoomsModal } from './components/common/PanoramaRoomsModal';
+import { RoomPanoramaModal } from './components/floorplan/RoomPanoramaModal';
 import { FloorMapSvg } from './components/floorplan/FloorMapSvg';
 import { IsometricView } from './components/floorplan/IsometricView';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
@@ -53,6 +55,8 @@ export const App: React.FC = () => {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
   const [isCsModalOpen, setIsCsModalOpen] = useState<boolean>(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
+  const [isPanoramaModalOpen, setIsPanoramaModalOpen] = useState<boolean>(false);
+  const [directPanoramaRoom, setDirectPanoramaRoom] = useState<Room | null>(null);
 
   // Global shortcut Ctrl+K or Cmd+K to open Search Engine modal
   useEffect(() => {
@@ -239,6 +243,7 @@ export const App: React.FC = () => {
         onOpenMenu={() => setIsMenuOpen(true)}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenGuide={() => setIsGuideModalOpen(true)}
+        onOpenPanoramaRooms={() => setIsPanoramaModalOpen(true)}
       />
 
       {/* 2. Slide-over Navigation Menu Drawer */}
@@ -264,6 +269,7 @@ export const App: React.FC = () => {
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCs={() => setIsCsModalOpen(true)}
         onOpenGuide={() => setIsGuideModalOpen(true)}
+        onOpenPanoramaRooms={() => setIsPanoramaModalOpen(true)}
       />
 
       {/* 3. Main Workspace Area (Clean & Simple) */}
@@ -456,6 +462,25 @@ export const App: React.FC = () => {
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCs={() => setIsCsModalOpen(true)}
       />
+
+      {/* 🌐 Modal Menu Katalog Ruangan Berfitur 360° */}
+      <PanoramaRoomsModal
+        isOpen={isPanoramaModalOpen}
+        onClose={() => setIsPanoramaModalOpen(false)}
+        buildings={buildings}
+        onOpenPanorama={(room) => setDirectPanoramaRoom(room)}
+        onNavigateToRoom={(bId, fNum, r) => handleNavigateFromSearch(bId, fNum, r)}
+        onOpenCs={() => setIsCsModalOpen(true)}
+      />
+
+      {/* 🌐 Direct Fullscreen 360 Panorama Modal */}
+      {directPanoramaRoom && (
+        <RoomPanoramaModal
+          room={directPanoramaRoom}
+          isOpen={Boolean(directPanoramaRoom)}
+          onClose={() => setDirectPanoramaRoom(null)}
+        />
+      )}
 
       {/* Minimalist Clean Footer */}
               <Footer onOpenGuide={() => setIsGuideModalOpen(true)} />

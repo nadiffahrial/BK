@@ -7,7 +7,8 @@ import {
   ListFilter, 
   GraduationCap,
   Search,
-  BookOpen
+  BookOpen,
+  Eye
 } from 'lucide-react';
 import { Building, RoomStatus, ViewMode } from '../../types';
 import { ThemeToggle } from '../common/ThemeToggle';
@@ -29,6 +30,7 @@ interface NavbarProps {
   onOpenMenu: () => void;
   onOpenSearch?: () => void;
   onOpenGuide?: () => void;
+  onOpenPanoramaRooms?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -36,7 +38,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onChangeViewMode,
   onOpenMenu,
   onOpenSearch,
-  onOpenGuide
+  onOpenGuide,
+  onOpenPanoramaRooms
 }) => {
   const { user } = useAuth();
 
@@ -107,8 +110,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          {/* 3. Guide Trigger, Search Engine Trigger, Dark Mode Toggle, User Avatar & Menu Button */}
+          {/* 3. 360 Rooms Trigger, Guide Trigger, Search Engine Trigger, Dark Mode Toggle, User Avatar & Menu Button */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* 🌐 Tombol Ruangan 360° */}
+            {onOpenPanoramaRooms && (
+              <button
+                onClick={onOpenPanoramaRooms}
+                className="smooth-btn flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/80 text-xs font-bold transition-all cursor-pointer group shadow-2xs"
+                title="Lihat Daftar Ruangan Berfitur Panorama 360°"
+              >
+                <Eye className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">Ruang 360°</span>
+                <span className="sm:hidden">360°</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+              </button>
+            )}
+
             {/* 📖 Tombol Panduan Pengguna */}
             {onOpenGuide && (
               <button

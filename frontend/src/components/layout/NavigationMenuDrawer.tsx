@@ -35,7 +35,8 @@ import {
   ChevronRight,
   Compass,
   Headphones,
-  BookOpen
+  BookOpen,
+  Eye
 } from 'lucide-react';
 
 interface NavigationMenuDrawerProps {
@@ -60,6 +61,7 @@ interface NavigationMenuDrawerProps {
   onOpenSearch?: () => void;
   onOpenCs?: () => void;
   onOpenGuide?: () => void;
+  onOpenPanoramaRooms?: () => void;
 }
 
 export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
@@ -83,7 +85,8 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
   isBackendConnected,
   onOpenSearch,
   onOpenCs,
-  onOpenGuide
+  onOpenGuide,
+  onOpenPanoramaRooms
 }) => {
   React.useEffect(() => {
     if (!isOpen) return;
@@ -207,6 +210,31 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                     </button>
                   ))}
                 </div>
+              )}
+
+              {/* 🌐 Katalog Ruangan Berfitur 360° Shortcut */}
+              {onOpenPanoramaRooms && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenPanoramaRooms();
+                  }}
+                  className="mt-2.5 w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-850 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-white/20 text-white group-hover:scale-110 transition-transform">
+                      <Eye className="w-4 h-4 animate-pulse" />
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-extrabold text-sm">Katalog Ruangan 360°</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping" />
+                      </div>
+                      <p className="text-[10px] text-emerald-100 font-medium">Tur interaktif Ultra-HD tanpa distorsi</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-lg font-mono">1 Ruang</span>
+                </button>
               )}
 
               {/* Spotlight Search Engine Shortcut */}

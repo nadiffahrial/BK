@@ -31,7 +31,11 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
   const [sortBy, setSortBy] = useState<'code' | 'capacity' | 'name'>('code');
 
   const filtered = rooms
-    .filter(r => filterType === 'all' || r.type === filterType)
+    .filter(r => {
+      if (filterType === 'all') return true;
+      if (filterType === 'panorama') return Boolean(r.panoramaUrl);
+      return r.type === filterType;
+    })
     .sort((a, b) => {
       if (sortBy === 'capacity') return b.capacity - a.capacity;
       if (sortBy === 'name') return a.name.localeCompare(b.name);
@@ -49,6 +53,7 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
           </span>
           {[
             { id: 'all', label: 'Semua Tipe' },
+            { id: 'panorama', label: '🌐 Ruang 360°' },
             { id: 'classroom', label: 'Kelas Teori' },
             { id: 'laboratory', label: 'Laboratorium' },
             { id: 'meeting', label: 'Ruang Rapat' },
