@@ -10,8 +10,33 @@ import { getAllBeacons, getBeaconById, locateDevicePosition, calculateNavigation
 import { getCampusProfile, getTodaySchedules, getStudentCategories } from '../controllers/campusController.js';
 import { getAllCsTickets, createCsTicket, updateCsTicketStatus } from '../controllers/csController.js';
 import { addClient } from '../sse.js';
+import { rateLimit } from 'express-rate-limit';
 
 const router = Router();
+
+// Rate Limit untuk Login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Terlalu banyak percobaan login. Silakan coba lagi nanti.'
+  }
+});
+
+// Rate Limit untuk Pengaduan
+const csTicketLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Terlalu banyak pengiriman pengaduan. Silakan coba lagi nanti.'
+  }
+});
 
 // 1. Healthcheck & Service Status
 router.get('/health', (req, res) => {
@@ -28,7 +53,7 @@ router.get('/health', (req, res) => {
 router.get('/events', addClient);
 
 // 3. Authentication
-router.post('/auth/login', login);
+router.post('/auth/login', loginLimiter, login);
 
 // 4. Campus Profile & Information (Universitas Siliwangi)
 router.get('/campus/info', getCampusProfile);
@@ -69,7 +94,7 @@ router.get(
   getAllCsTickets
 );
 
-router.post('/cs/tickets', createCsTicket);
+router.post('/cs/tickets', csTicketLimiter, createCsTicket);
 
 router.patch(
   '/cs/tickets/:id/status',

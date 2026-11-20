@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import apiRoutes from './routes/apiRoutes.js';
 import { initDatabase } from './config/db.js';
+import helmet from 'helmet';
 
 dotenv.config();
 
@@ -10,17 +11,35 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// Security Configuration
+const allowedOrigins = (
+  process.env.CORS_ORIGIN || 'http://localhost:5173'
+)
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+// Security Middleware
+app.use(helmet());
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
+  },
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
 }));
 
-app.use(express.json());
+// JSON Body Limit
+app.use(express.json({ limit: '100kb' }));
 
 // Request Logger
 app.use((req, res, next) => {
   const timestamp = new Date().toLocaleTimeString('id-ID');
-  console.log(`[${timestamp}] ${req.method} ${req.url}`);
+  console.log(`[${timestamp}] ${req.method} ${req.path}`);
   next();
 });
 
@@ -49,6 +68,30 @@ app.get('/', (req, res) => {
       'POST /api/iot/telemetry (Update Sensor Lingkungan & Suhu)',
       'GET /api/events (Server-Sent Events Real-time)'
     ]
+  });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  const timestamp = new Date().toLocaleTimeString('id-ID');
+
+  console.error(`[${timestamp}] Server Error:`, err.stack || err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  const status =
+    Number.isInteger(err.status) && err.status >= 400 && err.status < 600
+      ? err.status
+      : 500;
+
+  res.status(status).json({
+    success: false,
+    message:
+      status === 500
+        ? 'Terjadi kesalahan pada server.'
+        : err.message
   });
 });
 
