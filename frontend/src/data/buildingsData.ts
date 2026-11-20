@@ -317,6 +317,7 @@ export const BUILDINGS_DATA: Building[] = [
             acUnits: 2,
             facilities: [{ name: 'Graphic Tablet & High Refresh Monitor', iconName: 'Tv', available: true }],
             description: 'Laboratorium desain grafis, animasi 3D, dan pengembangan game engine.',
+            panoramaUrl: './panoramas/labkom-1j.jpg',
             schedule: [],
             coordinates: { x: 555, y: 270, w: 110, h: 195, doorPosition: 'top' }
           },

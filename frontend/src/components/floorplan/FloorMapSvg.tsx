@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Room, Floor } from '../../types';
+import { RoomPanoramaModal } from './RoomPanoramaModal';
 import { 
   Users, 
   Thermometer, 
@@ -15,7 +16,8 @@ import {
   Crosshair,
   Compass,
   Box,
-  Smartphone
+  Smartphone,
+  Eye
 } from 'lucide-react';
 
 interface FloorMapSvgProps {
@@ -39,6 +41,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
 }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [hoveredRoom, setHoveredRoom] = useState<Room | null>(null);
+  const [isPanoramaOpen, setIsPanoramaOpen] = useState<boolean>(false);
 
   const { width, height } = floor.dimensions;
   const entrancePoint = { x: 90, y: 250 };
@@ -363,6 +366,24 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                         </text>
                       </g>
 
+                      {/* 360 Panorama Indicator Badge on Room */}
+                      {room.panoramaUrl && (
+                        <g 
+                          transform={`translate(${x + badgeW + 16}, ${y + 8})`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectRoom(room);
+                            setIsPanoramaOpen(true);
+                          }}
+                          className="cursor-pointer transition-transform hover:scale-110"
+                        >
+                          <rect width="38" height="20" rx="6" fill="#0d9488" stroke="#5eead4" strokeWidth="1.5" />
+                          <text x="19" y="14" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="900" fontFamily="sans-serif">
+                            360°
+                          </text>
+                        </g>
+                      )}
+
                       {/* Status Indicator Dot */}
                       <circle
                         cx={x + w - (isCompact ? 10 : 16)}
@@ -514,9 +535,30 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
               <span>{activePathRoomId === selectedRoom.id ? 'Sembunyikan Jalur' : 'Petunjuk Arah ke Ruangan'}</span>
             </button>
           )}
+
+          {selectedRoom?.panoramaUrl && (
+            <button
+              type="button"
+              onClick={() => setIsPanoramaOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-sm shadow-teal-600/30 active:scale-95"
+              title="Buka Tur Panorama 360 Derajat Ruangan"
+            >
+              <Eye className="w-3.5 h-3.5 animate-pulse" />
+              <span>Tur 360°</span>
+            </button>
+          )}
         </div>
 
       </div>
+
+      {/* 360 Degree Panorama Virtual Tour Modal */}
+      {selectedRoom && selectedRoom.panoramaUrl && (
+        <RoomPanoramaModal
+          room={selectedRoom}
+          isOpen={isPanoramaOpen}
+          onClose={() => setIsPanoramaOpen(false)}
+        />
+      )}
 
       <style>{`
         @keyframes dash {

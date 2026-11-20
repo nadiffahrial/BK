@@ -38,6 +38,7 @@ export interface Room {
   acUnits?: number;
   facilities: RoomFacility[];
   description: string;
+  panoramaUrl?: string;
   currentActivity?: {
     title: string;
     personInCharge: string;

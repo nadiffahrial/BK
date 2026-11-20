@@ -264,6 +264,16 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                     Jika AC kelas tidak dingin, proyektor bermasalah, atau spidol habis, klik tombol melayang <strong>"Layanan CS"</strong> di pojok kanan bawah. Kirimkan laporan agar petugas sarpras segera datang memperbaiki.
                   </p>
                 </div>
+
+                <div className="p-4.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 modern-card-hover group hover:border-teal-300 dark:hover:border-teal-500/40">
+                  <h4 className="font-bold text-teal-700 dark:text-teal-400 flex items-center gap-2.5 text-sm mb-1.5">
+                    <span className="w-6 h-6 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold transition-transform duration-300 group-hover:scale-110 shadow-xs">5</span>
+                    Melihat Tur Panorama 360° Ruangan (Contoh: Lab 1J)
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-8.5">
+                    Ruangan bertanda <span className="font-mono font-bold bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded text-[11px]">360°</span> (seperti <strong>Lab Komputer 1J</strong>) dilengkapi fitur tur virtual 360 derajat interaktif. Klik tombol <strong>"Tur Panorama 360°"</strong> untuk memutar sudut pandang ruangan secara nyata langsung dari layar HP atau laptop Anda.
+                  </p>
+                </div>
               </div>
             </div>
           )}

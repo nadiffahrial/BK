@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Room, RoomStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { RoomPanoramaModal } from './RoomPanoramaModal';
 import { 
   X, 
   Users, 
@@ -15,10 +16,12 @@ import {
   Navigation, 
   CheckCircle2, 
   AlertTriangle, 
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  Leaf
+  Sparkles, 
+  ArrowRight, 
+  ShieldCheck, 
+  Leaf,
+  Eye,
+  Compass
 } from 'lucide-react';
 
 interface RoomDetailModalProps {
@@ -37,6 +40,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   onUpdateRoomStatus
 }) => {
   const { user } = useAuth();
+  const [isPanoramaOpen, setIsPanoramaOpen] = useState<boolean>(false);
   if (!room) return null;
 
   const isAdmin = user?.role === 'admin';
@@ -90,6 +94,47 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         {/* Modal Body */}
         <div className="p-6 space-y-6 text-sm text-slate-600">
           
+          {/* 🌟 Fitur Unggulan: Tampilan Panorama 360° Interaktif 🌟 */}
+          {room.panoramaUrl && (
+            <div className="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-xl shadow-emerald-600/25 border border-emerald-400/30 group transition-all">
+              <div className="absolute -right-8 -bottom-8 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+              
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner border border-white/25 group-hover:rotate-6 transition-transform">
+                    <Eye className="w-6 h-6 text-white animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/25 backdrop-blur-md border border-white/20 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping" />
+                        <span>Panorama 360° Tersedia</span>
+                      </span>
+                      <span className="text-[11px] font-bold text-emerald-100">
+                        Foto Riil Laboratorium
+                      </span>
+                    </div>
+                    <h4 className="font-extrabold text-white text-base">
+                      Eksplorasi Ruangan Virtual 360 Derajat
+                    </h4>
+                    <p className="text-xs text-emerald-100/90 mt-0.5 leading-relaxed max-w-lg">
+                      Putar dan jelajahi kondisi fisik {room.name} secara interaktif 360° dari sudut pandang nyata mahasiswa di dalam kelas.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPanoramaOpen(true)}
+                  className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-black shadow-lg shadow-black/10 transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-95 group-hover:shadow-emerald-950/20"
+                >
+                  <Compass className="w-4 h-4 text-emerald-600 animate-spin-slow" />
+                  <span>Buka Tampilan 360°</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ⭐ Petunjuk Arah Jalan untuk Mahasiswa (Student Wayfinding Guide) ⭐ */}
           <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white border border-emerald-200 shadow-xs">
             <div className="flex items-center justify-between mb-2.5">
@@ -256,6 +301,18 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               <Navigation className="w-4 h-4 animate-pulse" />
               <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan ke Ruangan'}</span>
             </button>
+
+            {room.panoramaUrl && (
+              <button
+                type="button"
+                onClick={() => setIsPanoramaOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-md shadow-teal-600/25 transition-all cursor-pointer active:scale-95"
+                title="Buka Tur Panorama 360 Derajat Ruangan"
+              >
+                <Eye className="w-4 h-4 animate-pulse" />
+                <span>Tur Panorama 360°</span>
+              </button>
+            )}
           </div>
 
           <button
@@ -267,6 +324,15 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         </div>
 
       </div>
+
+      {/* 360 Degree Panorama Virtual Tour Modal */}
+      {room.panoramaUrl && (
+        <RoomPanoramaModal
+          room={room}
+          isOpen={isPanoramaOpen}
+          onClose={() => setIsPanoramaOpen(false)}
+        />
+      )}
     </div>
   );
 };
