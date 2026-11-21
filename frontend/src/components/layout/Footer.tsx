@@ -26,11 +26,17 @@ export const Footer: React.FC<FooterProps> = ({ onOpenGuide }) => {
           </div>
 
           {/* Quick links & Contact */}
-          <div className="flex items-center gap-4 sm:gap-6 text-[11px] text-slate-500">
-            <span className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              LABKOM 1 & FT.1
-            </span>
+          <div className="flex items-center gap-4 sm:gap-6 text-[11px] text-slate-500 flex-wrap">
+            <a
+              href="https://maps.app.goo.gl/rPbFcGqnjGcag6i66"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors group"
+              title="Buka Lokasi Kampus 2 Mugarsari Universitas Siliwangi di Google Maps"
+            >
+              <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>Kampus 2 Mugarsari (Google Maps ↗)</span>
+            </a>
             {onOpenGuide && (
               <button
                 type="button"

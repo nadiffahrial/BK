@@ -292,6 +292,22 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                   </span>
                 </button>
               )}
+
+              {/* Lokasi Kampus 2 Mugarsari Google Maps Shortcut */}
+              <a
+                href="https://maps.app.goo.gl/rPbFcGqnjGcag6i66"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-50/60 hover:bg-emerald-100/70 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 font-bold text-xs border border-emerald-200/80 dark:border-slate-700 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span>Lokasi Kampus 2 Mugarsari</span>
+                </div>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold flex items-center gap-0.5">
+                  Maps ↗
+                </span>
+              </a>
             </div>
 
             {/* 2. Switch Building (2 Gedung Universitas) */}
