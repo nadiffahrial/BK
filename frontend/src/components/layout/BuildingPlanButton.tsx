@@ -88,67 +88,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
             </linearGradient>
           </defs>
 
-          {/* 1. Semicircular Atrium / Courtyard Canopy (Top building feature from image) */}
-          {isGedungA ? (
-            <g transform="translate(170, 24)">
-              <circle
-                cx="0"
-                cy="0"
-                r="20"
-                fill={isDark ? '#1e293b' : '#ffffff'}
-                stroke={isActive ? '#059669' : '#475569'}
-                strokeWidth={isActive ? '2.5' : '1.5'}
-              />
-              <circle
-                cx="0"
-                cy="0"
-                r="13"
-                fill="none"
-                stroke={isActive ? '#10b981' : '#94a3b8'}
-                strokeWidth="1"
-                strokeDasharray="2 2"
-              />
-              {/* Entrance corridor neck */}
-              <rect
-                x="-10"
-                y="10"
-                width="20"
-                height="14"
-                fill={isDark ? '#1e293b' : '#ffffff'}
-                stroke={isActive ? '#059669' : '#475569'}
-                strokeWidth={isActive ? '2' : '1.2'}
-              />
-              <text x="0" y="3" textAnchor="middle" fontSize="7" fontWeight="bold" fill={isActive ? (isDark ? '#34d399' : '#065f46') : (isDark ? '#cbd5e1' : '#64748b')}>
-                LOBBY
-              </text>
-            </g>
-          ) : (
-            /* Gedung B: Circular Dome on Right */
-            <g transform="translate(265, 24)">
-              <circle
-                cx="0"
-                cy="0"
-                r="18"
-                fill={isDark ? '#1e293b' : '#ffffff'}
-                stroke={isActive ? '#059669' : '#475569'}
-                strokeWidth={isActive ? '2.5' : '1.5'}
-              />
-              <circle
-                cx="0"
-                cy="0"
-                r="11"
-                fill="none"
-                stroke={isActive ? '#10b981' : '#94a3b8'}
-                strokeWidth="1"
-                strokeDasharray="2 2"
-              />
-              <text x="0" y="3" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill={isActive ? (isDark ? '#34d399' : '#065f46') : (isDark ? '#cbd5e1' : '#64748b')}>
-                SENAT
-              </text>
-            </g>
-          )}
-
-          {/* 2. Left Staircase / Fins (as shown on left side in user's image) */}
+          {/* 1. Left Staircase / Fins (as shown on left side in user's image) */}
           <g transform="translate(14, 30)">
             <rect
               x="0"
