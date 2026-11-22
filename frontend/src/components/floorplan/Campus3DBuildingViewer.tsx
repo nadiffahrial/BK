@@ -18,7 +18,10 @@ import {
   Lock,
   Compass,
   MapPin,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Car,
+  Flag,
+  Navigation
 } from 'lucide-react';
 
 interface Campus3DBuildingViewerProps {
@@ -91,25 +94,25 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
     signType: 'ft1',
     description: 'Gedung perkuliahan program studi Informatika dan Sistem Informasi, serta ruang sidang skripsi.'
   },
-  // 3. Gedung Dekanat & Pusat Administrasi Fakultas Teknik (Baris Depan Timur)
+  // 3. Gedung Dekanat & Pusat Administrasi Fakultas Teknik (Baris Depan Timur, Sesuai Foto Tampak Depan Asli)
   {
     id: 'dekanat-ft',
-    name: 'Gedung Dekanat & Tata Usaha FT',
+    name: 'Gedung Dekanat & Ruang Kuliah Terpadu FT',
     shortName: 'DEKANAT FT',
     code: 'DK',
-    role: 'Kantor Dekan & Layanan Administrasi Fakultas',
+    role: 'Dekanat & Ruang Kuliah Terpadu (SBSN 2022-2023)',
     hasFloorPlan: false,
     x: 26,
     z: 14,
-    length: 46,
-    depth: 15.0,
+    length: 48,
+    depth: 14.5,
     height: 8.6,
-    roofHeight: 5.4,
+    roofHeight: 5.5,
     hasFrontCanopy: true,
-    canopyX: 0,
+    canopyX: -4, // Kanopi portico berada di kiri-tengah fasad depan
     isDekanat: true,
     signType: 'dekanat',
-    description: 'Pusat pimpinan Fakultas Teknik, ruang senat, pelayanan akademik dan administrasi terpusat.'
+    description: 'Gedung Dekanat, kantor pimpinan, dan Ruang Kuliah Terpadu SBSN 2022-2023 dengan kanopi FAKULTAS TEKNIK.'
   },
   // 4. Gedung FT.2 - Teknik Elektro (Baris Tengah Timur, Sejajar di Belakang Dekanat)
   {
@@ -183,7 +186,7 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
 ];
 
 // =========================================================================
-// PROCEDURAL PROCEDURAL TEXTURES GENERATORS (PBR EXACT MATCH REAL LIFE)
+// PROCEDURAL TEXTURE GENERATORS (EXACT MATCH REAL-LIFE PHOTOS)
 // =========================================================================
 
 // 1. Tekstur Dinding Cat Biru Cerulean Asli FT UNSIL dengan Garis Tali Air
@@ -193,12 +196,12 @@ function generateSkyBlueWallTexture(): THREE.CanvasTexture {
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Warna biru muda khas dinding FT UNSIL (sesuai foto lapangan)
+  // Warna biru cerulean khas dinding FT UNSIL
   ctx.fillStyle = '#3ea6ff';
   ctx.fillRect(0, 0, 512, 512);
 
   // Variasi tekstur cat tembok halus
-  for (let i = 0; i < 6000; i++) {
+  for (let i = 0; i < 5000; i++) {
     const x = Math.random() * 512;
     const y = Math.random() * 512;
     ctx.fillStyle = Math.random() > 0.5 ? '#369bf0' : '#47aeff';
@@ -220,18 +223,17 @@ function generateSkyBlueWallTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-// 2. Fasad Plang Gedung FT.1 (Sesuai Foto Lapangan: "FT.1 INFORMATIKA & SISTEM INFORMASI")
+// 2. Fasad Plang Gedung FT.1 (Sesuai Foto: "FT.1 INFORMATIKA & SISTEM INFORMASI")
 function generateFT1SignTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Latar biru cerulean dinding
   ctx.fillStyle = '#3ea6ff';
   ctx.fillRect(0, 0, 512, 512);
 
-  // 3 Jendela ventilasi kotak hitam kecil di atas (sesuai foto)
+  // 3 Jendela ventilasi kotak hitam kecil di atas
   ctx.fillStyle = '#0f172a';
   ctx.strokeStyle = '#1e3a8a';
   ctx.lineWidth = 3;
@@ -241,7 +243,6 @@ function generateFT1SignTexture(): THREE.CanvasTexture {
     ctx.strokeRect(vx - 22, ventTopY - 22, 44, 44);
   });
 
-  // Tulisan 3D Putih Timbul "FT.1" (Sesuai Foto Lapangan)
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -250,11 +251,9 @@ function generateFT1SignTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#1e3a8a';
   ctx.fillText('FT.1', 259, 218);
 
-  // Huruf balok timbul putih bersih
   ctx.fillStyle = '#ffffff';
   ctx.fillText('FT.1', 256, 215);
 
-  // Subtitle teks: INFORMATIKA & SISTEM INFORMASI
   ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#1e3a8a';
   ctx.fillText('INFORMATIKA', 257, 283);
@@ -264,11 +263,11 @@ function generateFT1SignTexture(): THREE.CanvasTexture {
   ctx.fillText('INFORMATIKA', 256, 282);
   ctx.fillText('& SISTEM INFORMASI', 256, 316);
 
-  // Lisplang kanopi kecil pembagi
+  // Lisplang pembagi
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(50, 360, 412, 12);
 
-  // 3 Jendela ventilasi kotak hitam kecil di bawah kanopi
+  // 3 Jendela ventilasi kotak hitam kecil di bawah
   const ventBotY = 425;
   [140, 256, 372].forEach((vx) => {
     ctx.fillStyle = '#0f172a';
@@ -276,11 +275,10 @@ function generateFT1SignTexture(): THREE.CanvasTexture {
     ctx.strokeRect(vx - 22, ventBotY - 22, 44, 44);
   });
 
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
+  return new THREE.CanvasTexture(canvas);
 }
 
-// 3. Fasad Plang Gedung FT.2 (Sesuai Foto Lapangan: "FT.2 TEKNIK ELEKTRO")
+// 3. Fasad Plang Gedung FT.2 (Sesuai Foto: "FT.2 TEKNIK ELEKTRO")
 function generateFT2SignTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -290,7 +288,7 @@ function generateFT2SignTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#3ea6ff';
   ctx.fillRect(0, 0, 512, 512);
 
-  // 4 Jendela ventilasi kotak kecil di atas (sesuai foto FT.2)
+  // 4 Jendela ventilasi kotak kecil di atas
   ctx.fillStyle = '#0f172a';
   ctx.strokeStyle = '#1e3a8a';
   ctx.lineWidth = 3;
@@ -300,7 +298,6 @@ function generateFT2SignTexture(): THREE.CanvasTexture {
     ctx.strokeRect(vx - 20, ventTopY - 20, 40, 40);
   });
 
-  // Tulisan 3D Putih Timbul "FT.2"
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -311,7 +308,6 @@ function generateFT2SignTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#ffffff';
   ctx.fillText('FT.2', 256, 215);
 
-  // Subtitle teks: TEKNIK ELEKTRO
   ctx.font = '800 26px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#1e3a8a';
   ctx.fillText('TEKNIK ELEKTRO', 257, 291);
@@ -319,11 +315,9 @@ function generateFT2SignTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#ffffff';
   ctx.fillText('TEKNIK ELEKTRO', 256, 290);
 
-  // Lisplang kanopi kecil pembagi
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(50, 360, 412, 12);
 
-  // 4 Jendela ventilasi kotak kecil di bawah kanopi
   const ventBotY = 425;
   [110, 207, 304, 401].forEach((vx) => {
     ctx.fillStyle = '#0f172a';
@@ -331,8 +325,7 @@ function generateFT2SignTexture(): THREE.CanvasTexture {
     ctx.strokeRect(vx - 20, ventBotY - 20, 40, 40);
   });
 
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
+  return new THREE.CanvasTexture(canvas);
 }
 
 // 4. Fasad Plang Gedung LABTEK 1
@@ -360,51 +353,309 @@ function generateLabtek1SignTexture(): THREE.CanvasTexture {
   ctx.fillText('LABORATORIUM TEKNIK TERPADU', 256, 280);
   ctx.fillText('INFORMATIKA • ELEKTRO • SIPIL', 256, 315);
 
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
+  return new THREE.CanvasTexture(canvas);
 }
 
-// 5. Plang Nama Emas Resmi Dekanat Fakultas Teknik
-function generateDekanatSignTexture(): THREE.CanvasTexture {
+// 5. Panel Fasad Biru Tua Dekanat (Sesuai Foto Depan Asli: Ornamen Batik Chevron, Logo UNSIL, Teks SBSN Emas)
+function generateDekanatFeatureWallTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 128;
+  canvas.width = 1024;
+  canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#1e3a8a';
-  ctx.fillRect(0, 0, 512, 128);
+  // Latar biru tua cobalt yang gagah (persis foto asli)
+  ctx.fillStyle = '#0d3b82';
+  ctx.fillRect(0, 0, 1024, 512);
 
-  ctx.strokeStyle = '#fbbf24';
+  // Ornamen Batik Geometris Putih Sisi Kiri (Chevron Motif Sunda/Siliwangi)
+  ctx.save();
+  ctx.strokeStyle = '#ffffff';
+  ctx.fillStyle = '#ffffff';
   ctx.lineWidth = 4;
-  ctx.strokeRect(6, 6, 500, 116);
 
-  ctx.fillStyle = '#fbbf24';
+  // Bentuk chevron diagonal besar di kiri
+  ctx.beginPath();
+  ctx.moveTo(40, 460);
+  ctx.lineTo(140, 256);
+  ctx.lineTo(40, 60);
+  ctx.lineTo(95, 60);
+  ctx.lineTo(195, 256);
+  ctx.lineTo(95, 460);
+  ctx.closePath();
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+
+  // Pola garis batik megamendung / geometris di dalam chevron
+  ctx.strokeStyle = '#0d3b82';
+  ctx.lineWidth = 3;
+  for (let y = 80; y < 450; y += 32) {
+    ctx.beginPath();
+    ctx.moveTo(60, y);
+    ctx.lineTo(170, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Logo Universitas Siliwangi (Lambang Hijau & Emas Resmi UNSIL)
+  const logoCenterX = 560;
+  const logoCenterY = 120;
+  const logoRadius = 52;
+
+  // Lingkaran luar emas
+  ctx.beginPath();
+  ctx.arc(logoCenterX, logoCenterY, logoRadius + 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#eab308';
+  ctx.fill();
+
+  // Lingkaran hijau dasar
+  ctx.beginPath();
+  ctx.arc(logoCenterX, logoCenterY, logoRadius, 0, Math.PI * 2);
+  ctx.fillStyle = '#15803d';
+  ctx.fill();
+
+  // Bintang & Kujang/Padi Kapas emas di tengah
+  ctx.fillStyle = '#fde047';
+  ctx.beginPath();
+  ctx.arc(logoCenterX, logoCenterY, 20, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tulisan melingkar atau aksen
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 9px "Plus Jakarta Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('UNIVERSITAS SILIWANGI', logoCenterX, logoCenterY + 44);
+
+  // Teks Emas Resmi SBSN (Sesuai Persis Foto Fasad Depan Asli)
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('FAKULTAS TEKNIK', 256, 42);
+  // Bayangan teks
+  const drawGoldText = (text: string, x: number, y: number, font: string) => {
+    ctx.font = font;
+    ctx.fillStyle = '#061c40';
+    ctx.fillText(text, x + 2, y + 2);
+    ctx.fillStyle = '#fbbf24'; // Emas cerah
+    ctx.fillText(text, x, y);
+  };
 
-  ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+  drawGoldText('LABORATORIUM DAN RUANG KULIAH TERPADU', logoCenterX, 225, '800 28px "Plus Jakarta Sans", sans-serif');
+  drawGoldText('UNIVERSITAS SILIWANGI', logoCenterX, 275, '900 36px "Plus Jakarta Sans", sans-serif');
+  drawGoldText('FAKULTAS TEKNIK', logoCenterX, 330, '900 38px "Plus Jakarta Sans", sans-serif');
+  drawGoldText('SBSN TAHUN ANGGARAN 2022-2023', logoCenterX, 395, '800 24px "Plus Jakarta Sans", sans-serif');
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+// 6. Plang Timbul Kanopi Depan: "FAKULTAS TEKNIK" (Sesuai Foto Asli)
+function generateCanopyFasciaTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 96;
+  const ctx = canvas.getContext('2d')!;
+
+  // Biru tua kanopi
+  ctx.fillStyle = '#0d3b82';
+  ctx.fillRect(0, 0, 512, 96);
+
+  ctx.strokeStyle = '#1e40af';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(4, 4, 504, 88);
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Bayangan teks 3D
+  ctx.font = '900 38px "Plus Jakarta Sans", sans-serif';
+  ctx.fillStyle = '#020617';
+  ctx.fillText('FAKULTAS TEKNIK', 258, 50);
+
+  // Huruf timbul putih tebal
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('UNIVERSITAS SILIWANGI', 256, 75);
+  ctx.fillText('FAKULTAS TEKNIK', 256, 48);
 
-  ctx.font = '11px "Plus Jakarta Sans", sans-serif';
-  ctx.fillStyle = '#93c5fd';
-  ctx.fillText('GEDUNG DEKANAT & PUSAT ADMINISTRASI', 256, 102);
+  return new THREE.CanvasTexture(canvas);
+}
+
+// 7. Pintu Kaca Lobby Utama Gedung
+function generateLobbyEntranceTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+
+  // Cahaya dalam lobby hangat
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, 512, 256);
+
+  // Kaca pintu dengan pantulan dan pencahayaan interior
+  const grad = ctx.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, '#38bdf8');
+  grad.addColorStop(0.3, '#1e3a8a');
+  grad.addColorStop(0.8, '#0f172a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(20, 20, 472, 216);
+
+  // Kusen pintu hitam & gagang stainless
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(20, 20, 472, 216);
+
+  // Pembagi 2 pintu kaca
+  ctx.beginPath();
+  ctx.moveTo(256, 20);
+  ctx.lineTo(256, 236);
+  ctx.stroke();
+
+  // Gagang pintu vertikal stainless
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(240, 100, 6, 60);
+  ctx.fillRect(266, 100, 6, 60);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+// 8. Tekstur Jendela Kaca Kantor / Ruang Kuliah Fasad Depan (Grid Mullions)
+function generateFrontGridWindowTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+
+  // Kaca gelap reflektif
+  const grad = ctx.createLinearGradient(0, 0, 256, 256);
+  grad.addColorStop(0, '#1e293b');
+  grad.addColorStop(0.5, '#0f172a');
+  grad.addColorStop(1, '#020617');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 256);
+
+  // Pantulan langit
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.beginPath();
+  ctx.moveTo(20, 250);
+  ctx.lineTo(200, 10);
+  ctx.lineTo(250, 10);
+  ctx.lineTo(70, 250);
+  ctx.closePath();
+  ctx.fill();
+
+  // Kusen putih luar
+  ctx.strokeStyle = '#f8fafc';
+  ctx.lineWidth = 12;
+  ctx.strokeRect(6, 6, 244, 244);
+
+  // Kisi-kisi kusen hitam dalam (3 kolom x 2 baris)
+  ctx.strokeStyle = '#020617';
+  ctx.lineWidth = 5;
+
+  ctx.beginPath();
+  ctx.moveTo(85, 12);
+  ctx.lineTo(85, 244);
+  ctx.moveTo(170, 12);
+  ctx.lineTo(170, 244);
+  ctx.moveTo(12, 128);
+  ctx.lineTo(244, 128);
+  ctx.stroke();
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+// 9. Tekstur Dinding Talud Batu Kali (Sesuai Foto Akses Jalan Depan)
+function generateRetainingWallTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+
+  // Warna mortar abu semen
+  ctx.fillStyle = '#64748b';
+  ctx.fillRect(0, 0, 256, 256);
+
+  // Gambar batu kali acak (river rock masonry)
+  const stones = [
+    { x: 30, y: 30, r: 24, c: '#334155' },
+    { x: 95, y: 35, r: 28, c: '#475569' },
+    { x: 170, y: 30, r: 32, c: '#1e293b' },
+    { x: 230, y: 40, r: 22, c: '#334155' },
+    { x: 45, y: 95, r: 32, c: '#475569' },
+    { x: 125, y: 100, r: 36, c: '#1e293b' },
+    { x: 205, y: 95, r: 30, c: '#334155' },
+    { x: 30, y: 165, r: 28, c: '#1e293b' },
+    { x: 100, y: 170, r: 32, c: '#334155' },
+    { x: 175, y: 165, r: 34, c: '#475569' },
+    { x: 235, y: 160, r: 24, c: '#1e293b' },
+    { x: 50, y: 225, r: 26, c: '#334155' },
+    { x: 130, y: 225, r: 30, c: '#475569' },
+    { x: 210, y: 225, r: 28, c: '#1e293b' }
+  ];
+
+  stones.forEach(s => {
+    ctx.fillStyle = s.c;
+    ctx.beginPath();
+    ctx.ellipse(s.x, s.y, s.r, s.r * 0.75, Math.random() * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(8, 2);
   return texture;
 }
 
-// 6. Tekstur Genteng Keramik Merah Bata Bergelombang (Sesuai Foto Udara)
+// 10. Tekstur Kanstin Belang Hitam-Putih
+function generateCurbTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 32;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 64, 32);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(64, 0, 64, 32);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(12, 1);
+  return texture;
+}
+
+// 11. Tekstur Aspal Jalan Hitam Halus dengan Garis Putih
+function generateAsphaltTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#1e2530';
+  ctx.fillRect(0, 0, 256, 256);
+
+  for (let i = 0; i < 4000; i++) {
+    const x = Math.random() * 256;
+    const y = Math.random() * 256;
+    ctx.fillStyle = Math.random() > 0.5 ? '#293241' : '#141a24';
+    ctx.fillRect(x, y, 1.5, 1.5);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(6, 6);
+  return texture;
+}
+
+// 12. Tekstur Genteng Keramik Merah Bata Bergelombang
 function generateRoofTileTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Warna dasar genteng cokelat merah bata tua (sesuai foto lapangan)
   ctx.fillStyle = '#6e2716';
   ctx.fillRect(0, 0, 512, 512);
 
@@ -415,11 +666,9 @@ function generateRoofTileTexture(): THREE.CanvasTexture {
     const isOdd = (y / rowHeight) % 2 === 1;
     const offsetX = isOdd ? colWidth / 2 : 0;
 
-    // Bayangan overlap bawah genteng
     ctx.fillStyle = '#42160a';
     ctx.fillRect(0, y + rowHeight - 4, 512, 4);
 
-    // Kilau sorotan cahaya atas genteng
     ctx.fillStyle = '#993922';
     ctx.fillRect(0, y, 512, 3);
 
@@ -428,7 +677,6 @@ function generateRoofTileTexture(): THREE.CanvasTexture {
       ctx.fillStyle = '#361107';
       ctx.fillRect(tileX, y, 2.5, rowHeight);
 
-      // Lengkungan genteng keramik
       const grad = ctx.createLinearGradient(tileX, y, tileX + colWidth, y);
       grad.addColorStop(0, 'rgba(0,0,0,0.22)');
       grad.addColorStop(0.5, 'rgba(255,255,255,0.09)');
@@ -445,7 +693,7 @@ function generateRoofTileTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-// 7. Tekstur Paving Block Pola Herringbone (Sesuai Foto Koridor Tengah)
+// 13. Tekstur Paving Block Pola Herringbone (Sesuai Foto Koridor Tengah)
 function generateHerringbonePavingTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
@@ -460,10 +708,8 @@ function generateHerringbonePavingTexture(): THREE.CanvasTexture {
   ctx.strokeStyle = '#8e9aa8';
   ctx.lineWidth = 1.6;
 
-  // Gambar susunan paving bata saling mengunci (herringbone)
   for (let y = -28; y < 284; y += 28) {
     for (let x = -28; x < 284; x += 28) {
-      // Pasangan bata horizontal dan vertikal
       const shade1 = Math.random() * 22 - 11;
       const v1 = Math.min(235, Math.max(185, 205 + shade1));
       ctx.fillStyle = `rgb(${v1}, ${v1 + 2}, ${v1 + 4})`;
@@ -485,50 +731,7 @@ function generateHerringbonePavingTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-// 8. Tekstur Jendela Kaca Reflektif dengan Kusen Putih
-function generateWindowTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 256;
-  const ctx = canvas.getContext('2d')!;
-
-  const grad = ctx.createLinearGradient(0, 0, 256, 256);
-  grad.addColorStop(0, '#172554');
-  grad.addColorStop(0.5, '#0f172a');
-  grad.addColorStop(1, '#020617');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 256, 256);
-
-  // Pantulan langit
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.beginPath();
-  ctx.moveTo(30, 250);
-  ctx.lineTo(190, 10);
-  ctx.lineTo(240, 10);
-  ctx.lineTo(80, 250);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.strokeStyle = '#f8fafc';
-  ctx.lineWidth = 10;
-  ctx.strokeRect(5, 5, 246, 246);
-
-  ctx.lineWidth = 7;
-  ctx.beginPath();
-  ctx.moveTo(128, 5);
-  ctx.lineTo(128, 251);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(5, 80);
-  ctx.lineTo(251, 80);
-  ctx.stroke();
-
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
-}
-
-// 9. Tekstur Rumput Alami Bergradasi
+// 14. Tekstur Rumput Alami Bergradasi
 function generateGrassTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -587,15 +790,11 @@ function createHipRoofGeometry(
   const v4: [number, number, number] = [-ridgeX, height, 0];
   const v5: [number, number, number] = [ridgeX, height, 0];
 
-  // Depan
   pushTri(v0, v1, v5);
   pushTri(v0, v5, v4);
-  // Belakang
   pushTri(v2, v3, v4);
   pushTri(v2, v4, v5);
-  // Kiri
   pushTri(v3, v0, v4);
-  // Kanan
   pushTri(v1, v2, v5);
 
   geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -617,14 +816,15 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // State Kontrol
-  const [cameraPreset, setCameraPreset] = useState<'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'iso'>('drone');
+  const [cameraPreset, setCameraPreset] = useState<'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso'>('front');
   const [isExploded, setIsExploded] = useState<boolean>(false);
   const [isAutoRotate, setIsAutoRotate] = useState<boolean>(false);
-  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('day'); // Default siang cerah seperti foto lapangan
+  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('day');
   const [showPhotoModal, setShowPhotoModal] = useState<boolean>(false);
+  const [activePhotoIndex, setActivePhotoIndex] = useState<number>(0);
   const [hoveredBuildingId, setHoveredBuildingId] = useState<string | null>(null);
   const [selectedCampusBuilding, setSelectedCampusBuilding] = useState<CampusBuildingDef>(
-    ALL_CAMPUS_BUILDINGS.find(b => b.id === activeBuildingId) || ALL_CAMPUS_BUILDINGS[0]
+    ALL_CAMPUS_BUILDINGS.find(b => b.id === 'dekanat-ft') || ALL_CAMPUS_BUILDINGS[2]
   );
 
   // Three.js References
@@ -649,15 +849,16 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     isDragging: false,
     prevX: 0,
     prevY: 0,
-    azimuth: 0.58,
-    polar: 0.82,
-    distance: 125,
-    target: new THREE.Vector3(2, 4, -5),
-    targetAzimuth: 0.58,
-    targetPolar: 0.82,
-    targetDistance: 125
+    azimuth: 0.04,
+    polar: 1.40,
+    distance: 52,
+    target: new THREE.Vector3(26, 4.5, 14),
+    targetAzimuth: 0.04,
+    targetPolar: 1.40,
+    targetDistance: 52
   });
 
+  // Sinkronisasi pilihan gedung dari parent
   useEffect(() => {
     const found = ALL_CAMPUS_BUILDINGS.find(b => b.id === activeBuildingId);
     if (found) setSelectedCampusBuilding(found);
@@ -669,36 +870,43 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     });
   }, [selectedCampusBuilding]);
 
-  // Preset Kamera Akurat
-  const applyCameraPreset = useCallback((preset: 'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'iso') => {
+  // Preset Kamera Akurat (Persis Foto Lapangan)
+  const applyCameraPreset = useCallback((preset: 'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso') => {
     setCameraPreset(preset);
     const os = orbitState.current;
-    if (preset === 'drone') {
-      // Sudut Foto Drone Asli (Mencakup seluruh kawasan fakultas)
+
+    if (preset === 'front') {
+      // PERSIS FOTO 1: Tampak Depan Fasad Dekanat & Kanopi "FAKULTAS TEKNIK" (SBSN 2022-2023)
+      os.targetAzimuth = 0.04;
+      os.targetPolar = 1.40;
+      os.targetDistance = 50;
+      os.target.set(24, 4.5, 14);
+    } else if (preset === 'road_side') {
+      // PERSIS FOTO 2: Akses Jalan Aspal Depan, Talud Batu Kali, Barisan Motor & Gedung FT.2
+      os.targetAzimuth = 0.42;
+      os.targetPolar = 1.42;
+      os.targetDistance = 56;
+      os.target.set(32, 4.0, -8);
+    } else if (preset === 'courtyard') {
+      // PERSIS FOTO 3: Sudut Jalan Paving Herringbone Tengah & Kanopi Penghubung
+      os.targetAzimuth = 0.02;
+      os.targetPolar = 1.34;
+      os.targetDistance = 52;
+      os.target.set(2, 4, 0);
+    } else if (preset === 'labtek_ft1') {
+      // Fokus ke LABTEK 1 & FT.1 (yang dilingkari merah)
+      os.targetAzimuth = 0.52;
+      os.targetPolar = 0.88;
+      os.targetDistance = 72;
+      os.target.set(-22, 5, 0);
+    } else if (preset === 'drone') {
+      // PERSIS FOTO DRONE: Sudut Udara Seluruh Kawasan Fakultas
       os.targetAzimuth = 0.58;
       os.targetPolar = 0.82;
       os.targetDistance = 125;
       os.target.set(2, 4, -5);
-    } else if (preset === 'labtek_ft1') {
-      // Fokus ke LABTEK 1 & FT.1 (yang dilingkari merah)
-      os.targetAzimuth = 0.52;
-      os.targetPolar = 0.86;
-      os.targetDistance = 75;
-      os.target.set(-22, 5, 0);
-    } else if (preset === 'courtyard') {
-      // Sudut Jalan Koridor Paving Tengah (Persis Foto 4 "Kita lihat ke sana")
-      os.targetAzimuth = 0.02;
-      os.targetPolar = 1.32;
-      os.targetDistance = 55;
-      os.target.set(2, 4, 0);
-    } else if (preset === 'front') {
-      // Tampak Depan Jalan Utama Kampus & Fasad Dekanat
-      os.targetAzimuth = 0.05;
-      os.targetPolar = 1.35;
-      os.targetDistance = 90;
-      os.target.set(2, 5, 14);
     } else if (preset === 'iso') {
-      // Isometrik Klasik 45 Derajat
+      // Isometrik Klasik
       os.targetAzimuth = 0.785;
       os.targetPolar = 0.95;
       os.targetDistance = 115;
@@ -716,7 +924,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     const hemi = hemiLightRef.current;
 
     if (timeOfDay === 'day') {
-      // Siang Cerah Bersih Langit Biru (Persis Foto 2, 3, 4, 5 Lapangan)
       scene.background = new THREE.Color(isDark ? '#0b1329' : '#87ceeb');
       scene.fog = new THREE.FogExp2(isDark ? '#0b1329' : '#b0e0e6', 0.0035);
       sun.color.set('#ffffff');
@@ -728,7 +935,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       hemi.groundColor.set('#86efac');
       hemi.intensity = 0.9;
     } else if (timeOfDay === 'sunset') {
-      // Golden Hour berkabut (Persis Foto Drone 1)
       scene.background = new THREE.Color(isDark ? '#1a1829' : '#d8d4c7');
       scene.fog = new THREE.FogExp2(isDark ? '#1a1829' : '#d8d4c7', 0.0055);
       sun.color.set('#f59e0b');
@@ -740,7 +946,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       hemi.groundColor.set('#475569');
       hemi.intensity = 0.75;
     } else {
-      // Malam Hari Lampu Menyala
       scene.background = new THREE.Color('#030712');
       scene.fog = new THREE.FogExp2('#030712', 0.009);
       sun.color.set('#38bdf8');
@@ -833,28 +1038,36 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     const ft1SignTexture = generateFT1SignTexture();
     const ft2SignTexture = generateFT2SignTexture();
     const labtek1SignTexture = generateLabtek1SignTexture();
-    const dekanatSignTexture = generateDekanatSignTexture();
+    const dekanatFeatureTexture = generateDekanatFeatureWallTexture();
+    const canopyFasciaTexture = generateCanopyFasciaTexture();
+    const lobbyDoorTexture = generateLobbyEntranceTexture();
+    const frontGridWindowTexture = generateFrontGridWindowTexture();
+    const retainingWallTexture = generateRetainingWallTexture();
+    const curbTexture = generateCurbTexture();
+    const asphaltTexture = generateAsphaltTexture();
     const roofTexture = generateRoofTileTexture();
     const pavingTexture = generateHerringbonePavingTexture();
-    const windowTexture = generateWindowTexture();
     const grassTexture = generateGrassTexture();
 
-    // 6. MATERIAL REALISTIS (SESUAI FOTO REAL LIFE)
-    // Dinding Biru Muda Cerulean
+    // 6. MATERIAL REALISTIS
     const wallSkyBlueMat = new THREE.MeshStandardMaterial({
       map: wallTexture,
       roughness: 0.45,
       metalness: 0.08
     });
 
-    // Kolom & Sudut Pilar: BIRU TUA COBALT / ROYAL BLUE (Sesuai Foto 2 & 5)
     const pillarRoyalBlueMat = new THREE.MeshStandardMaterial({
-      color: '#1565c0', // Biru tua royal kolom asli FT
+      color: '#1565c0',
       roughness: 0.4,
       metalness: 0.12
     });
 
-    // Lisplang & Trims: PUTIH BERSIH
+    const canopyNavyMat = new THREE.MeshStandardMaterial({
+      color: '#0d3b82',
+      roughness: 0.35,
+      metalness: 0.15
+    });
+
     const whiteTrimMat = new THREE.MeshStandardMaterial({
       color: '#f8fafc',
       roughness: 0.35,
@@ -866,8 +1079,8 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       roughness: 0.85
     });
 
-    const windowGlassMat = new THREE.MeshStandardMaterial({
-      map: windowTexture,
+    const frontWindowMat = new THREE.MeshStandardMaterial({
+      map: frontGridWindowTexture,
       roughness: 0.12,
       metalness: 0.85
     });
@@ -884,7 +1097,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       roughness: 0.5
     });
 
-    // 7. LINGKUNGAN KAMPUS (Ground, Paving Herringbone, Jalan, Danau, Jembatan Penghubung)
+    // 7. LINGKUNGAN KAMPUS (Ground, Aspal Jalan Akses, Talud Batu Kali, Parkiran, Danau)
     // 7a. Rumput
     const groundGeo = new THREE.PlaneGeometry(360, 360);
     const groundMat = new THREE.MeshStandardMaterial({
@@ -912,14 +1125,14 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     pond.scale.set(1.4, 1, 0.95);
     scene.add(pond);
 
-    // 7c. Jalan Paving Herringbone Luas di Koridor Tengah (Persis Foto 4)
+    // 7c. Jalan Paving Herringbone Luas di Koridor Tengah
     const pavingMat = new THREE.MeshStandardMaterial({
       map: pavingTexture,
       roughness: 0.75,
       metalness: 0.12
     });
 
-    // Koridor Paving Utama Tengah (antara LABTEK/FT.1 dan Dekanat/FT.2)
+    // Koridor Paving Utama Tengah
     const mainStreetPaving = new THREE.Mesh(new THREE.PlaneGeometry(36, 120), pavingMat);
     mainStreetPaving.rotation.x = -Math.PI / 2;
     mainStreetPaving.position.set(2, -0.04, -5);
@@ -933,14 +1146,14 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     westPlaza.receiveShadow = true;
     scene.add(westPlaza);
 
-    // Paving Penghubung Timur (Dekanat ke FT.2)
-    const eastPlaza = new THREE.Mesh(new THREE.PlaneGeometry(56, 24), pavingMat);
+    // Paving Depan Dekanat & Area Parkir Motor Fasad Depan (Sesuai Foto 1 & 2)
+    const eastPlaza = new THREE.Mesh(new THREE.PlaneGeometry(64, 40), pavingMat);
     eastPlaza.rotation.x = -Math.PI / 2;
-    eastPlaza.position.set(28, -0.05, 0);
+    eastPlaza.position.set(28, -0.04, 25);
     eastPlaza.receiveShadow = true;
     scene.add(eastPlaza);
 
-    // 7d. KANOPI KORIDOR PENGHUBUNG BIRU (Sesuai Foto 4: Canopy Bridge Tengah)
+    // 7d. KANOPI KORIDOR PENGHUBUNG BIRU (Canopy Bridge Tengah)
     const bridgeCanopyGeo = new THREE.BoxGeometry(24, 0.45, 6);
     const bridgeCanopyMat = new THREE.MeshStandardMaterial({ color: '#1565c0', roughness: 0.4 });
     const bridgeCanopy = new THREE.Mesh(bridgeCanopyGeo, bridgeCanopyMat);
@@ -948,18 +1161,220 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     bridgeCanopy.castShadow = true;
     scene.add(bridgeCanopy);
 
-    // Tiang Kanopi Penghubung
-    const pMat = new THREE.MeshStandardMaterial({ color: '#1565c0' });
     [-8, 8].forEach((bx) => {
       [-2.4, 2.4].forEach((bz) => {
-        const bp = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4.2, 0.5), pMat);
+        const bp = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4.2, 0.5), bridgeCanopyMat);
         bp.position.set(2 + bx, 2.1, bz);
         bp.castShadow = true;
         scene.add(bp);
       });
     });
 
-    // 8. BUILDER SEMUA BANGUNAN KAMPUS LENGKAP
+    // 7e. JALAN AKSES ASPAL DEPAN & TALUD BATU KALI (Sesuai Foto 2 Lapangan)
+    const asphaltMat = new THREE.MeshStandardMaterial({ map: asphaltTexture, roughness: 0.85, metalness: 0.1 });
+    const retainingWallMat = new THREE.MeshStandardMaterial({ map: retainingWallTexture, roughness: 0.9 });
+    const curbMat = new THREE.MeshStandardMaterial({ map: curbTexture, roughness: 0.6 });
+
+    // Jalan Aspal Utama Depan Kampus
+    const frontRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(160, 16), asphaltMat);
+    frontRoadMesh.rotation.x = -Math.PI / 2;
+    frontRoadMesh.position.set(10, -0.1, 48);
+    frontRoadMesh.receiveShadow = true;
+    scene.add(frontRoadMesh);
+
+    // Jalan Aspal Cabang Akses Samping Sisi FT.2 (Sesuai Foto 2)
+    const sideRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(14, 90), asphaltMat);
+    sideRoadMesh.rotation.x = -Math.PI / 2;
+    sideRoadMesh.position.set(58, -0.1, 8);
+    sideRoadMesh.receiveShadow = true;
+    scene.add(sideRoadMesh);
+
+    // Talud Batu Kali Memanjang di Tepi Jalan & Lapangan Parkir
+    const wall1 = new THREE.Mesh(new THREE.BoxGeometry(70, 1.2, 0.8), retainingWallMat);
+    wall1.position.set(25, 0.45, 39.5);
+    wall1.castShadow = true;
+    scene.add(wall1);
+
+    // Kanstin Belang Hitam Putih di Atas Talud
+    const curb1 = new THREE.Mesh(new THREE.BoxGeometry(70, 0.25, 0.35), curbMat);
+    curb1.position.set(25, 1.15, 39.5);
+    scene.add(curb1);
+
+    // Talud Sisi Samping Menuju Belakang FT.2
+    const wallSide = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 50), retainingWallMat);
+    wallSide.position.set(51, 0.45, 14);
+    wallSide.castShadow = true;
+    scene.add(wallSide);
+
+    const curbSide = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.25, 50), curbMat);
+    curbSide.position.set(51, 1.15, 14);
+    scene.add(curbSide);
+
+    // 8. TIANG BENDERA INDONESIA MERAH PUTIH (Di Depan Kanopi Utama Fakultas Teknik)
+    const flagGroup = new THREE.Group();
+    flagGroup.position.set(22, 0, 26); // Tepat di depan kanopi Dekanat FT
+
+    // Dudukan Beton Tiang Bendera
+    const flagBase = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.8, 0.4, 24), plinthMat);
+    flagBase.position.y = 0.2;
+    flagGroup.add(flagBase);
+
+    // Tiang Stainless Steel
+    const flagPole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.08, 0.12, 10.5, 16),
+      new THREE.MeshStandardMaterial({ color: '#f8fafc', metalness: 0.85, roughness: 0.2 })
+    );
+    flagPole.position.y = 5.4;
+    flagPole.castShadow = true;
+    flagGroup.add(flagPole);
+
+    // Finial Bola Emas di Ujung Tiang
+    const goldBall = new THREE.Mesh(
+      new THREE.SphereGeometry(0.18, 16, 16),
+      new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.9, roughness: 0.15 })
+    );
+    goldBall.position.y = 10.7;
+    flagGroup.add(goldBall);
+
+    // Kain Bendera Merah Putih
+    const flagClothGeo = new THREE.PlaneGeometry(2.4, 1.4, 12, 4);
+    const flagCanvas = document.createElement('canvas');
+    flagCanvas.width = 128;
+    flagCanvas.height = 64;
+    const fctx = flagCanvas.getContext('2d')!;
+    fctx.fillStyle = '#dc2626'; // Merah
+    fctx.fillRect(0, 0, 128, 32);
+    fctx.fillStyle = '#ffffff'; // Putih
+    fctx.fillRect(0, 32, 128, 32);
+    const flagTex = new THREE.CanvasTexture(flagCanvas);
+
+    // Efek kibaran gelombang bendera
+    const pos = flagClothGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const u = pos.getX(i);
+      const wave = Math.sin(u * 2.8) * 0.15;
+      pos.setZ(i, wave);
+    }
+    flagClothGeo.computeVertexNormals();
+
+    const flagCloth = new THREE.Mesh(
+      flagClothGeo,
+      new THREE.MeshStandardMaterial({ map: flagTex, side: THREE.DoubleSide, roughness: 0.6 })
+    );
+    flagCloth.position.set(1.2, 9.8, 0);
+    flagCloth.castShadow = true;
+    flagGroup.add(flagCloth);
+
+    scene.add(flagGroup);
+
+    // 9. DETAIL DERETAN MOTOR & MOBIL PARKIR (Persis Foto 1 & Foto 2)
+    const motoGroup = new THREE.Group();
+    const wheelMat = new THREE.MeshStandardMaterial({ color: '#090d16', roughness: 0.9 });
+    const seatMat = new THREE.MeshStandardMaterial({ color: '#18181b', roughness: 0.8 });
+    const chromeMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', metalness: 0.85, roughness: 0.2 });
+
+    const createMotorbike = (x: number, z: number, rotY: number, colorHex: string, helmetHex: string) => {
+      const m = new THREE.Group();
+      m.position.set(x, 0, z);
+      m.rotation.y = rotY;
+
+      // 2 Roda
+      const fw = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.08, 12), wheelMat);
+      fw.rotation.z = Math.PI / 2;
+      fw.position.set(0.42, 0.24, 0);
+      m.add(fw);
+
+      const rw = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.08, 12), wheelMat);
+      rw.rotation.z = Math.PI / 2;
+      rw.position.set(-0.42, 0.24, 0);
+      m.add(rw);
+
+      // Bodi motor
+      const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4, metalness: 0.2 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.35, 0.26), bodyMat);
+      body.position.set(0.04, 0.44, 0);
+      m.add(body);
+
+      // Jok motor
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.08, 0.22), seatMat);
+      seat.position.set(-0.1, 0.64, 0);
+      m.add(seat);
+
+      // Stang motor
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.48), chromeMat);
+      bar.position.set(0.36, 0.78, 0);
+      m.add(bar);
+
+      // Helm di atas jok
+      const helmet = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 10, 10),
+        new THREE.MeshStandardMaterial({ color: helmetHex, roughness: 0.3 })
+      );
+      helmet.position.set(-0.1, 0.76, 0);
+      m.add(helmet);
+
+      motoGroup.add(m);
+    };
+
+    const bikeColors = ['#0f172a', '#dc2626', '#2563eb', '#ea580c', '#ffffff', '#475569', '#16a34a'];
+    const helmetColors = ['#f8fafc', '#0f172a', '#dc2626', '#fbbf24', '#0284c7'];
+
+    // Barisan Parkir Motor Fasad Depan (Dekanat & Menuju Jalan)
+    for (let r = 0; r < 2; r++) {
+      const zRow = 30 + r * 3.5;
+      for (let i = 0; i < 14; i++) {
+        const xPos = 6 + i * 2.4;
+        const col = bikeColors[i % bikeColors.length];
+        const hcol = helmetColors[(i * 3 + r) % helmetColors.length];
+        createMotorbike(xPos, zRow, -0.4, col, hcol);
+      }
+    }
+
+    // Barisan Parkir Motor Sisi Gedung FT.2 (Persis Foto 2)
+    for (let i = 0; i < 9; i++) {
+      const col = bikeColors[(i + 2) % bikeColors.length];
+      const hcol = helmetColors[i % helmetColors.length];
+      createMotorbike(45.5, -4 - i * 2.2, Math.PI / 2 + 0.1, col, hcol);
+    }
+
+    scene.add(motoGroup);
+
+    // Mobil Parkir di Depan
+    const createCar = (x: number, z: number, rotY: number, colorHex: string) => {
+      const carGroup = new THREE.Group();
+      carGroup.position.set(x, 0, z);
+      carGroup.rotation.y = rotY;
+
+      const carPaint = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.35, metalness: 0.3 });
+      const glassMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.1, metalness: 0.8 });
+
+      // Bodi bawah
+      const lower = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.85, 1.8), carPaint);
+      lower.position.y = 0.6;
+      lower.castShadow = true;
+      carGroup.add(lower);
+
+      // Kabin / Kaca
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 1.6), glassMat);
+      cabin.position.set(-0.2, 1.3, 0);
+      carGroup.add(cabin);
+
+      // Roda
+      [[-1.3, 0.95], [-1.3, -0.95], [1.3, 0.95], [1.3, -0.95]].forEach(([wx, wz]) => {
+        const w = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.22, 14), wheelMat);
+        w.rotation.x = Math.PI / 2;
+        w.position.set(wx, 0.35, wz);
+        carGroup.add(w);
+      });
+
+      scene.add(carGroup);
+    };
+
+    createCar(12, 24, 0.1, '#ffffff');  // Mobil putih
+    createCar(16, 24, 0.1, '#cbd5e1');  // Mobil perak
+    createCar(36, 24, -0.15, '#0f172a'); // Mobil hitam
+
+    // 10. BUILDER SEMUA BANGUNAN KAMPUS LENGKAP
     hitBoxesRef.current = [];
     buildingGroupsRef.current.clear();
     buildingRoofsRef.current.clear();
@@ -984,8 +1399,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       plinthMesh.receiveShadow = true;
       bldgGroup.add(plinthMesh);
 
-      // 2. Dinding Utama: CAT BIRU CERULEAN ASLI (Sky Blue)
-      // Lantai 1
+      // 2. Dinding Utama & Jendela
       const floor1Group = new THREE.Group();
       const wall1Mesh = new THREE.Mesh(
         new THREE.BoxGeometry(bldg.length, floorHeight, bldg.depth),
@@ -996,7 +1410,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       wall1Mesh.receiveShadow = true;
       floor1Group.add(wall1Mesh);
 
-      // Kolom Struktural: BIRU TUA ROYAL (Cobalt Blue Pillars)
+      // Kolom Struktural: BIRU TUA ROYAL
       const colCount = Math.max(7, Math.floor(bldg.length / 5));
       const colStep = bldg.length / (colCount - 1);
       const colGeo = new THREE.BoxGeometry(0.8, floorHeight + 0.1, 0.8);
@@ -1004,13 +1418,11 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       for (let i = 0; i < colCount; i++) {
         const cx = -bldg.length / 2 + i * colStep;
 
-        // Pilar depan biru tua
         const colFront = new THREE.Mesh(colGeo, pillarRoyalBlueMat);
         colFront.position.set(cx, 0.5 + floorHeight / 2, bldg.depth / 2 + 0.1);
         colFront.castShadow = true;
         floor1Group.add(colFront);
 
-        // Pilar belakang biru tua
         const colBack = new THREE.Mesh(colGeo, pillarRoyalBlueMat);
         colBack.position.set(cx, 0.5 + floorHeight / 2, -bldg.depth / 2 - 0.1);
         colBack.castShadow = true;
@@ -1021,20 +1433,24 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
           const winW = colStep - 0.85;
           const winH = 1.85;
 
-          const winFront = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), windowGlassMat);
-          winFront.position.set(cx + colStep / 2, 0.5 + 2.0, bldg.depth / 2 + 0.08);
-          floor1Group.add(winFront);
+          // Jangan pasang jendela standar jika ini adalah panel dekoratif SBSN Dekanat
+          const isDekanatFeaturePanel = bldg.isDekanat && (cx + colStep / 2 < 0);
 
-          const winBack = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), windowGlassMat);
+          if (!isDekanatFeaturePanel) {
+            const winFront = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), frontWindowMat);
+            winFront.position.set(cx + colStep / 2, 0.5 + 2.0, bldg.depth / 2 + 0.08);
+            floor1Group.add(winFront);
+
+            const shadeFront = new THREE.Mesh(new THREE.BoxGeometry(winW + 0.2, 0.15, 0.7), whiteTrimMat);
+            shadeFront.position.set(cx + colStep / 2, 0.5 + 2.95, bldg.depth / 2 + 0.4);
+            shadeFront.castShadow = true;
+            floor1Group.add(shadeFront);
+          }
+
+          const winBack = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), frontWindowMat);
           winBack.rotation.y = Math.PI;
           winBack.position.set(cx + colStep / 2, 0.5 + 2.0, -bldg.depth / 2 - 0.08);
           floor1Group.add(winBack);
-
-          // Lisplang Kanopi Kecil Putih di Atas Jendela (Sunshade Ledge)
-          const shadeFront = new THREE.Mesh(new THREE.BoxGeometry(winW + 0.2, 0.15, 0.7), whiteTrimMat);
-          shadeFront.position.set(cx + colStep / 2, 0.5 + 2.95, bldg.depth / 2 + 0.4);
-          shadeFront.castShadow = true;
-          floor1Group.add(shadeFront);
         }
       }
 
@@ -1044,7 +1460,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       const floor2Group = new THREE.Group();
       floor2Group.position.y = 0.5 + floorHeight;
 
-      // Sabuk Balok Tengah Putih
       const beamMesh = new THREE.Mesh(
         new THREE.BoxGeometry(bldg.length + 1.2, 0.45, bldg.depth + 1.2),
         whiteTrimMat
@@ -1079,23 +1494,27 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
           const winW = colStep - 0.85;
           const winH = 1.85;
 
-          const winFront = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), windowGlassMat);
-          winFront.position.set(cx + colStep / 2, 0.45 + 2.0, bldg.depth / 2 + 0.08);
-          floor2Group.add(winFront);
+          const isDekanatFeaturePanel = bldg.isDekanat && (cx + colStep / 2 < 0);
 
-          const winBack = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), windowGlassMat);
+          if (!isDekanatFeaturePanel) {
+            const winFront = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), frontWindowMat);
+            winFront.position.set(cx + colStep / 2, 0.45 + 2.0, bldg.depth / 2 + 0.08);
+            floor2Group.add(winFront);
+
+            const shadeFront = new THREE.Mesh(new THREE.BoxGeometry(winW + 0.2, 0.15, 0.7), whiteTrimMat);
+            shadeFront.position.set(cx + colStep / 2, 0.45 + 2.95, bldg.depth / 2 + 0.4);
+            shadeFront.castShadow = true;
+            floor2Group.add(shadeFront);
+          }
+
+          const winBack = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), frontWindowMat);
           winBack.rotation.y = Math.PI;
           winBack.position.set(cx + colStep / 2, 0.45 + 2.0, -bldg.depth / 2 - 0.08);
           floor2Group.add(winBack);
-
-          const shadeFront = new THREE.Mesh(new THREE.BoxGeometry(winW + 0.2, 0.15, 0.7), whiteTrimMat);
-          shadeFront.position.set(cx + colStep / 2, 0.45 + 2.95, bldg.depth / 2 + 0.4);
-          shadeFront.castShadow = true;
-          floor2Group.add(shadeFront);
         }
       }
 
-      // Fasad Ujung Timur dengan Plang Huruf 3D Putih Asli (Sesuai Foto 2, 3, 5)
+      // Fasad Ujung Timur/Barat dengan Plang Huruf 3D Putih Asli (FT.1, FT.2, LABTEK 1)
       let signMat: THREE.MeshStandardMaterial | null = null;
       if (bldg.signType === 'ft1') {
         signMat = new THREE.MeshStandardMaterial({ map: ft1SignTexture, roughness: 0.4 });
@@ -1106,11 +1525,25 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       }
 
       if (signMat) {
-        // Tempelkan plang nama timbul pada fasad ujung barat/timur gedung
         const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(bldg.depth * 0.9, floorHeight * 1.8), signMat);
         signMesh.rotation.y = Math.PI / 2;
         signMesh.position.set(bldg.length / 2 + 0.08, 0.5 + floorHeight, 0);
         bldgGroup.add(signMesh);
+      }
+
+      // DETAIL KHUSUS FASAD DEPAN DEKANAT (PERSIS FOTO 1 ASLI)
+      if (bldg.isDekanat) {
+        // A. Panel Biru Besar SBSN (Sebelah Kiri Kanopi)
+        const featurePanelMat = new THREE.MeshStandardMaterial({
+          map: dekanatFeatureTexture,
+          roughness: 0.35,
+          metalness: 0.15
+        });
+        const panelW = 16.5;
+        const panelH = floorHeight * 1.95;
+        const panelMesh = new THREE.Mesh(new THREE.PlaneGeometry(panelW, panelH), featurePanelMat);
+        panelMesh.position.set(-14.5, 0.5 + floorHeight, bldg.depth / 2 + 0.18);
+        bldgGroup.add(panelMesh);
       }
 
       bldgGroup.add(floor2Group);
@@ -1124,13 +1557,11 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       const roofW = bldg.length + eaveOverhang * 2;
       const roofD = bldg.depth + eaveOverhang * 2;
 
-      // Lisplang Putih Keliling Atap (Eaves Fascia)
       const fasciaMesh = new THREE.Mesh(new THREE.BoxGeometry(roofW, 0.4, roofD), whiteTrimMat);
       fasciaMesh.position.y = 0.2;
       fasciaMesh.castShadow = true;
       roofGroup.add(fasciaMesh);
 
-      // Bidang Miring Genteng Atap Limasan
       const hipRoofGeo = createHipRoofGeometry(roofW, roofD, roofPeak, 10.5);
       const hipRoofMesh = new THREE.Mesh(hipRoofGeo, roofTileMat);
       hipRoofMesh.position.y = 0.4;
@@ -1138,7 +1569,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       hipRoofMesh.receiveShadow = true;
       roofGroup.add(hipRoofMesh);
 
-      // Nok Jurai Puncak (Apex Ridge)
       const ridgeLen = Math.max(4, roofW - 10.5 * 2);
       const ridgeMesh = new THREE.Mesh(new THREE.BoxGeometry(ridgeLen, 0.35, 0.7), roofRidgeMat);
       ridgeMesh.position.set(0, 0.4 + roofPeak + 0.05, 0);
@@ -1149,43 +1579,64 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
 
       // 5. Kanopi Teras Pintu Masuk
       if (bldg.hasFrontCanopy) {
-        const canW = bldg.isDekanat ? 16.0 : 9.5;
-        const canD = bldg.isDekanat ? 7.5 : 5.8;
-        const canH = 3.8;
-        const canX = bldg.canopyX ?? (bldg.isDekanat ? 0 : 8);
+        const canW = bldg.isDekanat ? 14.5 : 9.5;
+        const canD = bldg.isDekanat ? 7.8 : 5.8;
+        const canH = 4.2;
+        const canX = bldg.canopyX ?? (bldg.isDekanat ? -4 : 8);
         const canZ = bldg.depth / 2 + canD / 2;
 
-        const canopyRoof = new THREE.Mesh(new THREE.BoxGeometry(canW, 0.45, canD), whiteTrimMat);
+        // Plafon kanopi tebal
+        const canopyRoof = new THREE.Mesh(
+          new THREE.BoxGeometry(canW, 0.55, canD),
+          bldg.isDekanat ? canopyNavyMat : whiteTrimMat
+        );
         canopyRoof.position.set(canX, canH, canZ);
         canopyRoof.castShadow = true;
         bldgGroup.add(canopyRoof);
 
-        // Pilar Kanopi Biru Tua Royal
-        const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.65, canH, 0.65), pillarRoyalBlueMat);
-        p1.position.set(canX - canW / 2 + 0.6, canH / 2, canZ + canD / 2 - 0.6);
-        p1.castShadow = true;
-        bldgGroup.add(p1);
+        // Fasad Depan Plang Kanopi Dekanat: "FAKULTAS TEKNIK" (Persis Foto 1)
+        if (bldg.isDekanat) {
+          const canopySignMat = new THREE.MeshStandardMaterial({ map: canopyFasciaTexture, roughness: 0.35 });
+          const canopySign = new THREE.Mesh(new THREE.PlaneGeometry(canW * 0.95, 0.52), canopySignMat);
+          canopySign.position.set(canX, canH, canZ + canD / 2 + 0.04);
+          bldgGroup.add(canopySign);
 
-        const p2 = new THREE.Mesh(new THREE.BoxGeometry(0.65, canH, 0.65), pillarRoyalBlueMat);
-        p2.position.set(canX + canW / 2 - 0.6, canH / 2, canZ + canD / 2 - 0.6);
-        p2.castShadow = true;
-        bldgGroup.add(p2);
+          // Pintu Kaca Lobby Dekanat di Belakang Kanopi
+          const lobbyDoorMat = new THREE.MeshStandardMaterial({ map: lobbyDoorTexture, roughness: 0.2, metalness: 0.8 });
+          const lobbyDoor = new THREE.Mesh(new THREE.PlaneGeometry(8.5, 3.8), lobbyDoorMat);
+          lobbyDoor.position.set(canX, 0.5 + 1.9, bldg.depth / 2 + 0.12);
+          bldgGroup.add(lobbyDoor);
+        }
+
+        // Dua Pilar Besar Penyangga Kanopi (Biru Tua - Putih - Biru Tua sesuai Foto 1)
+        const colW = bldg.isDekanat ? 0.95 : 0.65;
+        const pOffsets = [canX - canW / 2 + 0.8, canX + canW / 2 - 0.8];
+
+        pOffsets.forEach((px) => {
+          // Bawah (Biru tua)
+          const pBottom = new THREE.Mesh(new THREE.BoxGeometry(colW, 1.2, colW), pillarRoyalBlueMat);
+          pBottom.position.set(px, 0.6, canZ + canD / 2 - 0.7);
+          pBottom.castShadow = true;
+          bldgGroup.add(pBottom);
+
+          // Tengah (Putih)
+          const pMid = new THREE.Mesh(new THREE.BoxGeometry(colW - 0.05, 2.2, colW - 0.05), whiteTrimMat);
+          pMid.position.set(px, 1.2 + 1.1, canZ + canD / 2 - 0.7);
+          pMid.castShadow = true;
+          bldgGroup.add(pMid);
+
+          // Atas (Biru tua)
+          const pTop = new THREE.Mesh(new THREE.BoxGeometry(colW, canH - 3.4, colW), pillarRoyalBlueMat);
+          pTop.position.set(px, 3.4 + (canH - 3.4) / 2, canZ + canD / 2 - 0.7);
+          pTop.castShadow = true;
+          bldgGroup.add(pTop);
+        });
 
         // Anak Tangga Masuk
-        const stepMesh = new THREE.Mesh(new THREE.BoxGeometry(canW - 1, 0.25, 2.5), plinthMat);
-        stepMesh.position.set(canX, 0.12, canZ + canD / 2 + 1.0);
+        const stepMesh = new THREE.Mesh(new THREE.BoxGeometry(canW + 2, 0.35, 3.0), plinthMat);
+        stepMesh.position.set(canX, 0.17, canZ + canD / 2 + 1.2);
         stepMesh.receiveShadow = true;
         bldgGroup.add(stepMesh);
-
-        // Plang Nama Emas Resmi Dekanat
-        if (bldg.isDekanat) {
-          const signBoard = new THREE.Mesh(
-            new THREE.PlaneGeometry(12, 3.0),
-            new THREE.MeshStandardMaterial({ map: dekanatSignTexture, roughness: 0.3, metalness: 0.4 })
-          );
-          signBoard.position.set(canX, canH + 1.8, canZ + canD / 2 + 0.05);
-          bldgGroup.add(signBoard);
-        }
       }
 
       // 6. Highlight Selection Box
@@ -1197,7 +1648,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       });
       const highlightMesh = new THREE.LineSegments(highlightEdges, highlightMat);
       highlightMesh.position.y = (bldg.height + roofPeak) / 2;
-      highlightMesh.visible = bldg.id === activeBuildingId;
+      highlightMesh.visible = bldg.id === selectedCampusBuilding.id;
       bldgGroup.add(highlightMesh);
       highlightMeshesRef.current.set(bldg.id, highlightMesh);
 
@@ -1214,7 +1665,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       buildingGroupsRef.current.set(bldg.id, bldgGroup);
     });
 
-    // 9. VEGETASI & POHON KAMPUS (Sesuai Foto Udara)
+    // 11. VEGETASI & POHON KAMPUS (Sesuai Foto Udara & Sisi Jalan Akses)
     const treeTrunkMat = new THREE.MeshStandardMaterial({ color: '#4a3325', roughness: 0.95 });
     const leafDarkMat = new THREE.MeshStandardMaterial({ color: '#1b4332', roughness: 0.85 });
     const leafMidMat = new THREE.MeshStandardMaterial({ color: '#2d6a4f', roughness: 0.8 });
@@ -1248,15 +1699,18 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     };
 
     const trees = [
+      // Pohon samping talud jalan akses (Sesuai Foto 2)
+      [53, 30, 0.75], [53, 20, 0.8], [53, 10, 0.75], [53, 0, 0.8], [53, -10, 0.85], [53, -20, 0.9],
+      // Pohon perimeter kawasan
       [-70, 22, 1.3], [-72, 0, 1.2], [-70, -22, 1.4],
       [-46, 14, 0.95], [-44, -14, 1.0], [4, 14, 0.85], [4, -14, 0.9],
       [72, 24, 1.2], [82, 14, 1.3], [85, -2, 1.4], [78, -16, 1.1],
-      [-45, 34, 0.9], [-22, 34, 0.85], [0, 34, 0.9], [15, 34, 0.85], [48, 34, 0.95],
+      [-45, 34, 0.9], [-22, 34, 0.85], [-2, 38, 0.85], [48, 38, 0.95],
       [-32, -56, 1.3], [-8, -56, 1.2], [18, -56, 1.35], [46, -56, 1.25]
     ];
     trees.forEach(([tx, tz, ts]) => createCanopyTree(tx, tz, ts));
 
-    // 10. Interaksi Mouse & Touch
+    // 12. Interaksi Mouse & Touch
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -1324,7 +1778,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      orbitState.current.targetDistance = Math.max(30, Math.min(190, orbitState.current.targetDistance + e.deltaY * 0.08));
+      orbitState.current.targetDistance = Math.max(25, Math.min(190, orbitState.current.targetDistance + e.deltaY * 0.08));
     };
 
     const domEl = renderer.domElement;
@@ -1337,7 +1791,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     domEl.addEventListener('touchmove', handlePointerMove, { passive: true });
     domEl.addEventListener('touchend', handlePointerUp);
 
-    // 11. Loop Render Animasi
+    // 13. Loop Render Animasi
     const animate = () => {
       animationFrameIdRef.current = requestAnimationFrame(animate);
 
@@ -1389,6 +1843,45 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     };
   }, [isAutoRotate, onSelectBuilding, isDark]);
 
+  // Koleksi Foto Lapangan untuk Dibandingkan
+  const CAMPUS_REAL_PHOTOS = [
+    {
+      title: 'Tampak Depan Fasad Dekanat & Kanopi "FAKULTAS TEKNIK"',
+      subtitle: 'Plang Timbul FAKULTAS TEKNIK, Panel Biru SBSN 2022-2023, Tiang Bendera & Deretan Parkir',
+      image: './images/ft-depan-dekanat.jpg',
+      presetKey: 'front' as const,
+      description: 'Menampilkan fasad megah depan Fakultas Teknik: kanopi biru bertuliskan FAKULTAS TEKNIK, ornamen batik chevron di panel biru SBSN, tiang bendera Merah Putih, dan barisan motor parkir.'
+    },
+    {
+      title: 'Akses Jalan Depan & Talud Batu Kali (Menuju FT.2)',
+      subtitle: 'Jalan Aspal, Talud Batu Kali dengan Kanstin Belang, dan Plang FT.2 Teknik Elektro',
+      image: './images/ft-jalan-akses-ft2.jpg',
+      presetKey: 'road_side' as const,
+      description: 'Sudut pandang dari jalan aspal depan menelusuri talud batu kali, pembatas kanstin hitam-putih, pohon pelindung, dan deretan motor di sisi FT.2.'
+    },
+    {
+      title: 'Koridor Tengah Paving Herringbone & Jembatan Kanopi',
+      subtitle: 'Jalan Koridor Penghubung Antar Sayap Bangunan',
+      image: './images/ft-koridor-tengah.jpg',
+      presetKey: 'courtyard' as const,
+      description: 'Paving block saling mengunci abu-abu (herringbone) di antara barisan gedung dengan jembatan kanopi biru penghubung kedua sayap.'
+    },
+    {
+      title: 'Plang Identitas 3D FT.1 (Informatika & SI)',
+      subtitle: 'Huruf Balok Timbul FT.1, Kisi Ventilasi Kotak & Garis Lisplang Putih',
+      image: './images/ft-gedung-ft1.jpg',
+      presetKey: 'labtek_ft1' as const,
+      description: 'Fasad ujung timur Gedung FT.1 yang memuat tulisan timbul 3D FT.1 INFORMATIKA & SISTEM INFORMASI.'
+    },
+    {
+      title: 'Foto Udara Kompleks Fakultas Teknik (Drone)',
+      subtitle: 'Kawasan Lengkap Gedung Kuliah Terpadu & Laboratorium FT Kampus 2 Mugarsari',
+      image: './images/gedung-labtek-ft1-unsil.jpg',
+      presetKey: 'drone' as const,
+      description: 'Tata letak masterplan 7 massa bangunan fakultas dengan genteng keramik cokelat terakota dan danau retensi.'
+    }
+  ];
+
   return (
     <div className="relative w-full bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100 dark:border-slate-800 shadow-xl overflow-hidden text-slate-800 dark:text-slate-100 transition-colors">
       
@@ -1410,7 +1903,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Model 3D arsitektural akurat berbasis foto drone udara: tekstur genteng limasan, dinding biru FT, dan lanskap danau.
+                Model 3D arsitektural akurat: fasad depan SBSN Dekanat, kanopi Fakultas Teknik, tiang bendera, talud batu kali, dan barisan parkir motor.
               </p>
             </div>
           </div>
@@ -1421,17 +1914,43 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
           
           {/* Preset Kamera */}
           <div className="flex items-center gap-1 p-1 bg-slate-200/80 dark:bg-slate-800 rounded-xl text-xs">
+            
             <button
-              onClick={() => applyCameraPreset('drone')}
+              onClick={() => applyCameraPreset('front')}
               className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'drone'
+                cameraPreset === 'front'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
               }`}
-              title="Sudut pandang udara seluruh kawasan persis seperti foto drone asli"
+              title="Tampak Depan Dekanat & Kanopi FAKULTAS TEKNIK (Sesuai Foto 1)"
             >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Foto Drone</span>
+              <Eye className="w-3.5 h-3.5" />
+              <span>Detail Depan</span>
+            </button>
+
+            <button
+              onClick={() => applyCameraPreset('road_side')}
+              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
+                cameraPreset === 'road_side'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+              }`}
+              title="Akses Jalan Aspal Depan & Talud Batu Kali (Sesuai Foto 2)"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Jalan Akses</span>
+            </button>
+
+            <button
+              onClick={() => applyCameraPreset('courtyard')}
+              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
+                cameraPreset === 'courtyard'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+              }`}
+              title="Sudut pandang jalan paving tengah (Persis Foto 3)"
+            >
+              <span>Koridor Tengah</span>
             </button>
 
             <button
@@ -1448,28 +1967,16 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             </button>
 
             <button
-              onClick={() => applyCameraPreset('courtyard')}
+              onClick={() => applyCameraPreset('drone')}
               className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'courtyard'
+                cameraPreset === 'drone'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
               }`}
-              title="Sudut pandang jalan paving tengah (Persis Foto Lapangan)"
+              title="Sudut pandang udara seluruh kawasan persis seperti foto drone asli"
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Koridor Tengah</span>
-            </button>
-
-            <button
-              onClick={() => applyCameraPreset('front')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                cameraPreset === 'front'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Tampak Depan Dekanat & Jalan Utama"
-            >
-              Depan
+              <Camera className="w-3.5 h-3.5" />
+              <span>Foto Drone</span>
             </button>
 
             <button
@@ -1506,7 +2013,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
               className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                 timeOfDay === 'day' ? 'bg-amber-400 text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
-              title="Siang Cerah (Persis Foto 2-5)"
+              title="Siang Cerah (Persis Foto Lapangan)"
             >
               <Sun className="w-3.5 h-3.5" />
             </button>
@@ -1543,14 +2050,14 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             <RotateCw className={`w-3.5 h-3.5 ${isAutoRotate ? 'animate-spin' : ''}`} />
           </button>
 
-          {/* Tombol Bandingkan Foto Drone Asli */}
+          {/* Tombol Bandingkan Foto Lapangan Asli */}
           <button
             onClick={() => setShowPhotoModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95"
-            title="Lihat foto drone asli yang ditandai lingkaran merah"
+            title="Bandingkan langsung dengan 5 foto asli lapangan"
           >
             <ImageIcon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Foto Drone Asli</span>
+            <span className="hidden sm:inline">Bandingkan Foto Asli</span>
           </button>
         </div>
       </div>
@@ -1567,6 +2074,31 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
           <div className="px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md text-white text-[11px] font-bold border border-white/20">
             <span>Pilih Bangunan Kampus:</span>
           </div>
+
+          {/* Gedung Dekanat FT (Fasad Depan Utama) */}
+          <button
+            onClick={() => {
+              const def = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'dekanat-ft')!;
+              setSelectedCampusBuilding(def);
+              applyCameraPreset('front');
+            }}
+            className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl backdrop-blur-md text-xs font-extrabold transition-all shadow-lg cursor-pointer border text-left ${
+              selectedCampusBuilding.id === 'dekanat-ft'
+                ? 'bg-blue-700 text-white border-blue-400 ring-2 ring-blue-400/40 translate-x-1'
+                : 'bg-white/95 dark:bg-slate-800/95 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700 hover:border-blue-400'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${selectedCampusBuilding.id === 'dekanat-ft' ? 'bg-amber-300 animate-ping' : 'bg-blue-500'}`} />
+              <div>
+                <span className="block font-bold">Gedung Dekanat FT</span>
+                <span className="text-[10px] font-normal opacity-80 block">SBSN 2022-2023 & Kanopi</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-900/80 text-blue-100 shrink-0">
+              Detail Depan
+            </span>
+          </button>
 
           {/* LABTEK 1 (Denah Tersedia) */}
           <button
@@ -1618,29 +2150,12 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             </span>
           </button>
 
-          {/* Gedung Dekanat FT */}
-          <button
-            onClick={() => {
-              const def = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'dekanat-ft')!;
-              setSelectedCampusBuilding(def);
-            }}
-            className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl backdrop-blur-md text-xs transition-all shadow-sm cursor-pointer border text-left ${
-              selectedCampusBuilding.id === 'dekanat-ft'
-                ? 'bg-sky-700 text-white border-sky-400 ring-2 ring-sky-400/30'
-                : 'bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-white'
-            }`}
-          >
-            <span className="font-semibold text-[11px]">Gedung Dekanat FT</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-              Eksterior
-            </span>
-          </button>
-
           {/* Gedung FT.2 */}
           <button
             onClick={() => {
               const def = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'gedung-ft2')!;
               setSelectedCampusBuilding(def);
+              applyCameraPreset('road_side');
             }}
             className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl backdrop-blur-md text-xs transition-all shadow-sm cursor-pointer border text-left ${
               selectedCampusBuilding.id === 'gedung-ft2'
@@ -1667,6 +2182,8 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-extrabold shadow-md shrink-0 ${
               selectedCampusBuilding.hasFloorPlan
                 ? 'bg-gradient-to-tr from-emerald-600 to-teal-600'
+                : selectedCampusBuilding.isDekanat
+                ? 'bg-gradient-to-tr from-blue-700 to-indigo-800'
                 : 'bg-gradient-to-tr from-blue-600 to-indigo-700'
             }`}>
               {selectedCampusBuilding.code}
@@ -1766,51 +2283,89 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
 
       </div>
 
-      {/* 3. Modal Lightbox Foto Udara Asli Drone */}
+      {/* 3. Modal Lightbox Foto Asli Lapangan Lengkap */}
       {showPhotoModal && (
         <div 
-          className="fixed inset-0 z-[150] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-[150] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
           onClick={() => setShowPhotoModal(false)}
         >
           <div 
-            className="relative max-w-4xl w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-modal-spring"
+            className="relative max-w-5xl w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-modal-spring flex flex-col max-h-[92vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 bg-slate-950 flex items-center justify-between border-b border-white/10">
+            {/* Modal Header */}
+            <div className="p-4 bg-slate-950 flex items-center justify-between border-b border-white/10 shrink-0">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-amber-400" />
                 <div>
                   <h4 className="text-white text-sm sm:text-base font-extrabold">
-                    Foto Udara Asli Kawasan Fakultas Teknik Universitas Siliwangi
+                    Galeri Foto Asli Lapangan Fakultas Teknik UNSIL
                   </h4>
                   <p className="text-[11px] text-slate-400">
-                    Kawasan Gedung Kuliah Terpadu dan Laboratorium FT Kampus 2 Mugarsari
+                    Bandingkan langsung setiap detail arsitektur 3D dengan foto dokumentasi asli
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowPhotoModal(false)}
-                className="text-white/70 hover:text-white px-2 py-1 rounded-lg text-sm font-bold"
+                className="text-white/70 hover:text-white px-3 py-1.5 rounded-xl text-sm font-bold bg-white/10 hover:bg-white/20 transition-all cursor-pointer"
               >
                 ✕ Tutup
               </button>
             </div>
 
-            <div className="relative p-2 bg-slate-950 flex justify-center">
-              <img 
-                src="./images/gedung-labtek-ft1-unsil.jpg" 
-                alt="Gedung Kuliah Terpadu dan Laboratorium Fakultas Teknik Universitas Siliwangi" 
-                className="max-h-[72vh] w-auto object-contain rounded-xl"
-              />
+            {/* Tab Selector Foto */}
+            <div className="p-2.5 bg-slate-900 border-b border-white/10 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-none">
+              {CAMPUS_REAL_PHOTOS.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActivePhotoIndex(idx)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    activePhotoIndex === idx
+                      ? 'bg-amber-500 text-slate-950 shadow-md'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {idx + 1}. {item.title.split('&')[0]}
+                </button>
+              ))}
             </div>
 
-            <div className="p-4 bg-slate-900 border-t border-white/10 text-xs text-slate-300 flex items-center justify-between flex-wrap gap-2">
-              <span>
-                Area yang dilingkari merah adalah <strong>Gedung LABTEK 1</strong> dan <strong>Gedung FT.1</strong> yang memiliki fitur denah interaktif lengkap.
-              </span>
+            {/* Foto Tampilan Utama */}
+            <div className="relative p-3 bg-slate-950 flex flex-col items-center justify-center overflow-y-auto flex-1">
+              <img 
+                src={CAMPUS_REAL_PHOTOS[activePhotoIndex].image} 
+                alt={CAMPUS_REAL_PHOTOS[activePhotoIndex].title} 
+                className="max-h-[58vh] w-auto object-contain rounded-2xl shadow-xl border border-white/10"
+              />
+              <div className="mt-3 text-center max-w-2xl px-4">
+                <h5 className="text-white font-extrabold text-sm sm:text-base">
+                  {CAMPUS_REAL_PHOTOS[activePhotoIndex].title}
+                </h5>
+                <p className="text-xs text-amber-300 font-medium mt-0.5">
+                  {CAMPUS_REAL_PHOTOS[activePhotoIndex].subtitle}
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  {CAMPUS_REAL_PHOTOS[activePhotoIndex].description}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="p-4 bg-slate-900 border-t border-white/10 text-xs text-slate-300 flex items-center justify-between flex-wrap gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  applyCameraPreset(CAMPUS_REAL_PHOTOS[activePhotoIndex].presetKey);
+                  setShowPhotoModal(false);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold transition-all shadow-md cursor-pointer"
+              >
+                <Camera className="w-4 h-4" />
+                <span>Lihat Sudut Ini di Model 3D</span>
+              </button>
               <button
                 onClick={() => setShowPhotoModal(false)}
-                className="px-4 py-1.5 rounded-xl bg-emerald-600 text-white font-bold"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all cursor-pointer"
               >
                 Kembali ke Model 3D
               </button>
