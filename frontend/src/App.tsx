@@ -13,6 +13,7 @@ import { PanoramaRoomsModal } from './components/common/PanoramaRoomsModal';
 import { RoomPanoramaModal } from './components/floorplan/RoomPanoramaModal';
 import { FloorMapSvg } from './components/floorplan/FloorMapSvg';
 import { IsometricView } from './components/floorplan/IsometricView';
+import { Campus3DBuildingViewer } from './components/floorplan/Campus3DBuildingViewer';
 import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
 import { RoomDetailModal } from './components/floorplan/RoomDetailModal';
 import { MobileRotateDisplay } from './components/common/MobileRotateDisplay';
@@ -43,6 +44,8 @@ export const App: React.FC = () => {
   const [activeFloorNumber, setActiveFloorNumber] = useState<number>(1);
   // Default to '3d' view so 3D isometric model appears immediately
   const [viewMode, setViewMode] = useState<ViewMode>('3d');
+  // Sub-mode untuk tampilan 3D: 'building' (eksterior bangunan 3D Three.js) atau 'floorplan' (denah lantai)
+  const [view3DSubMode, setView3DSubMode] = useState<'building' | 'floorplan'>('building');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<RoomStatus | 'all'>('all');
   
@@ -216,7 +219,7 @@ export const App: React.FC = () => {
     setViewMode('3d');
     setSelectedRoom(room);
     setActivePathRoomId(room.id);
-    const bldgName = buildingId === 'gedung-a' ? 'LABKOM 1' : 'FT.1';
+    const bldgName = buildingId === 'gedung-a' ? 'LABTEK 1' : 'FT.1';
     setRecentNotification(`Menavigasi ke ${room.code} - ${room.name} (${bldgName}, Tingkat ${floorNumber})`);
     setTimeout(() => setRecentNotification(null), 4000);
     scrollTo3DModel();
@@ -335,14 +338,61 @@ export const App: React.FC = () => {
         )}
 
         {viewMode === '3d' && (
-          <IsometricView
-            building={activeBuilding}
-            activeFloorNumber={activeFloorNumber}
-            onSelectFloor={(num) => setActiveFloorNumber(num)}
-            onSelectRoom={(room) => setSelectedRoom(room)}
-            selectedRoom={selectedRoom}
-            onChangeViewMode={handleChangeViewMode}
-          />
+          <div className="space-y-4">
+            {/* 🏛️ Sub-Mode Selector: Model Bangunan 3D Eksterior vs Denah Lantai Isometrik */}
+            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 max-w-lg mx-auto shadow-xs">
+              <button
+                onClick={() => setView3DSubMode('building')}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  view3DSubMode === 'building'
+                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-1 ring-emerald-500/20'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Model Bangunan 3D</span>
+                <span className="text-[10px] opacity-80">(LABTEK 1 & FT.1)</span>
+              </button>
+
+              <button
+                onClick={() => setView3DSubMode('floorplan')}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  view3DSubMode === 'floorplan'
+                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-1 ring-emerald-500/20'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Denah Lantai Isometrik</span>
+                <span className="text-[10px] opacity-80">(Tingkat 1 & 2)</span>
+              </button>
+            </div>
+
+            {view3DSubMode === 'building' ? (
+              <Campus3DBuildingViewer
+                buildings={buildings}
+                activeBuildingId={activeBuildingId}
+                onSelectBuilding={(id) => handleSelectBuilding(id)}
+                activeFloorNumber={activeFloorNumber}
+                onSelectFloor={(num) => {
+                  handleSelectFloor(num);
+                  setView3DSubMode('floorplan');
+                }}
+                onSelectRoom={(room) => setSelectedRoom(room)}
+                onSwitchToFloorPlan={() => setView3DSubMode('floorplan')}
+              />
+            ) : (
+              <IsometricView
+                building={activeBuilding}
+                activeFloorNumber={activeFloorNumber}
+                onSelectFloor={(num) => setActiveFloorNumber(num)}
+                onSelectRoom={(room) => setSelectedRoom(room)}
+                selectedRoom={selectedRoom}
+                onChangeViewMode={handleChangeViewMode}
+                onSwitchToBuildingView={() => setView3DSubMode('building')}
+              />
+            )}
+          </div>
         )}
 
         {viewMode === 'list' && (

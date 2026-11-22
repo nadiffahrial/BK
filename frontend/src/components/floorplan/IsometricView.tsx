@@ -20,7 +20,8 @@ import {
   Eye,
   SlidersHorizontal,
   RotateCcw,
-  Smartphone
+  Smartphone,
+  Building2
 } from 'lucide-react';
 
 interface IsometricViewProps {
@@ -30,6 +31,7 @@ interface IsometricViewProps {
   onSelectRoom: (room: Room) => void;
   selectedRoom?: Room | null;
   onChangeViewMode?: (mode: '2d' | '3d' | 'list') => void;
+  onSwitchToBuildingView?: () => void;
 }
 
 export const IsometricView: React.FC<IsometricViewProps> = ({
@@ -38,7 +40,8 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
   onSelectFloor,
   onSelectRoom,
   selectedRoom,
-  onChangeViewMode
+  onChangeViewMode,
+  onSwitchToBuildingView
 }) => {
   const { isDark } = useTheme();
 
@@ -238,6 +241,18 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
 
         {/* 3D Camera & Presentation Presets */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Tombol Beralih ke Model Bangunan 3D Eksterior */}
+          {onSwitchToBuildingView && (
+            <button
+              onClick={onSwitchToBuildingView}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm transition-all cursor-pointer active:scale-95"
+              title="Kembali ke Model Eksterior Bangunan 3D (Gedung LABTEK 1 & FT.1)"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Model Bangunan 3D</span>
+            </button>
+          )}
+
           {/* Quick Camera Angles - Termasuk POV Samping Sesuai Permintaan User */}
           <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
             <button

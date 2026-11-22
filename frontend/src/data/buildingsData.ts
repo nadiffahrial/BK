@@ -4,9 +4,9 @@ export const BUILDINGS_DATA: Building[] = [
   {
     id: 'gedung-a',
     code: 'A',
-    name: 'Gedung LABKOM 1 - Laboratorium Komputer Terpadu',
-    shortName: 'LABKOM 1',
-    tagline: 'Pusat Laboratorium Komputer, Jaringan, Multimedia, dan AI Universitas Siliwangi',
+    name: 'Gedung LABTEK 1 - Laboratorium Komputer Terpadu',
+    shortName: 'LABTEK 1',
+    tagline: 'Pusat Laboratorium Komputer, Jaringan, Multimedia, dan AI Fakultas Teknik Universitas Siliwangi',
     floorsCount: 2,
     address: 'Komp. Kampus Fakultas Teknik, Universitas Siliwangi',
     operatingHours: '07.30 - 20.30 WIB',
