@@ -8,7 +8,8 @@ import {
   GraduationCap,
   Search,
   BookOpen,
-  Eye
+  Eye,
+  ShieldCheck
 } from 'lucide-react';
 import { Building, RoomStatus, ViewMode } from '../../types';
 import { ThemeToggle } from '../common/ThemeToggle';
@@ -56,14 +57,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="font-black text-sm sm:text-base tracking-tight text-slate-900 dark:text-white transition-colors leading-tight">
-                  SmartCampus<span className="text-emerald-600 dark:text-emerald-400">3D</span>
+                  <span className="text-emerald-700 dark:text-emerald-300">SILO</span><span className="text-teal-600 dark:text-teal-300">KA</span>
                 </span>
-                <span className="hidden lg:inline-flex text-[9px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-2xs">
-                  Denah 3D
+                <span className={`hidden lg:inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border shadow-2xs ${user?.role === 'admin' || user?.role === 'super_admin' ? 'text-indigo-800 dark:text-indigo-200 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800' : 'text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800'}`}>
+                  {user?.role === 'admin' || user?.role === 'super_admin' ? <><ShieldCheck className="h-3 w-3" /> PANEL ADMIN</> : 'WAYFINDING'}
                 </span>
               </div>
               <span className="text-[10px] sm:text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 tracking-tight leading-none mt-0.5">
-                Universitas Siliwangi
+                Siliwangi Location Assistant
               </span>
             </div>
           </div>

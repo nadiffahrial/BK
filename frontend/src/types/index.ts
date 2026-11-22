@@ -115,3 +115,13 @@ export interface CsTicket {
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface CsChatMessage {
+  id: number;
+  ticketId: string;
+  senderId: string;
+  senderName: string;
+  senderRole: string;
+  message: string;
+  createdAt: string;
+}

@@ -17,7 +17,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenGuide }) => {
             <CampusLogo size="sm" />
             <div>
               <span className="font-extrabold text-xs text-slate-900 dark:text-white">
-                SmartCampus<span className="text-emerald-600 dark:text-emerald-400">3D</span> • Universitas Siliwangi
+                SILOKA • Siliwangi Location Assistant
               </span>
               <p className="text-[10px] text-slate-400 dark:text-slate-500">
                 Sistem Tata Ruang Gedung LABKOM 1 & FT.1 • Universitas Siliwangi
@@ -58,7 +58,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenGuide }) => {
 
           {/* Copyright */}
           <div className="text-[10px] text-slate-400">
-            © {new Date().getFullYear()} SmartCampus3D • Terintegrasi MySQL & Node.js
+            © {new Date().getFullYear()} SILOKA • Siliwangi Location Assistant
           </div>
 
         </div>

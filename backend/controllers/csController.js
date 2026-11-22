@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'node:crypto';
 import { getDb } from '../config/db.js';
 import { state } from '../store.js';
 import { broadcastEvent } from '../sse.js';
@@ -92,7 +93,9 @@ export const createCsTicket = async (req, res) => {
       });
     }
 
-    const ticketId = `CS-${Math.floor(1000 + Math.random() * 9000)}`;
+    const ticketId = `CS-${randomBytes(4).toString('hex').toUpperCase()}`;
+    const chatAccessToken = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(chatAccessToken).digest('hex');
     const newTicket = {
       id: ticketId,
       senderName: senderName.trim(),
@@ -127,10 +130,18 @@ export const createCsTicket = async (req, res) => {
             newTicket.adminResponse
           ]
         );
+        await db.query(
+          'INSERT INTO `cs_ticket_access` (ticket_id, token_hash) VALUES (?, ?)',
+          [newTicket.id, tokenHash]
+        );
         console.log(`[CS Backend] ✅ Tiket #${newTicket.id} tersimpan ke MySQL database 'smartspace_db'`);
       } catch (dbErr) {
         console.error('MySQL insert error for cs_tickets:', dbErr.message);
+        return res.status(500).json({ success: false, message: 'Tiket gagal disimpan. Silakan coba kembali.' });
       }
+    } else {
+      state.csTicketAccess[newTicket.id] = tokenHash;
+      state.csTicketMessages[newTicket.id] = [];
     }
 
     // 2. Simpan ke in-memory store agar sinkron
@@ -148,7 +159,8 @@ export const createCsTicket = async (req, res) => {
     res.status(201).json({
       success: true,
       message: `Tiket bantuan #${newTicket.id} berhasil dikirim ke Layanan CS BAAK & IT dan tersimpan di database MySQL!`,
-      data: newTicket
+      data: newTicket,
+      chatAccessToken
     });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Gagal membuat tiket CS', error: err.message });
@@ -220,5 +232,124 @@ export const updateCsTicketStatus = async (req, res) => {
       success: false,
       message: 'Gagal memperbarui status tiket CS.'
     });
+  }
+};
+
+// Riwayat percakapan live chat untuk satu tiket (khusus petugas CS).
+export const getCsTicketMessages = async (req, res) => {
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, message: 'Database MySQL tidak tersedia.' });
+  try {
+    const { id } = req.params;
+    const [tickets] = await db.query('SELECT id FROM `cs_tickets` WHERE id = ? LIMIT 1', [id]);
+    if (!tickets.length) return res.status(404).json({ success: false, message: 'Tiket tidak ditemukan.' });
+    const [rows] = await db.query(
+      `SELECT id, ticket_id AS ticketId, sender_id AS senderId, sender_name AS senderName,
+              sender_role AS senderRole, message, created_at AS createdAt
+       FROM cs_ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC, id ASC`, [id]
+    );
+    return res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Gagal mengambil percakapan CS:', err.message);
+    return res.status(500).json({ success: false, message: 'Gagal mengambil percakapan tiket.' });
+  }
+};
+
+export const sendCsTicketMessage = async (req, res) => {
+  const db = getDb();
+  const message = typeof req.body.message === 'string' ? req.body.message.trim() : '';
+  if (!message) return res.status(400).json({ success: false, message: 'Pesan tidak boleh kosong.' });
+  if (message.length > 5000) return res.status(400).json({ success: false, message: 'Pesan maksimal 5000 karakter.' });
+  if (!db) return res.status(503).json({ success: false, message: 'Database MySQL tidak tersedia.' });
+  try {
+    const { id: ticketId } = req.params;
+    const [tickets] = await db.query('SELECT id FROM `cs_tickets` WHERE id = ? LIMIT 1', [ticketId]);
+    if (!tickets.length) return res.status(404).json({ success: false, message: 'Tiket tidak ditemukan.' });
+    const user = req.user;
+    const [result] = await db.query(
+      `INSERT INTO cs_ticket_messages (ticket_id, sender_id, sender_name, sender_role, message)
+       VALUES (?, ?, ?, ?, ?)`, [ticketId, user.id, user.name, user.role, message]
+    );
+    const [rows] = await db.query(
+      `SELECT id, ticket_id AS ticketId, sender_id AS senderId, sender_name AS senderName,
+              sender_role AS senderRole, message, created_at AS createdAt
+       FROM cs_ticket_messages WHERE id = ?`, [result.insertId]
+    );
+    const chatMessage = rows[0];
+    return res.status(201).json({ success: true, data: chatMessage });
+  } catch (err) {
+    console.error('Gagal mengirim pesan CS:', err.message);
+    return res.status(500).json({ success: false, message: 'Gagal mengirim pesan tiket.' });
+  }
+};
+
+const hasVisitorChatAccess = async (ticketId, token) => {
+  if (typeof token !== 'string' || token.length !== 64) return false;
+  const tokenHash = createHash('sha256').update(token).digest('hex');
+  const db = getDb();
+  if (!db) return state.csTicketAccess[ticketId] === tokenHash;
+  const [rows] = await db.query(
+    'SELECT ticket_id FROM cs_ticket_access WHERE ticket_id = ? AND token_hash = ? LIMIT 1',
+    [ticketId, tokenHash]
+  );
+  return rows.length > 0;
+};
+
+export const getVisitorCsTicketMessages = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!await hasVisitorChatAccess(id, req.get('x-cs-ticket-access'))) {
+      return res.status(403).json({ success: false, message: 'Akses percakapan tidak valid.' });
+    }
+    const db = getDb();
+    if (!db) return res.json({ success: true, data: state.csTicketMessages[id] || [] });
+    const [rows] = await db.query(
+      `SELECT id, ticket_id AS ticketId, sender_id AS senderId, sender_name AS senderName,
+              sender_role AS senderRole, message, created_at AS createdAt
+       FROM cs_ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC, id ASC`, [id]
+    );
+    return res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Gagal mengambil chat pengunjung:', err.message);
+    return res.status(500).json({ success: false, message: 'Gagal mengambil percakapan tiket.' });
+  }
+};
+
+export const sendVisitorCsTicketMessage = async (req, res) => {
+  const { id: ticketId } = req.params;
+  const message = typeof req.body.message === 'string' ? req.body.message.trim() : '';
+  if (!message) return res.status(400).json({ success: false, message: 'Pesan tidak boleh kosong.' });
+  if (message.length > 5000) return res.status(400).json({ success: false, message: 'Pesan maksimal 5000 karakter.' });
+  try {
+    if (!await hasVisitorChatAccess(ticketId, req.get('x-cs-ticket-access'))) {
+      return res.status(403).json({ success: false, message: 'Akses percakapan tidak valid.' });
+    }
+    const db = getDb();
+    if (!db) {
+      const ticket = state.csTickets.find(item => item.id === ticketId);
+      if (!ticket) return res.status(404).json({ success: false, message: 'Tiket tidak ditemukan.' });
+      const chatMessage = {
+        id: Date.now(), ticketId, senderId: `visitor:${ticketId}`, senderName: ticket.senderName,
+        senderRole: 'visitor', message, createdAt: new Date().toISOString()
+      };
+      state.csTicketMessages[ticketId] ||= [];
+      state.csTicketMessages[ticketId].push(chatMessage);
+      return res.status(201).json({ success: true, data: chatMessage });
+    }
+    const [tickets] = await db.query('SELECT sender_name FROM cs_tickets WHERE id = ? LIMIT 1', [ticketId]);
+    if (!tickets.length) return res.status(404).json({ success: false, message: 'Tiket tidak ditemukan.' });
+    const [result] = await db.query(
+      `INSERT INTO cs_ticket_messages (ticket_id, sender_id, sender_name, sender_role, message)
+       VALUES (?, ?, ?, 'visitor', ?)`, [`${ticketId}`, `visitor:${ticketId}`, tickets[0].sender_name, message]
+    );
+    const [rows] = await db.query(
+      `SELECT id, ticket_id AS ticketId, sender_id AS senderId, sender_name AS senderName,
+              sender_role AS senderRole, message, created_at AS createdAt
+       FROM cs_ticket_messages WHERE id = ?`, [result.insertId]
+    );
+    return res.status(201).json({ success: true, data: rows[0] });
+  } catch (err) {
+    console.error('Gagal mengirim chat pengunjung:', err.message);
+    return res.status(500).json({ success: false, message: 'Gagal mengirim pesan tiket.' });
   }
 };

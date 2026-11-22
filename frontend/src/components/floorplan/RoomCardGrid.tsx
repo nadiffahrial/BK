@@ -19,19 +19,22 @@ interface RoomCardGridProps {
   selectedRoom: Room | null;
   onSelectRoom: (room: Room) => void;
   onNavigateRoom?: (room: Room) => void;
+  statusFilter?: RoomStatus | 'all';
 }
 
 export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
   rooms,
   selectedRoom,
   onSelectRoom,
-  onNavigateRoom
+  onNavigateRoom,
+  statusFilter = 'all'
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'code' | 'capacity' | 'name'>('code');
 
   const filtered = rooms
     .filter(r => {
+      if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (filterType === 'all') return true;
       if (filterType === 'panorama') return Boolean(r.panoramaUrl);
       return r.type === filterType;

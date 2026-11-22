@@ -70,7 +70,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                   Buku Panduan Pengguna
                 </h2>
                 <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full border border-white/20 shadow-xs">
-                  SmartCampus3D
+                  SILOKA
                 </span>
               </div>
               <p className="text-xs text-emerald-100/90 font-medium mt-0.5">
@@ -132,7 +132,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                   </div>
                   <div>
                     <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                      Tujuan Utama Website SmartCampus3D
+                      Tujuan Utama SILOKA
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">
                       Aplikasi ini dirancang khusus untuk mempermudah seluruh civitas akademika Universitas Siliwangi dalam menemukan lokasi ruangan, melihat fasilitas gedung secara interaktif 3D & 2D, mengetahui agenda penggunaan ruangan, hingga melaporkan gangguan fasilitas secara cepat dan terintegrasi.

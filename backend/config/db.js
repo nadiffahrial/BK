@@ -164,6 +164,31 @@ const createTables = async () => {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  // Percakapan live chat per tiket. DDL additive dan aman untuk tiket yang sudah ada.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS \`cs_ticket_messages\` (
+      \`id\` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      \`ticket_id\` VARCHAR(50) NOT NULL,
+      \`sender_id\` VARCHAR(50) NOT NULL,
+      \`sender_name\` VARCHAR(150) NOT NULL,
+      \`sender_role\` VARCHAR(50) NOT NULL,
+      \`message\` TEXT NOT NULL,
+      \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX \`idx_cs_ticket_messages_ticket_created\` (\`ticket_id\`, \`created_at\`, \`id\`),
+      CONSTRAINT \`fk_cs_ticket_messages_ticket\` FOREIGN KEY (\`ticket_id\`) REFERENCES \`cs_tickets\` (\`id\`) ON DELETE RESTRICT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  // Capability token hashed server-side for safe public access to a visitor's ticket chat.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS \`cs_ticket_access\` (
+      \`ticket_id\` VARCHAR(50) NOT NULL PRIMARY KEY,
+      \`token_hash\` CHAR(64) NOT NULL UNIQUE,
+      \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT \`fk_cs_ticket_access_ticket\` FOREIGN KEY (\`ticket_id\`) REFERENCES \`cs_tickets\` (\`id\`) ON DELETE RESTRICT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   console.log(`📋 Tabel-tabel MySQL berhasil disinkronkan`);
 };
 

@@ -457,7 +457,7 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
           </div>
 
           <span className="font-semibold text-emerald-700">
-            SmartCampus3D Wayfinding
+            SILOKA • Siliwangi Location Assistant
           </span>
         </div>
 

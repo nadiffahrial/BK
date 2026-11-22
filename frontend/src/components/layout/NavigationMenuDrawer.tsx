@@ -152,10 +152,10 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               <CampusLogo size="md" />
               <div>
                 <h2 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
-                  Universitas Siliwangi
+                  {user?.role === 'admin' || user?.role === 'super_admin' ? 'Panel Admin Kampus' : 'Universitas Siliwangi'}
                 </h2>
                 <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                  SmartCampus3D • LABKOM 1 & FT.1
+                  {user?.role === 'admin' || user?.role === 'super_admin' ? 'Manajemen ruang & layanan CS' : 'SILOKA • Siliwangi Location Assistant'}
                 </p>
               </div>
             </div>
@@ -266,10 +266,10 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     <Headphones className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-                    <span>Layanan CS & Pengaduan Kampus</span>
+                    <span>{user?.role === 'admin' || user?.role === 'super_admin' ? 'Antrean Tiket & Live Chat CS' : 'Layanan CS & Pengaduan Kampus'}</span>
                   </div>
                   <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-                    Online
+                    {user?.role === 'admin' || user?.role === 'super_admin' ? 'Kelola' : 'Online'}
                   </span>
                 </button>
               )}

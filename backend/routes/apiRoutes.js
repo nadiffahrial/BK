@@ -8,7 +8,7 @@ import { getAllBuildings, getBuildingById, getBuildingFloors } from '../controll
 import { getAllRooms, getRoomById, updateRoomStatus, getCampusStats, searchRoomsEngine } from '../controllers/roomController.js';
 import { getAllBeacons, getBeaconById, locateDevicePosition, calculateNavigationRoute, updateIotTelemetry } from '../controllers/iotController.js';
 import { getCampusProfile, getTodaySchedules, getStudentCategories } from '../controllers/campusController.js';
-import { getAllCsTickets, createCsTicket, updateCsTicketStatus } from '../controllers/csController.js';
+import { getAllCsTickets, createCsTicket, updateCsTicketStatus, getCsTicketMessages, sendCsTicketMessage, getVisitorCsTicketMessages, sendVisitorCsTicketMessage } from '../controllers/csController.js';
 import { addClient } from '../sse.js';
 import { rateLimit } from 'express-rate-limit';
 
@@ -36,6 +36,14 @@ const csTicketLimiter = rateLimit({
     success: false,
     message: 'Terlalu banyak pengiriman pengaduan. Silakan coba lagi nanti.'
   }
+});
+
+const csChatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { success: false, message: 'Terlalu banyak aktivitas chat. Silakan tunggu sebentar.' }
 });
 
 // 1. Healthcheck & Service Status
@@ -96,11 +104,28 @@ router.get(
 
 router.post('/cs/tickets', csTicketLimiter, createCsTicket);
 
+// Visitor chat uses a per-ticket capability token returned only to the ticket creator.
+router.get('/cs/public/tickets/:id/messages', csChatLimiter, getVisitorCsTicketMessages);
+router.post('/cs/public/tickets/:id/messages', csChatLimiter, sendVisitorCsTicketMessage);
+
 router.patch(
   '/cs/tickets/:id/status',
   authenticateToken,
   authorizeRoles('admin', 'super_admin'),
   updateCsTicketStatus
+);
+
+router.get(
+  '/cs/tickets/:id/messages',
+  authenticateToken,
+  authorizeRoles('admin', 'super_admin'),
+  getCsTicketMessages
+);
+router.post(
+  '/cs/tickets/:id/messages',
+  authenticateToken,
+  authorizeRoles('admin', 'super_admin'),
+  sendCsTicketMessage
 );
 
 // 11. Campus Statistics

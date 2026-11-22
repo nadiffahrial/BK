@@ -30,7 +30,9 @@ export const state = {
       adminResponse: 'Ruang Lab AI telah dijadwalkan dan disinkronkan ke sistem SmartCampus3D.',
       createdAt: new Date(Date.now() - 3600000 * 6).toISOString()
     }
-  ]
+  ],
+  csTicketAccess: {},
+  csTicketMessages: {}
 };
 
 // Helper to find room across all buildings & floors

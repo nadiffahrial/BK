@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
-import { CsTicket } from '../../types';
+import { CsChatMessage, CsTicket } from '../../types';
 
 interface CustomerServiceModalProps {
   isOpen: boolean;
@@ -40,15 +40,31 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
 }) => {
   const { user, token } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'create' | 'history' | 'contact'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'history' | 'contact' | 'chat'>('create');
   const [tickets, setTickets] = useState<CsTicket[]>([]);
   const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
   const [editedStatus, setEditedStatus] = useState<string>('pending');
   const [editedResponse, setEditedResponse] = useState<string>('');
   const [isUpdatingTicket, setIsUpdatingTicket] = useState(false);
   const [isLoadingTickets, setIsLoadingTickets] = useState<boolean>(false);
+  const [ticketLoadError, setTicketLoadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const [chatTicketId, setChatTicketId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<CsChatMessage[]>([]);
+  const [chatDraft, setChatDraft] = useState('');
+  const [isSendingChat, setIsSendingChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [visitorConversations, setVisitorConversations] = useState<Array<{ ticketId: string; subject: string; initialMessage?: string; accessToken: string }>>(() => {
+    try {
+      const saved = localStorage.getItem('smartspace_cs_conversations');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const isCsAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const visitorAccessToken = visitorConversations.find(item => item.ticketId === chatTicketId)?.accessToken;
 
   // Form states
   const [senderName, setSenderName] = useState<string>('');
@@ -84,6 +100,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
     }
 
     setIsLoadingTickets(true);
+    setTicketLoadError(null);
 
     try {
       const data = await apiService.getCsTickets(
@@ -96,6 +113,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
     } catch (error) {
       console.error('Gagal mengambil tiket CS:', error);
       setTickets([]);
+      setTicketLoadError(error instanceof Error ? error.message : 'Gagal mengambil riwayat tiket.');
     } finally {
       setIsLoadingTickets(false);
     }
@@ -138,6 +156,56 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
     }
   }, [isOpen, activeTab]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setActiveTab(isCsAdmin ? 'history' : visitorConversations.length > 0 ? 'chat' : 'create');
+    if (!isCsAdmin) setChatTicketId(current => current || visitorConversations[0]?.ticketId || null);
+  }, [isOpen, isCsAdmin, visitorConversations]);
+
+  useEffect(() => {
+    if (!isOpen || !chatTicketId || (isCsAdmin ? !token : !visitorAccessToken)) return;
+    let active = true;
+    const loadMessages = async () => {
+      try {
+        const messages = isCsAdmin
+          ? await apiService.getCsTicketMessages(chatTicketId, token!)
+          : await apiService.getVisitorCsTicketMessages(chatTicketId, visitorAccessToken!);
+        if (active) {
+          setChatMessages(current => {
+            const byId = new Map(current.map(item => [item.id, item]));
+            messages.forEach(item => byId.set(item.id, item));
+            return [...byId.values()].sort((a, b) => a.id - b.id);
+          });
+          setChatError(null);
+        }
+      } catch (error: any) {
+        if (active) setChatError(error.message || 'Percakapan gagal dimuat.');
+      }
+    };
+    setChatMessages([]);
+    loadMessages();
+    const poll = window.setInterval(loadMessages, 3000);
+    return () => { active = false; window.clearInterval(poll); };
+  }, [isOpen, chatTicketId, token, isCsAdmin, visitorAccessToken]);
+
+  const handleSendChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if ((!isCsAdmin && !visitorAccessToken) || (isCsAdmin && !token) || !chatTicketId || !chatDraft.trim() || isSendingChat) return;
+    setIsSendingChat(true);
+    setChatError(null);
+    try {
+      const sent = isCsAdmin
+        ? await apiService.sendCsTicketMessage(chatTicketId, chatDraft.trim(), token!)
+        : await apiService.sendVisitorCsTicketMessage(chatTicketId, chatDraft.trim(), visitorAccessToken!);
+      setChatMessages(current => current.some(item => item.id === sent.id) ? current : [...current, sent]);
+      setChatDraft('');
+    } catch (error: any) {
+      setChatError(error.message || 'Pesan gagal dikirim.');
+    } finally {
+      setIsSendingChat(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,6 +231,13 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
 
       if (res.success) {
         setSubmitSuccess(res.message);
+        if (res.data?.id && res.chatAccessToken) {
+          const conversation = { ticketId: res.data.id, subject: res.data.subject, initialMessage: res.data.message, accessToken: res.chatAccessToken };
+          const updatedConversations = [conversation, ...visitorConversations.filter(item => item.ticketId !== conversation.ticketId)].slice(0, 10);
+          setVisitorConversations(updatedConversations);
+          localStorage.setItem('smartspace_cs_conversations', JSON.stringify(updatedConversations));
+          setChatTicketId(conversation.ticketId);
+        }
         if (onNotificationSent) {
           onNotificationSent(res.message);
         }
@@ -176,9 +251,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
 
         // Arahkan ke riwayat hanya untuk administrator
         setTimeout(() => {
-          if (user?.role === 'admin' || user?.role === 'super_admin') {
-            setActiveTab('history');
-          }
+          setActiveTab(isCsAdmin ? 'history' : 'chat');
 
           setSubmitSuccess(null);
         }, 1800);
@@ -295,6 +368,20 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
               </button>
             )}
 
+            {!isCsAdmin && visitorConversations.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setChatTicketId(current => current || visitorConversations[0].ticketId);
+                  setActiveTab('chat');
+                }}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${activeTab === 'chat' ? 'bg-white text-emerald-800 shadow-xs' : 'text-emerald-100 hover:bg-white/10'}`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Chat Saya ({visitorConversations.length})</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setActiveTab('contact')}
@@ -322,7 +409,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
                   <div>
                     <div>{submitSuccess}</div>
                     <div className="text-[10px] font-normal text-emerald-700 dark:text-emerald-400 mt-0.5">
-                      Notifikasi pengaduan telah disiarkan ke server. Mengalihkan ke riwayat tiket...
+                      {isCsAdmin ? 'Mengalihkan ke riwayat tiket...' : 'Membuka ruang chat tiket Anda...'}
                     </div>
                   </div>
                 </div>
@@ -458,6 +545,12 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
                 </button>
               </div>
 
+              {ticketLoadError && (
+                <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+                  Riwayat tiket tidak dapat dimuat: {ticketLoadError} Pastikan backend dan MySQL aktif, lalu segarkan.
+                </div>
+              )}
+
               {tickets.length > 0 ? (
                 tickets.map((t) => (
                   <div
@@ -511,7 +604,41 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
                         >
                           Kelola Tiket
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setChatTicketId(current => current === t.id ? null : t.id)}
+                          className="ml-2 px-4 py-2 text-xs font-semibold rounded-lg border border-emerald-600 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                          aria-expanded={chatTicketId === t.id}
+                        >
+                          {chatTicketId === t.id ? 'Tutup Chat' : 'Buka Live Chat'}
+                        </button>
                       </div>
+                    )}
+                    {chatTicketId === t.id && (
+                      <section className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden" aria-label={`Percakapan tiket ${t.id}`}>
+                        <div className="px-3 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                          <span className="font-bold text-slate-800 dark:text-slate-100">Percakapan #{t.id}</span>
+                          <span className="text-[10px] text-emerald-700 dark:text-emerald-300">Live via server</span>
+                        </div>
+                        <div className="max-h-56 overflow-y-auto p-3 space-y-2">
+                          <div className="max-w-[90%] rounded-xl rounded-tl-sm bg-slate-100 dark:bg-slate-800 p-2.5">
+                            <div className="text-[10px] font-bold text-slate-500">{t.senderName} · Pengaduan</div>
+                            <p className="whitespace-pre-wrap break-words text-[11px] text-slate-800 dark:text-slate-100">{t.message}</p>
+                          </div>
+                          {chatMessages.map(item => (
+                            <div key={item.id} className={`max-w-[90%] rounded-xl p-2.5 ${item.senderRole === 'admin' || item.senderRole === 'super_admin' ? 'ml-auto rounded-tr-sm bg-emerald-100 dark:bg-emerald-950/70' : 'rounded-tl-sm bg-slate-100 dark:bg-slate-800'}`}>
+                              <div className="text-[10px] font-bold text-slate-500">{item.senderName} · {new Date(item.createdAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</div>
+                              <p className="whitespace-pre-wrap break-words text-[11px] text-slate-800 dark:text-slate-100">{item.message}</p>
+                            </div>
+                          ))}
+                          {chatMessages.length === 0 && !chatError && <p className="text-center text-[10px] text-slate-400">Belum ada balasan. Kirim pesan untuk memulai percakapan.</p>}
+                        </div>
+                        {chatError && <p role="alert" className="px-3 pb-2 text-[11px] text-rose-600">{chatError}</p>}
+                        <form onSubmit={handleSendChat} className="flex gap-2 p-2 border-t border-slate-200 dark:border-slate-700">
+                          <textarea value={chatDraft} onChange={e => setChatDraft(e.target.value)} maxLength={5000} rows={2} placeholder="Tulis balasan untuk pengirim tiket..." className="flex-1 resize-none rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                          <button type="submit" disabled={isSendingChat || !chatDraft.trim()} className="self-end rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{isSendingChat ? 'Mengirim...' : 'Kirim'}</button>
+                        </form>
+                      </section>
                     )}
                     {/* Form Pengelolaan Tiket */}
                     {editingTicketId === t.id && (
@@ -573,8 +700,53 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
                 ))
               ) : (
                 <div className="p-8 text-center text-xs text-slate-400">
-                  Belum ada tiket pengaduan tersimpan.
+                  {isLoadingTickets ? 'Memuat riwayat tiket...' : ticketLoadError ? 'Periksa koneksi backend atau sesi admin.' : 'Belum ada tiket tersimpan di database. Tiket baru akan muncul di sini setelah dikirim melalui tab Kirim Pengaduan.'}
                 </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'chat' && !isCsAdmin && (
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="visitor-chat-ticket" className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Pilih tiket</label>
+                <select
+                  id="visitor-chat-ticket"
+                  value={chatTicketId || ''}
+                  onChange={e => setChatTicketId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-900"
+                >
+                  {visitorConversations.map(item => <option key={item.ticketId} value={item.ticketId}>#{item.ticketId} · {item.subject}</option>)}
+                </select>
+              </div>
+              {chatTicketId && (
+                <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900" aria-label="Live chat dengan petugas CS">
+                  <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 dark:border-slate-700">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100">Percakapan #{chatTicketId}</span>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300">Petugas CS</span>
+                  </div>
+                  <div className="max-h-80 min-h-32 space-y-2 overflow-y-auto p-3">
+                    {visitorConversations.find(item => item.ticketId === chatTicketId)?.initialMessage && (
+                      <div className="max-w-[90%] rounded-xl rounded-tl-sm bg-slate-100 p-2.5 dark:bg-slate-800">
+                        <div className="text-[10px] font-bold text-slate-500">Pengaduan awal</div>
+                        <p className="whitespace-pre-wrap break-words text-xs text-slate-800 dark:text-slate-100">{visitorConversations.find(item => item.ticketId === chatTicketId)?.initialMessage}</p>
+                      </div>
+                    )}
+                    {chatMessages.map(item => (
+                      <div key={item.id} className={`max-w-[90%] rounded-xl p-2.5 ${item.senderRole === 'visitor' ? 'ml-auto rounded-tr-sm bg-emerald-100 dark:bg-emerald-950/70' : 'rounded-tl-sm bg-slate-100 dark:bg-slate-800'}`}>
+                        <div className="text-[10px] font-bold text-slate-500">{item.senderRole === 'visitor' ? 'Anda' : item.senderName} · {new Date(item.createdAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</div>
+                        <p className="whitespace-pre-wrap break-words text-xs text-slate-800 dark:text-slate-100">{item.message}</p>
+                      </div>
+                    ))}
+                    {chatMessages.length === 0 && !chatError && <p className="py-6 text-center text-xs text-slate-400">Belum ada balasan. Petugas akan membalas di percakapan ini.</p>}
+                  </div>
+                  {chatError && <p role="alert" className="px-3 pb-2 text-xs text-rose-600">{chatError}</p>}
+                  <form onSubmit={handleSendChat} className="flex gap-2 border-t border-slate-200 p-2 dark:border-slate-700">
+                    <textarea value={chatDraft} onChange={e => setChatDraft(e.target.value)} maxLength={5000} rows={2} placeholder="Tulis pesan untuk petugas CS..." className="flex-1 resize-none rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800" />
+                    <button type="submit" disabled={isSendingChat || !chatDraft.trim()} className="self-end rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{isSendingChat ? 'Mengirim...' : 'Kirim'}</button>
+                  </form>
+                  <p className="px-3 pb-2 text-[10px] text-slate-400">Akses chat tersimpan pada browser ini. Gunakan perangkat/browser yang sama untuk melanjutkan.</p>
+                </section>
               )}
             </div>
           )}
@@ -585,7 +757,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
               
               {/* WhatsApp Call Center */}
               <a
-                href="https://wa.me/6281234567890?text=Halo%20Layanan%20Customer%20Service%20SmartCampus3D%20UNSIL"
+                href="https://wa.me/6281234567890?text=Halo%20Layanan%20Customer%20Service%20SILOKA%20UNSIL"
                 target="_blank"
                 rel="noreferrer"
                 className="p-3.5 rounded-2xl bg-emerald-50/70 hover:bg-emerald-100/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between transition-all group"
@@ -608,7 +780,7 @@ export const CustomerServiceModal: React.FC<CustomerServiceModalProps> = ({
 
               {/* Email BAAK & Sarpras */}
               <a
-                href="mailto:sarpras@unsil.ac.id?subject=Pengaduan%20Fasilitas%20SmartCampus3D"
+                href="mailto:sarpras@unsil.ac.id?subject=Pengaduan%20Fasilitas%20SILOKA"
                 className="p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between transition-all group"
               >
                 <div className="flex items-center gap-3">

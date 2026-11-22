@@ -18,7 +18,7 @@ import { RoomCardGrid } from './components/floorplan/RoomCardGrid';
 import { RoomDetailModal } from './components/floorplan/RoomDetailModal';
 import { MobileRotateDisplay } from './components/common/MobileRotateDisplay';
 import { BUILDINGS_DATA } from './data/buildingsData';
-import { Room, RoomStatus, ViewMode } from './types';
+import { CsTicket, Room, RoomStatus, ViewMode } from './types';
 import { apiService } from './services/api';
 import { 
   Building2, 
@@ -33,7 +33,11 @@ import {
   Clock,
   Compass,
   Headphones,
-  BookOpen
+  BookOpen,
+  TicketCheck,
+  Wrench,
+  RefreshCw,
+  ShieldCheck
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -60,6 +64,9 @@ export const App: React.FC = () => {
   const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
   const [isPanoramaModalOpen, setIsPanoramaModalOpen] = useState<boolean>(false);
   const [directPanoramaRoom, setDirectPanoramaRoom] = useState<Room | null>(null);
+  const [adminTickets, setAdminTickets] = useState<CsTicket[]>([]);
+  const [isLoadingAdminTickets, setIsLoadingAdminTickets] = useState(false);
+  const isAdmin = isAuthenticated && (user?.role === 'admin' || user?.role === 'super_admin');
 
   // Global shortcut Ctrl+K or Cmd+K to open Search Engine modal
   useEffect(() => {
@@ -72,6 +79,20 @@ export const App: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin || !token) {
+      setAdminTickets([]);
+      return;
+    }
+    let active = true;
+    setIsLoadingAdminTickets(true);
+    apiService.getCsTickets(undefined, undefined, token)
+      .then(tickets => { if (active) setAdminTickets(tickets); })
+      .catch(error => console.warn('Ringkasan tiket admin gagal dimuat:', error))
+      .finally(() => { if (active) setIsLoadingAdminTickets(false); });
+    return () => { active = false; };
+  }, [isAdmin, token, isCsModalOpen]);
 
   // Load buildings from Node.js backend on mount
   useEffect(() => {
@@ -127,6 +148,20 @@ export const App: React.FC = () => {
   const activeBuilding = (buildings && buildings.find(b => b.id === activeBuildingId)) || (buildings && buildings[0]) || BUILDINGS_DATA[0];
   const activeFloor = (activeBuilding && activeBuilding.floors && activeBuilding.floors.find(f => f.floorNumber === activeFloorNumber)) || (activeBuilding && activeBuilding.floors && activeBuilding.floors[0]) || BUILDINGS_DATA[0].floors[0];
   const floorRooms = activeFloor?.rooms || [];
+  const allRooms = buildings.flatMap(building => building.floors.flatMap(floor => floor.rooms));
+  const roomStatusCounts = {
+    available: allRooms.filter(room => room.status === 'available').length,
+    occupied: allRooms.filter(room => room.status === 'occupied').length,
+    reserved: allRooms.filter(room => room.status === 'reserved').length,
+    maintenance: allRooms.filter(room => room.status === 'maintenance').length
+  };
+  const activeCsTickets = adminTickets.filter(ticket => ticket.status !== 'resolved').length;
+
+  const openRoomOperations = (status: RoomStatus | 'all' = 'all') => {
+    setStatusFilter(status);
+    setViewMode('list');
+    window.setTimeout(() => document.getElementById('room-operations')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
 
   const scrollTo3DModel = () => {
     const tryScroll = () => {
@@ -277,6 +312,64 @@ export const App: React.FC = () => {
 
       {/* 3. Main Workspace Area (Clean & Simple) */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+
+        {isAdmin && (
+          <section className="mb-7 overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 text-white shadow-xl shadow-slate-900/10">
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-900 px-5 py-6 sm:px-8 sm:py-8">
+              <div className="absolute -right-16 -top-28 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+              <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-white/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-emerald-200">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Konsol Pengelola Kampus
+                  </div>
+                  <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Selamat datang, {user?.name?.split(' ')[0]}</h1>
+                  <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">Pantau kondisi ruang dan tangani laporan pengunjung dari satu tempat.</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-bold">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${isBackendConnected ? 'bg-emerald-400/15 text-emerald-200' : 'bg-amber-400/15 text-amber-200'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${isBackendConnected ? 'bg-emerald-300' : 'bg-amber-300'}`} />
+                      Backend {isBackendConnected ? 'terhubung' : 'offline'}
+                    </span>
+                    <span className="rounded-full bg-white/10 px-2.5 py-1 text-slate-300">{user?.department || 'Administrator'}</span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setIsCsModalOpen(true)} className="inline-flex items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-extrabold text-slate-950 transition hover:bg-emerald-300">
+                    <TicketCheck className="h-4 w-4" /> Buka antrean CS
+                    <span className="rounded-full bg-slate-950/15 px-1.5 py-0.5 text-[10px]">{isLoadingAdminTickets ? '…' : activeCsTickets}</span>
+                  </button>
+                  <button type="button" onClick={() => openRoomOperations()} className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white/15">
+                    <Wrench className="h-4 w-4" /> Kelola status ruang
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 divide-x divide-y divide-slate-800 sm:grid-cols-4 sm:divide-y-0">
+              {[
+                { label: 'Total ruang', value: allRooms.length, hint: 'di seluruh gedung', status: 'all' as const, color: 'text-white' },
+                { label: 'Tersedia', value: roomStatusCounts.available, hint: 'siap digunakan', status: 'available' as const, color: 'text-emerald-300' },
+                { label: 'Sedang digunakan', value: roomStatusCounts.occupied, hint: 'ruang terisi', status: 'occupied' as const, color: 'text-rose-300' },
+                { label: 'Perlu servis', value: roomStatusCounts.maintenance, hint: 'pemeliharaan', status: 'maintenance' as const, color: 'text-amber-300' }
+              ].map(item => (
+                <button key={item.label} type="button" onClick={() => openRoomOperations(item.status)} className="p-4 text-left transition hover:bg-white/5 sm:px-6">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{item.label}</div>
+                  <div className={`mt-1 text-2xl font-black ${item.color}`}>{item.value}</div>
+                  <div className="text-[10px] text-slate-500">{item.hint}</div>
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-800 px-4 py-3 text-[10px] text-slate-400 sm:px-6">
+              <span>{activeCsTickets} tiket CS masih perlu ditangani</span>
+              <button type="button" disabled={isLoadingAdminTickets || !token} onClick={() => {
+                if (!token) return;
+                setIsLoadingAdminTickets(true);
+                apiService.getCsTickets(undefined, undefined, token).then(setAdminTickets).catch(error => setRecentNotification(error.message)).finally(() => setIsLoadingAdminTickets(false));
+              }} className="inline-flex items-center gap-1.5 font-bold text-emerald-300 hover:text-emerald-200 disabled:opacity-50">
+                <RefreshCw className={`h-3 w-3 ${isLoadingAdminTickets ? 'animate-spin' : ''}`} /> Segarkan ringkasan
+              </button>
+            </div>
+          </section>
+        )}
         
         {/* Toast Alert Banner if status updated */}
         {recentNotification && (
@@ -291,6 +384,16 @@ export const App: React.FC = () => {
             >
               ✕
             </button>
+          </div>
+        )}
+
+        {isAdmin && (
+          <div id="room-operations" className="mb-3 scroll-mt-20 flex items-end justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Operasional Kampus</div>
+              <h2 className="mt-1 text-lg font-black text-slate-900 dark:text-white">Peta dan pengelolaan ruang</h2>
+            </div>
+            <span className="hidden rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 sm:inline-flex">{activeBuilding.shortName} · Tingkat {activeFloorNumber}</span>
           </div>
         )}
 
@@ -397,11 +500,14 @@ export const App: React.FC = () => {
 
         {viewMode === 'list' && (
           <RoomCardGrid
-            rooms={activeFloor.rooms}
+            rooms={isAdmin ? allRooms : activeFloor.rooms}
             selectedRoom={selectedRoom}
             onSelectRoom={setSelectedRoom}
+            statusFilter={statusFilter}
             onNavigateRoom={(room) => {
               setSelectedRoom(room);
+              setActiveBuildingId(room.buildingId);
+              setActiveFloorNumber(room.floorNumber);
               setActivePathRoomId(room.id);
             }}
           />

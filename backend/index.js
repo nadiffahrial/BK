@@ -49,7 +49,7 @@ app.use('/api', apiRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.send({
-    message: 'SmartCampus 3D Universitas Siliwangi Backend Server is Running',
+    message: 'SILOKA — Siliwangi Location Assistant API is running',
     institution: 'Universitas Siliwangi (UNSIL)',
     database: 'MySQL XAMPP (phpMyAdmin) connected',
     databaseName: process.env.DB_NAME || 'smartspace_db',

@@ -91,14 +91,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onClose }) => {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
-                SmartCampus<span className="text-emerald-600 dark:text-emerald-400">3D</span>
+                <span className="text-emerald-300">SILO</span><span className="text-teal-300">KA</span>
               </span>
               <span className="hidden sm:inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                 Universitas Siliwangi
               </span>
             </div>
             <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hidden sm:block">
-              Universitas Siliwangi • Gedung LABKOM 1 & FT.1
+              Siliwangi Location Assistant • Universitas Siliwangi
             </p>
           </div>
         </div>
@@ -369,7 +369,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onClose }) => {
 
       {/* Clean Minimalist Bottom Footer */}
       <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400 dark:text-slate-500">
-        © {new Date().getFullYear()} SmartCampus3D • Gedung LABKOM 1 & Gedung FT.1 Universitas
+        © {new Date().getFullYear()} SILOKA • Siliwangi Location Assistant
       </footer>
 
     </div>

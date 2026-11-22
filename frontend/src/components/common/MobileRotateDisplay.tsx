@@ -291,7 +291,7 @@ export const MobileRotateDisplay: React.FC<MobileRotateDisplayProps> = ({
           {/* Bottom helper footnote */}
           <div className="px-4 py-1.5 bg-slate-900/60 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center justify-between shrink-0">
             <span>💡 Tips: Putar HP Anda ke posisi tidur (landscape) untuk kenyamanan penuh.</span>
-            <span className="font-mono text-emerald-400">SmartCampus 3D Mobile View</span>
+            <span className="font-mono text-emerald-400">SILOKA • Mobile View</span>
           </div>
 
         </div>

@@ -1,4 +1,4 @@
-import { Building, RoomStatus, User, SearchResultRoom, CsTicket } from '../types';
+import { Building, RoomStatus, User, SearchResultRoom, CsTicket, CsChatMessage } from '../types';
 import { BUILDINGS_DATA } from '../data/buildingsData';
 
 const API_BASE = '/api';
@@ -262,11 +262,11 @@ export const apiService = {
       }
     });
 
+    const json = await res.json();
     if (!res.ok) {
-      throw new Error('Gagal mengambil data tiket Customer Service.');
+      throw new Error(json.message || 'Gagal mengambil data tiket Customer Service.');
     }
 
-    const json = await res.json();
     return json.data || [];
   },
 
@@ -279,7 +279,7 @@ export const apiService = {
       roomCode?: string;
       subject: string;
       message: string;
-    }): Promise<{ success: boolean; message: string; data?: CsTicket }> {
+    }): Promise<{ success: boolean; message: string; data?: CsTicket; chatAccessToken?: string }> {
       const res = await fetch(`${API_BASE}/cs/tickets`, {
         method: 'POST',
         headers: {
@@ -318,5 +318,45 @@ export const apiService = {
       }
 
       return await res.json();
+    },
+
+    async getCsTicketMessages(ticketId: string, token: string): Promise<CsChatMessage[]> {
+      const res = await fetch(`${API_BASE}/cs/tickets/${encodeURIComponent(ticketId)}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Gagal mengambil percakapan tiket.');
+      return json.data || [];
+    },
+
+    async sendCsTicketMessage(ticketId: string, message: string, token: string): Promise<CsChatMessage> {
+      const res = await fetch(`${API_BASE}/cs/tickets/${encodeURIComponent(ticketId)}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message })
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Gagal mengirim pesan.');
+      return json.data;
+    },
+
+    async getVisitorCsTicketMessages(ticketId: string, accessToken: string): Promise<CsChatMessage[]> {
+      const res = await fetch(`${API_BASE}/cs/public/tickets/${encodeURIComponent(ticketId)}/messages`, {
+        headers: { 'X-CS-Ticket-Access': accessToken }
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Gagal mengambil percakapan tiket.');
+      return json.data || [];
+    },
+
+    async sendVisitorCsTicketMessage(ticketId: string, message: string, accessToken: string): Promise<CsChatMessage> {
+      const res = await fetch(`${API_BASE}/cs/public/tickets/${encodeURIComponent(ticketId)}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CS-Ticket-Access': accessToken },
+        body: JSON.stringify({ message })
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Gagal mengirim pesan.');
+      return json.data;
     },
   };
