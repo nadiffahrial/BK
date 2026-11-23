@@ -48,8 +48,8 @@ export const App: React.FC = () => {
   const [activeFloorNumber, setActiveFloorNumber] = useState<number>(1);
   // Default to '3d' view so 3D isometric model appears immediately
   const [viewMode, setViewMode] = useState<ViewMode>('3d');
-  // Sub-mode untuk tampilan 3D: 'building' (eksterior bangunan 3D Three.js) atau 'floorplan' (denah lantai)
-  const [view3DSubMode, setView3DSubMode] = useState<'building' | 'floorplan'>('building');
+  // Sub-mode untuk tampilan 3D: 'building' (eksterior bangunan 3D Three.js) atau 'floorplan' (denah lantai isometrik)
+  const [view3DSubMode, setView3DSubMode] = useState<'building' | 'floorplan'>('floorplan');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<RoomStatus | 'all'>('all');
   
