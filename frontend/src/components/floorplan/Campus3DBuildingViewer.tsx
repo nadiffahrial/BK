@@ -54,12 +54,12 @@ interface CampusBuildingDef {
   hasFrontCanopy?: boolean;
   canopyX?: number;
   isDekanat?: boolean;
-  signType?: 'ft1' | 'ft2' | 'labtek1' | 'dekanat' | 'generic';
+  signType?: 'ft1' | 'ft2' | 'labtek1' | 'sipil' | 'dekanat' | 'generic';
   description: string;
 }
 
 const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
-  // 1. Gedung LABTEK 1 (Baris Depan Barat, Dilingkari Merah, Denah Tersedia ✓)
+  // 1. Gedung LABTEK 1 (Lajur Barat-Depan, Dilingkari Merah, Denah Lantai 1 & 2 Tersedia ✓)
   {
     id: 'gedung-a',
     name: 'Gedung LABTEK 1',
@@ -67,7 +67,7 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
     code: 'A',
     role: 'Laboratorium Komputer & Riset Teknik Terpadu',
     hasFloorPlan: true,
-    x: -24,
+    x: -28,
     z: 14,
     length: 50,
     depth: 13.5,
@@ -76,18 +76,18 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
     hasFrontCanopy: true,
     canopyX: 8,
     signType: 'labtek1',
-    description: 'Pusat laboratorium komputer, jaringan, multimedia, dan riset AI Fakultas Teknik.'
+    description: 'Pusat laboratorium komputer, jaringan, multimedia, dan riset AI Fakultas Teknik (Denah Tersedia).'
   },
-  // 2. Gedung FT.1 (Baris Tengah Barat, Sejajar di Belakang LABTEK 1, Dilingkari Merah, Denah Tersedia ✓)
+  // 2. Gedung FT.1 (Lajur Barat-Tengah, Dilingkari Merah, Denah Lantai 1 & 2 Tersedia ✓)
   {
     id: 'gedung-b',
-    name: 'Gedung FT.1',
+    name: 'Gedung FT.1 (Informatika & SI)',
     shortName: 'FT.1',
     code: 'B',
     role: 'Informatika & Sistem Informasi (Kuliah & Sidang)',
     hasFloorPlan: true,
-    x: -20,
-    z: -14,
+    x: -26,
+    z: -16,
     length: 52,
     depth: 13.5,
     height: 7.8,
@@ -95,9 +95,9 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
     hasFrontCanopy: true,
     canopyX: -12,
     signType: 'ft1',
-    description: 'Gedung perkuliahan program studi Informatika dan Sistem Informasi, serta ruang sidang skripsi.'
+    description: 'Gedung perkuliahan program studi Informatika dan Sistem Informasi, serta ruang sidang skripsi (Denah Tersedia).'
   },
-  // 3. Gedung Dekanat & Pusat Administrasi Fakultas Teknik (Baris Depan Timur, Sesuai Foto Fasad Depan Asli)
+  // 3. Gedung Dekanat & Pusat Administrasi Fakultas Teknik (Lajur Tengah-Depan, Sesuai Google Earth Pin Merah & Foto Fasad)
   {
     id: 'dekanat-ft',
     name: 'Gedung Dekanat & Ruang Kuliah Terpadu FT',
@@ -115,9 +115,9 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
     canopyX: -4,
     isDekanat: true,
     signType: 'dekanat',
-    description: 'Gedung Dekanat, kantor pimpinan, dan Ruang Kuliah Terpadu SBSN 2022-2023 dengan kanopi FAKULTAS TEKNIK.'
+    description: 'Gedung Dekanat, kantor pimpinan, dan Ruang Kuliah Terpadu SBSN 2022-2023 dengan kanopi FAKULTAS TEKNIK dan logo resmi UNSIL.'
   },
-  // 4. Gedung FT.2 - Teknik Elektro (Baris Tengah Timur, Sejajar di Belakang Dekanat)
+  // 4. Gedung FT.2 - Teknik Elektro (Lajur Tengah, Sejajar di Belakang Dekanat)
   {
     id: 'gedung-ft2',
     name: 'Gedung FT.2 (Teknik Elektro)',
@@ -126,7 +126,7 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
     role: 'Perkuliahan & Laboratorium Teknik Elektro',
     hasFloorPlan: false,
     x: 28,
-    z: -14,
+    z: -16,
     length: 50,
     depth: 13.5,
     height: 7.8,
@@ -134,57 +134,62 @@ const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
     hasFrontCanopy: true,
     canopyX: -10,
     signType: 'ft2',
-    description: 'Gedung perkuliahan teori, ruang dosen, dan laboratorium program studi Teknik Elektro.'
+    description: 'Gedung perkuliahan teori, ruang dosen, dan laboratorium praktikum program studi Teknik Elektro.'
   },
-  // 5. Gedung Lab Terpadu Utara 1 (Baris Belakang Barat)
+  // 5. Gedung Laboratorium Teknik Sipil Mugarsari (Lajur Timur-Depan, Sesuai Google Earth)
   {
-    id: 'lab-utara-1',
-    name: 'Gedung Kuliah & Lab Utara 1',
-    shortName: 'LAB UTARA 1',
-    code: 'LU1',
-    role: 'Laboratorium Praktikum Terpadu',
+    id: 'lab-sipil',
+    name: 'Gedung Lab Teknik Sipil Mugarsari',
+    shortName: 'LAB SIPIL',
+    code: 'TS',
+    role: 'Laboratorium Rekayasa Struktur & Uji Bahan Sipil',
     hasFloorPlan: false,
-    x: -12,
-    z: -42,
+    x: 62,
+    z: 14,
+    length: 50,
+    depth: 14.0,
+    height: 8.0,
+    roofHeight: 5.4,
+    hasFrontCanopy: true,
+    canopyX: -6,
+    signType: 'sipil',
+    description: 'Fasilitas pengujian bahan konstruksi, mekanika tanah, struktur beton, dan rekayasa hidrolika Teknik Sipil Mugarsari.'
+  },
+  // 6. Gedung Kuliah & Lab Riset Terpadu Panjang (Lajur Tengah-Utara, Gedung Terpanjang di Google Earth)
+  {
+    id: 'lab-terpadu-panjang',
+    name: 'Gedung Kuliah & Lab Riset Terpadu',
+    shortName: 'KULIAH TERPADU',
+    code: 'KTP',
+    role: 'Gedung Kuliah Terpadu Bersama & Riset Keteknikan',
+    hasFloorPlan: false,
+    x: 2,
+    z: -46,
+    length: 68,
+    depth: 14.0,
+    height: 8.2,
+    roofHeight: 5.5,
+    hasFrontCanopy: true,
+    canopyX: 0,
+    signType: 'generic',
+    description: 'Gedung perkuliahan terpanjang di kampus untuk kelas bersama lintas program studi dan riset keteknikan terpadu.'
+  },
+  // 7. Gedung Laboratorium Teknik Mesin & Energi Terbarukan (Lajur Timur-Utara)
+  {
+    id: 'lab-mesin',
+    name: 'Gedung Lab Teknik Mesin & Energi',
+    shortName: 'LAB MESIN',
+    code: 'TM',
+    role: 'Laboratorium Konversi Energi & Manufaktur CNC',
+    hasFloorPlan: false,
+    x: 62,
+    z: -40,
     length: 48,
-    depth: 13.0,
+    depth: 13.5,
     height: 7.6,
     roofHeight: 5.0,
     signType: 'generic',
-    description: 'Fasilitas laboratorium praktikum terpadu rekayasa keteknikan.'
-  },
-  // 6. Gedung Lab Terpadu Utara 2 (Baris Belakang Timur)
-  {
-    id: 'lab-utara-2',
-    name: 'Gedung Kuliah & Lab Utara 2',
-    shortName: 'LAB UTARA 2',
-    code: 'LU2',
-    role: 'Laboratorium Teknik Mesin & Konversi Energi',
-    hasFloorPlan: false,
-    x: 30,
-    z: -42,
-    length: 48,
-    depth: 13.0,
-    height: 7.6,
-    roofHeight: 5.0,
-    signType: 'generic',
-    description: 'Fasilitas penunjang praktikum teknik mesin dan permesinan terpadu.'
-  },
-  // 7. Gedung Workshop / Utilitas Barat
-  {
-    id: 'workshop-barat',
-    name: 'Gedung Workshop & Utilitas Barat',
-    shortName: 'WORKSHOP',
-    code: 'WS',
-    role: 'Gedung Power House, Genset & Workshop',
-    hasFloorPlan: false,
-    x: -58,
-    z: 0,
-    length: 30,
-    depth: 11.0,
-    height: 6.5,
-    roofHeight: 4.4,
-    description: 'Pusat gardu distribusi listrik, genset cadangan, dan sarana pemeliharaan fakultas.'
+    description: 'Fasilitas praktikum manufaktur, CNC, permesinan, pengelasan, dan riset konversi energi Fakultas Teknik.'
   }
 ];
 
@@ -742,6 +747,54 @@ function generateLabtek1SignTexture(): THREE.CanvasTexture {
   return new THREE.CanvasTexture(canvas);
 }
 
+function generateSipilSignTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#3ea6ff';
+  ctx.fillRect(0, 0, 512, 512);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.strokeStyle = '#1e3a8a';
+  ctx.lineWidth = 3;
+  const ventTopY = 70;
+  [110, 207, 304, 401].forEach((vx) => {
+    ctx.fillRect(vx - 20, ventTopY - 20, 40, 40);
+    ctx.strokeRect(vx - 20, ventTopY - 20, 40, 40);
+  });
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  ctx.font = '900 82px "Plus Jakarta Sans", sans-serif';
+  ctx.fillStyle = '#1e3a8a';
+  ctx.fillText('LAB SIPIL', 258, 208);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('LAB SIPIL', 256, 205);
+
+  ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+  ctx.fillStyle = '#1e3a8a';
+  ctx.fillText('TEKNIK SIPIL MUGARSARI', 257, 281);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('TEKNIK SIPIL MUGARSARI', 256, 280);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(50, 350, 412, 10);
+
+  const ventBotY = 425;
+  [110, 207, 304, 401].forEach((vx) => {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(vx - 20, ventBotY - 20, 40, 40);
+    ctx.strokeRect(vx - 20, ventBotY - 20, 40, 40);
+  });
+
+  return new THREE.CanvasTexture(canvas);
+}
+
 // 8. Jendela Kaca Reflektif Fasad Depan Grid Mullions
 function generateFrontGridWindowTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
@@ -951,7 +1004,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // State Kontrol
-  const [cameraPreset, setCameraPreset] = useState<'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso'>('front');
+  const [cameraPreset, setCameraPreset] = useState<'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso' | 'satellite'>('front');
   const [graphicsQuality, setGraphicsQuality] = useState<'ue5_ultra' | 'ue5_high'>('ue5_ultra');
   const [isExploded, setIsExploded] = useState<boolean>(false);
   const [isAutoRotate, setIsAutoRotate] = useState<boolean>(false);
@@ -1009,7 +1062,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   }, [selectedCampusBuilding]);
 
   // Preset Kamera Akurat (Unreal Engine Cinematic Focal Points)
-  const applyCameraPreset = useCallback((preset: 'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso') => {
+  const applyCameraPreset = useCallback((preset: 'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso' | 'satellite') => {
     setCameraPreset(preset);
     const os = orbitState.current;
 
@@ -1036,18 +1089,24 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       os.targetAzimuth = 0.52;
       os.targetPolar = 0.88;
       os.targetDistance = 72;
-      os.target.set(-22, 5, 0);
+      os.target.set(-26, 5, -2);
     } else if (preset === 'drone') {
       // PERSIS FOTO DRONE: Sudut Udara Seluruh Kawasan Fakultas
       os.targetAzimuth = 0.58;
       os.targetPolar = 0.82;
-      os.targetDistance = 125;
-      os.target.set(2, 4, -5);
+      os.targetDistance = 140;
+      os.target.set(16, 4, -14);
     } else if (preset === 'iso') {
       os.targetAzimuth = 0.785;
       os.targetPolar = 0.95;
-      os.targetDistance = 115;
-      os.target.set(2, 4, -5);
+      os.targetDistance = 130;
+      os.target.set(16, 4, -14);
+    } else if (preset === 'satellite') {
+      // PERSIS GOOGLE EARTH SATELIT: Sudut Atas Miring Satelit Mugarsari
+      os.targetAzimuth = 0.05;
+      os.targetPolar = 0.40;
+      os.targetDistance = 160;
+      os.target.set(16, 2, -14);
     }
   }, []);
 
@@ -1205,6 +1264,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     const ft1SignTexture = generateFT1SignTexture();
     const ft2SignTexture = generateFT2SignTexture();
     const labtek1SignTexture = generateLabtek1SignTexture();
+    const sipilSignTexture = generateSipilSignTexture();
     const frontGridWindowTexture = generateFrontGridWindowTexture();
     const retainingWallTexture = generateRetainingWallTexture();
     const curbTexture = generateCurbTexture();
@@ -1324,8 +1384,8 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // 7c. Danau Retensi Timur (Air Animasi Glistening Water)
-    const pondGeo = new THREE.CylinderGeometry(20, 24, 0.45, 48);
+    // 7c. Danau Retensi Timur (Air Animasi Glistening Water Sesuai Google Earth)
+    const pondGeo = new THREE.CylinderGeometry(24, 30, 0.45, 48);
     const pondMat = new THREE.MeshPhysicalMaterial({
       color: '#0284c7',
       roughness: 0.03,
@@ -1337,8 +1397,8 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       envMapIntensity: 2.6
     });
     const pond = new THREE.Mesh(pondGeo, pondMat);
-    pond.position.set(68, 0.05, 5);
-    pond.scale.set(1.4, 1, 0.95);
+    pond.position.set(96, 0.05, 12);
+    pond.scale.set(1.5, 1, 1.15);
     scene.add(pond);
     waterMeshRef.current = pond;
 
@@ -1352,21 +1412,24 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       envMapIntensity: 0.65
     });
 
-    const mainStreetPaving = new THREE.Mesh(new THREE.PlaneGeometry(36, 120), pavingMat);
+    // Koridor Paving Utama Tengah
+    const mainStreetPaving = new THREE.Mesh(new THREE.PlaneGeometry(42, 136), pavingMat);
     mainStreetPaving.rotation.x = -Math.PI / 2;
-    mainStreetPaving.position.set(2, -0.04, -5);
+    mainStreetPaving.position.set(2, -0.04, -12);
     mainStreetPaving.receiveShadow = true;
     scene.add(mainStreetPaving);
 
-    const westPlaza = new THREE.Mesh(new THREE.PlaneGeometry(60, 24), pavingMat);
+    // Plaza Barat (Area LABTEK 1 & FT.1)
+    const westPlaza = new THREE.Mesh(new THREE.PlaneGeometry(68, 36), pavingMat);
     westPlaza.rotation.x = -Math.PI / 2;
-    westPlaza.position.set(-22, -0.05, 0);
+    westPlaza.position.set(-26, -0.05, 0);
     westPlaza.receiveShadow = true;
     scene.add(westPlaza);
 
-    const eastPlaza = new THREE.Mesh(new THREE.PlaneGeometry(64, 40), pavingMat);
+    // Plaza Timur (Area Dekanat & Lab Sipil)
+    const eastPlaza = new THREE.Mesh(new THREE.PlaneGeometry(90, 50), pavingMat);
     eastPlaza.rotation.x = -Math.PI / 2;
-    eastPlaza.position.set(28, -0.04, 25);
+    eastPlaza.position.set(44, -0.04, 25);
     eastPlaza.receiveShadow = true;
     scene.add(eastPlaza);
 
@@ -1386,7 +1449,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       });
     });
 
-    // 7f. Jalan Aspal Depan & Samping dengan Wet-look Spekular
+    // 7f. Jalan Aspal Depan & Area Parkir Utama Barat (Persis Google Earth Mugarsari)
     const asphaltMat = new THREE.MeshPhysicalMaterial({
       map: asphaltDiff,
       roughness: 0.72,
@@ -1395,16 +1458,36 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       envMapIntensity: 0.5
     });
 
-    const frontRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(180, 16), asphaltMat);
+    // Area Parkir Barat Luas (Parkiran Mahasiswa & Dosen FT)
+    const westParkingMesh = new THREE.Mesh(new THREE.PlaneGeometry(46, 115), asphaltMat);
+    westParkingMesh.rotation.x = -Math.PI / 2;
+    westParkingMesh.position.set(-66, -0.08, -6);
+    westParkingMesh.receiveShadow = true;
+    scene.add(westParkingMesh);
+
+    // Kanopi Peneduh Parkir Motor Barat
+    const parkShedMat = new THREE.MeshStandardMaterial({ color: '#1e3a8a', metalness: 0.8, roughness: 0.25 });
+    const parkShedGeo = new THREE.BoxGeometry(36, 0.2, 5.5);
+    [-35, 10].forEach(sz => {
+      const shed = new THREE.Mesh(parkShedGeo, parkShedMat);
+      shed.position.set(-66, 3.2, sz);
+      shed.castShadow = true;
+      scene.add(shed);
+    });
+
+    // Jalan Aspal Akses Utama Depan
+    const frontRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(210, 18), asphaltMat);
     frontRoadMesh.rotation.x = -Math.PI / 2;
-    frontRoadMesh.position.set(10, -0.1, 48);
+    frontRoadMesh.position.set(8, -0.1, 48);
     frontRoadMesh.receiveShadow = true;
     scene.add(frontRoadMesh);
 
-    const sideRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(14, 96), asphaltMat);
+    // Jalan Akses Samping Timur Menuju Danau
+    const sideRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(16, 110), asphaltMat);
     sideRoadMesh.rotation.x = -Math.PI / 2;
-    sideRoadMesh.position.set(58, -0.1, 8);
+    sideRoadMesh.position.set(96, -0.1, -12);
     sideRoadMesh.receiveShadow = true;
+    scene.add(sideRoadMesh);
     scene.add(sideRoadMesh);
 
     // Talud Batu Kali & Kanstin
@@ -1776,6 +1859,8 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
         signMat = new THREE.MeshStandardMaterial({ map: ft2SignTexture, roughness: 0.35 });
       } else if (bldg.signType === 'labtek1') {
         signMat = new THREE.MeshStandardMaterial({ map: labtek1SignTexture, roughness: 0.35 });
+      } else if (bldg.signType === 'sipil') {
+        signMat = new THREE.MeshStandardMaterial({ map: sipilSignTexture, roughness: 0.35 });
       }
 
       if (signMat) {
@@ -1957,10 +2042,14 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     };
 
     const trees = [
+      // Deretan pohon peneduh Parkiran Barat (Google Earth Mugarsari)
+      [-86, -50, 1.1], [-86, -30, 1.2], [-86, -10, 1.15], [-86, 12, 1.2], [-86, 32, 1.05],
+      [-50, -48, 0.95], [-50, -24, 1.0], [-50, 0, 0.95], [-50, 24, 1.0],
+      // Sekitar Danau Retensi Timur (Google Earth)
+      [84, -6, 1.2], [96, 4, 1.3], [108, 16, 1.25], [98, 28, 1.35], [82, 30, 1.1],
+      // Jalur Pedestrian & Taman Koridor
       [53, 30, 0.8], [53, 20, 0.85], [53, 10, 0.8], [53, 0, 0.85], [53, -10, 0.9], [53, -20, 0.95],
-      [-70, 22, 1.3], [-72, 0, 1.2], [-70, -22, 1.4],
       [-46, 14, 0.95], [-44, -14, 1.0], [4, 14, 0.85], [4, -14, 0.9],
-      [72, 24, 1.2], [82, 14, 1.3], [85, -2, 1.4], [78, -16, 1.1],
       [-45, 34, 0.9], [-22, 34, 0.85], [-2, 38, 0.85], [48, 38, 0.95],
       [-32, -56, 1.3], [-8, -56, 1.2], [18, -56, 1.35], [46, -56, 1.25]
     ];
@@ -2247,6 +2336,19 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             >
               <Camera className="w-3.5 h-3.5" />
               <span>Foto Drone</span>
+            </button>
+
+            <button
+              onClick={() => applyCameraPreset('satellite')}
+              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
+                cameraPreset === 'satellite'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+              }`}
+              title="Sudut Pandang Satelit Google Earth Kampus 2 Mugarsari"
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>Google Earth 🛰️</span>
             </button>
 
             <button
