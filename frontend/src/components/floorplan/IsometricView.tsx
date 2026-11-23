@@ -187,31 +187,13 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
       id="isometric-3d-model-section"
       className="relative w-full bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100 dark:border-slate-800 p-4 sm:p-6 shadow-sm overflow-hidden text-slate-800 dark:text-slate-100 transition-colors scroll-mt-20 ring-1 ring-emerald-500/20"
     >
-      {/* Self-contained CSS animations for smooth 3D experience and animated people */}
+      {/* Optimized CSS transitions for GPU-accelerated 3D transforms without continuous repaints */}
       <style>{`
-        @keyframes walkEast {
-          0% { transform: translateX(80px); opacity: 0; }
-          6% { opacity: 1; }
-          94% { opacity: 1; }
-          100% { transform: translateX(960px); opacity: 0; }
-        }
-        @keyframes walkWest {
-          0% { transform: translateX(960px); opacity: 0; }
-          6% { opacity: 1; }
-          94% { opacity: 1; }
-          100% { transform: translateX(80px); opacity: 0; }
-        }
-        .walking-student-east {
-          animation: walkEast 18s linear infinite;
-        }
-        .walking-student-west {
-          animation: walkWest 22s linear infinite;
-        }
         .floor-slab-transition {
-          transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-                      opacity 0.6s ease,
-                      box-shadow 0.6s ease,
-                      border-color 0.4s ease;
+          transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                      opacity 0.35s ease,
+                      border-color 0.25s ease;
+          will-change: transform, opacity;
         }
       `}</style>
       
@@ -354,10 +336,10 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
       {/* 2. 3D Staged Canvas with Dynamic Elevation & Physical 3D Stairs */}
       <div className="relative min-h-[660px] sm:min-h-[720px] flex items-center justify-center overflow-hidden py-16 bg-gradient-to-b from-emerald-50/40 via-slate-50/50 to-white dark:from-slate-900/90 dark:via-slate-950 dark:to-slate-900/90 rounded-2xl border border-slate-100 dark:border-slate-800 transition-colors">
         
-        {/* Ambient atmospheric backdrop */}
-        <div className="absolute w-[650px] h-[650px] bg-emerald-400/15 rounded-full blur-[140px] pointer-events-none" />
+        {/* Ambient atmospheric backdrop - GPU-efficient radial gradient without blur filter */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.08)_0%,transparent_70%)] pointer-events-none" />
 
-        {/* 🏷️ Floating Left Tabs for Direct One-Click Floor Selection (Tanpa Status 'Kosong') */}
+        {/* 🏷️ Floating Left Tabs for Direct One-Click Floor Selection */}
         <div className="absolute top-6 left-6 z-40 flex flex-col gap-2.5 pointer-events-auto">
           {building.floors.map((fl) => {
             const isFlActive = fl.floorNumber === activeFloorNumber;
@@ -365,10 +347,10 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
               <button
                 key={fl.floorNumber}
                 onClick={() => onSelectFloor(fl.floorNumber)}
-                className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all duration-300 shadow-md cursor-pointer border ${
+                className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all duration-200 shadow-md cursor-pointer border ${
                   isFlActive
                     ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30 ring-2 ring-emerald-400/40 translate-x-1 scale-105'
-                    : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-md text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-400 hover:translate-x-0.5'
+                    : 'bg-white/95 dark:bg-slate-800/95 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-400 hover:translate-x-0.5'
                 }`}
               >
                 <span className={`w-2 h-2 rounded-full ${isFlActive ? 'bg-white animate-ping' : 'bg-slate-400'}`} />
@@ -384,12 +366,13 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
           })}
         </div>
 
-        {/* 3D Isometric Projection Root with Responsive Mobile Scale */}
+        {/* 3D Isometric Projection Root with Hardware Acceleration */}
         <div
-          className="relative transition-transform duration-700 ease-smooth origin-center"
+          className="relative transition-transform duration-500 ease-out origin-center"
           style={{
             transform: `scale(${canvasScale}) perspective(1400px) rotateX(${tiltAngle}deg) rotateZ(${rotateAngle}deg)`,
             transformStyle: 'preserve-3d',
+            willChange: 'transform',
             width: '820px',
             height: '380px'
           }}
@@ -582,24 +565,24 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                 onClick={() => onSelectFloor(floor.floorNumber)}
                 className={`absolute inset-0 rounded-2xl cursor-pointer floor-slab-transition ${
                   isSelected
-                    ? 'border-2 border-emerald-500 dark:border-emerald-400 shadow-[0_35px_70px_-10px_rgba(16,185,129,0.45)] ring-4 ring-emerald-500/25'
+                    ? 'border-2 border-emerald-500 dark:border-emerald-400 shadow-2xl ring-2 ring-emerald-500/20'
                     : isHovered
-                    ? 'border-2 border-emerald-400 shadow-[0_20px_45px_rgba(16,185,129,0.25)]'
-                    : 'border border-slate-300 dark:border-slate-700 shadow-[0_10px_25px_rgba(0,0,0,0.08)]'
+                    ? 'border-2 border-emerald-400 shadow-lg'
+                    : 'border border-slate-300 dark:border-slate-700 shadow-sm'
                 }`}
                 style={{
                   transform: `translateZ(${zDistance}px) scale(${scale})`,
                   transformStyle: 'preserve-3d',
+                  willChange: 'transform, opacity',
                   opacity,
                   zIndex: isSelected ? 35 : 10,
                   backgroundColor: isDark
                     ? isSelected
                       ? 'rgba(15, 23, 42, 0.98)'
-                      : 'rgba(15, 23, 42, 0.85)'
+                      : 'rgba(15, 23, 42, 0.88)'
                     : isSelected
                     ? 'rgba(255, 255, 255, 0.98)'
-                    : 'rgba(255, 255, 255, 0.88)',
-                  backdropFilter: 'blur(14px)',
+                    : 'rgba(255, 255, 255, 0.92)',
                 }}
               >
                 
@@ -717,15 +700,15 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
                       KORIDOR TENGAH LANTAI {floor.floorNumber}
                     </text>
 
-                    {/* 🚶‍♂️ Simulasi Orang Berjalan di Koridor Tengah */}
+                    {/* 🚶‍♂️ Simulasi Mahasiswa di Koridor Tengah */}
                     {isSelected && (
                       <g className="corridor-walkers" pointerEvents="none">
-                        <g className="walking-student-east">
+                        <g transform="translate(240, 0)">
                           <circle cx="0" cy="245" r="3.2" fill="#059669" />
                           <path d="M -3 252 L -1.5 248 Q 0 247 1.5 248 L 3 252 Z" fill="#047857" />
                           <rect x="-4.5" y="247" width="2.2" height="3.8" rx="0.8" fill="#f59e0b" />
                         </g>
-                        <g className="walking-student-west">
+                        <g transform="translate(820, 0)">
                           <circle cx="0" cy="255" r="3.2" fill="#0284c7" />
                           <path d="M -3 262 L -1.5 258 Q 0 257 1.5 258 L 3 262 Z" fill="#0369a1" />
                           <rect x="2.5" y="257" width="2.2" height="3.8" rx="0.8" fill="#e11d48" />
