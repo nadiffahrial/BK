@@ -26,6 +26,7 @@ import {
   Zap,
   Maximize2
 } from 'lucide-react';
+import { UNSIL_LOGO_BASE64 } from './logoBase64';
 
 interface Campus3DBuildingViewerProps {
   buildings: Building[];
@@ -504,86 +505,88 @@ function generateHerringbonePbrTextures(): { diffuse: THREE.CanvasTexture; bump:
   return { diffuse, bump };
 }
 
-// 5. Panel Fasad Biru SBSN Dekanat Resolusi Tinggi (Ornamen Batik Chevron, Lambang UNSIL Emas)
+// 5. Panel Fasad Biru SBSN Dekanat Resolusi Tinggi (Ornamen Batik Chevron, Logo Resmi UNSIL Asli, Teks Emas SBSN)
 function generateDekanatFeatureWallTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 1024;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Latar biru tua cobalt megah
-  ctx.fillStyle = '#0d3875';
-  ctx.fillRect(0, 0, 1024, 512);
+  const texture = new THREE.CanvasTexture(canvas);
 
-  // Ornamen Batik Geometris Putih Sisi Kiri
-  ctx.save();
-  ctx.strokeStyle = '#ffffff';
-  ctx.fillStyle = '#ffffff';
-  ctx.lineWidth = 4;
+  const drawContent = (logoImg?: HTMLImageElement) => {
+    // Latar biru tua cobalt megah
+    ctx.fillStyle = '#0d3875';
+    ctx.fillRect(0, 0, 1024, 512);
 
-  ctx.beginPath();
-  ctx.moveTo(40, 460);
-  ctx.lineTo(140, 256);
-  ctx.lineTo(40, 60);
-  ctx.lineTo(95, 60);
-  ctx.lineTo(195, 256);
-  ctx.lineTo(95, 460);
-  ctx.closePath();
-  ctx.fill();
+    // Ornamen Batik Geometris Putih Sisi Kiri
+    ctx.save();
+    ctx.strokeStyle = '#ffffff';
+    ctx.fillStyle = '#ffffff';
+    ctx.lineWidth = 4;
 
-  ctx.strokeStyle = '#0d3875';
-  ctx.lineWidth = 3;
-  for (let y = 80; y < 450; y += 32) {
     ctx.beginPath();
-    ctx.moveTo(60, y);
-    ctx.lineTo(170, y);
-    ctx.stroke();
-  }
-  ctx.restore();
+    ctx.moveTo(40, 460);
+    ctx.lineTo(140, 256);
+    ctx.lineTo(40, 60);
+    ctx.lineTo(95, 60);
+    ctx.lineTo(195, 256);
+    ctx.lineTo(95, 460);
+    ctx.closePath();
+    ctx.fill();
 
-  // Logo Universitas Siliwangi Emas & Hijau
-  const logoCenterX = 560;
-  const logoCenterY = 120;
-  const logoRadius = 52;
+    ctx.strokeStyle = '#0d3875';
+    ctx.lineWidth = 3;
+    for (let y = 80; y < 450; y += 32) {
+      ctx.beginPath();
+      ctx.moveTo(60, y);
+      ctx.lineTo(170, y);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-  ctx.beginPath();
-  ctx.arc(logoCenterX, logoCenterY, logoRadius + 4, 0, Math.PI * 2);
-  ctx.fillStyle = '#eab308';
-  ctx.fill();
+    // Gambar Logo Resmi Universitas Siliwangi (Perisai Hijau & Harimau Maung Siliwangi Asli)
+    const logoCenterX = 560;
+    const logoCenterY = 118;
+    const logoSize = 135;
 
-  ctx.beginPath();
-  ctx.arc(logoCenterX, logoCenterY, logoRadius, 0, Math.PI * 2);
-  ctx.fillStyle = '#15803d';
-  ctx.fill();
+    if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+      ctx.drawImage(logoImg, logoCenterX - logoSize / 2, logoCenterY - logoSize / 2, logoSize, logoSize);
+    } else {
+      ctx.beginPath();
+      ctx.arc(logoCenterX, logoCenterY, 52, 0, Math.PI * 2);
+      ctx.fillStyle = '#15803d';
+      ctx.fill();
+    }
 
-  ctx.fillStyle = '#fde047';
-  ctx.beginPath();
-  ctx.arc(logoCenterX, logoCenterY, 20, 0, Math.PI * 2);
-  ctx.fill();
+    // Teks Emas Resmi SBSN
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 9px "Plus Jakarta Sans", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('UNIVERSITAS SILIWANGI', logoCenterX, logoCenterY + 44);
+    const drawGoldText = (text: string, x: number, y: number, font: string) => {
+      ctx.font = font;
+      ctx.fillStyle = '#061c40';
+      ctx.fillText(text, x + 2, y + 2);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(text, x, y);
+    };
 
-  // Teks Emas Resmi SBSN
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+    drawGoldText('LABORATORIUM DAN RUANG KULIAH TERPADU', logoCenterX, 225, '800 28px "Plus Jakarta Sans", sans-serif');
+    drawGoldText('UNIVERSITAS SILIWANGI', logoCenterX, 275, '900 36px "Plus Jakarta Sans", sans-serif');
+    drawGoldText('FAKULTAS TEKNIK', logoCenterX, 330, '900 38px "Plus Jakarta Sans", sans-serif');
+    drawGoldText('SBSN TAHUN ANGGARAN 2022-2023', logoCenterX, 395, '800 24px "Plus Jakarta Sans", sans-serif');
 
-  const drawGoldText = (text: string, x: number, y: number, font: string) => {
-    ctx.font = font;
-    ctx.fillStyle = '#061c40';
-    ctx.fillText(text, x + 2, y + 2);
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillText(text, x, y);
+    texture.needsUpdate = true;
   };
 
-  drawGoldText('LABORATORIUM DAN RUANG KULIAH TERPADU', logoCenterX, 225, '800 28px "Plus Jakarta Sans", sans-serif');
-  drawGoldText('UNIVERSITAS SILIWANGI', logoCenterX, 275, '900 36px "Plus Jakarta Sans", sans-serif');
-  drawGoldText('FAKULTAS TEKNIK', logoCenterX, 330, '900 38px "Plus Jakarta Sans", sans-serif');
-  drawGoldText('SBSN TAHUN ANGGARAN 2022-2023', logoCenterX, 395, '800 24px "Plus Jakarta Sans", sans-serif');
+  const img = new Image();
+  img.onload = () => {
+    drawContent(img);
+  };
+  img.src = UNSIL_LOGO_BASE64;
+  drawContent();
 
-  return new THREE.CanvasTexture(canvas);
+  return texture;
 }
 
 // 6. Plang Kanopi Depan: "FAKULTAS TEKNIK"
@@ -1796,6 +1799,22 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
         const panelMesh = new THREE.Mesh(new THREE.PlaneGeometry(panelW, panelH), featurePanelMat);
         panelMesh.position.set(-14.5, 0.5 + floorHeight, bldg.depth / 2 + 0.18);
         bldgGroup.add(panelMesh);
+
+        // Emblem Logo Resmi Universitas Siliwangi Timbul 3D (Perisai Hijau & Harimau Maung Siliwangi Asli)
+        const logoBadgeTexture = new THREE.TextureLoader().load(UNSIL_LOGO_BASE64);
+        const logoBadgeMat = new THREE.MeshPhysicalMaterial({
+          map: logoBadgeTexture,
+          transparent: true,
+          roughness: 0.25,
+          metalness: 0.2,
+          clearcoat: 0.8,
+          envMapIntensity: 1.5
+        });
+        const logoBadgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 2.35), logoBadgeMat);
+        const logoPosX = -14.5 + panelW * (560 / 1024 - 0.5);
+        const logoPosY = 0.5 + floorHeight + panelH * (0.5 - 118 / 512);
+        logoBadgeMesh.position.set(logoPosX, logoPosY, bldg.depth / 2 + 0.24);
+        bldgGroup.add(logoBadgeMesh);
       }
 
       bldgGroup.add(floor2Group);
