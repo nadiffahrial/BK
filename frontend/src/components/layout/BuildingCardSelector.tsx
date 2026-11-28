@@ -11,6 +11,7 @@ interface BuildingCardSelectorProps {
   onSelectFloor?: (floorNumber: number) => void;
   onSelectRoom?: (room: Room) => void;
   viewMode?: ViewMode;
+  buildingLabels?: Record<string, string>;
 }
 
 export const BuildingCardSelector: React.FC<BuildingCardSelectorProps> = ({
@@ -19,7 +20,8 @@ export const BuildingCardSelector: React.FC<BuildingCardSelectorProps> = ({
   onSelectBuilding,
   activeFloorNumber = 1,
   onSelectFloor,
-  viewMode = '3d'
+  viewMode = '3d',
+  buildingLabels = {}
 }) => {
   return (
     <div className="mb-6">
@@ -59,6 +61,7 @@ export const BuildingCardSelector: React.FC<BuildingCardSelectorProps> = ({
           <BuildingPlanButton
             key={b.id}
             building={b}
+            buildingLabel={buildingLabels[b.id]}
             isActive={b.id === activeBuildingId}
             onSelect={() => onSelectBuilding(b.id)}
             activeFloorNumber={activeFloorNumber}

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from './context/AuthContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { Navbar } from './components/layout/Navbar';
-import { NavigationMenuDrawer } from './components/layout/NavigationMenuDrawer';
 import { Footer } from './components/layout/Footer';
 import { BuildingCardSelector } from './components/layout/BuildingCardSelector';
 import { StudentRoomFinder } from './components/common/StudentRoomFinder';
@@ -21,6 +20,7 @@ import { BUILDINGS_DATA } from './data/buildingsData';
 import { CAMPUS_MODEL_LABELS } from './data/campusModelLabels';
 import { Building, CsTicket, Room, RoomStatus, ViewMode } from './types';
 import { apiService } from './services/api';
+import { applyScheduleStatus } from './utils/scheduleStatus';
 import { 
   Building2, 
   MapPin, 
@@ -35,7 +35,6 @@ import {
   Compass,
   Headphones,
   BookOpen,
-  TicketCheck,
   Wrench,
   RefreshCw,
   ShieldCheck,
@@ -51,8 +50,8 @@ import { AdminWorkspace } from './components/layout/AdminWorkspace';
 
 export const App: React.FC = () => {
   const { isAuthenticated, user, token, logout } = useAuth();
+  const isAdmin = isAuthenticated && (user?.role === 'admin' || user?.role === 'super_admin');
 
-  const [buildings, setBuildings] = useState(BUILDINGS_DATA);
   const [campusModelLabels, setCampusModelLabels] = useState<Record<string, string>>(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('siloka_campus_model_labels') || '{}') as Record<string, string>;
@@ -63,10 +62,10 @@ export const App: React.FC = () => {
       return { ...CAMPUS_MODEL_LABELS, ...saved };
     } catch { return CAMPUS_MODEL_LABELS; }
   });
+  const [buildings, setBuildings] = useState(BUILDINGS_DATA);
   const [activeBuildingId, setActiveBuildingId] = useState<string>('gedung-a');
   const [activeFloorNumber, setActiveFloorNumber] = useState<number>(1);
-  // Default to '3d' view so 3D isometric model appears immediately
-  const [viewMode, setViewMode] = useState<ViewMode>('3d');
+  const [viewMode, setViewMode] = useState<ViewMode>(isAdmin ? '3d' : '2d');
   // Sub-mode untuk tampilan 3D: 'building' (eksterior bangunan 3D Three.js) atau 'floorplan' (denah lantai isometrik)
   const [view3DSubMode, setView3DSubMode] = useState<'building' | 'floorplan'>('floorplan');
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +76,6 @@ export const App: React.FC = () => {
   const [activePathRoomId, setActivePathRoomId] = useState<string | null>(null);
   const [recentNotification, setRecentNotification] = useState<string | null>(null);
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
   const [isCsModalOpen, setIsCsModalOpen] = useState<boolean>(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
@@ -86,8 +84,47 @@ export const App: React.FC = () => {
   const [adminTickets, setAdminTickets] = useState<CsTicket[]>([]);
   const [isLoadingAdminTickets, setIsLoadingAdminTickets] = useState(false);
   const [visitCount, setVisitCount] = useState(0);
-  const [adminSection, setAdminSection] = useState<'overview' | 'rooms' | 'schedule' | 'admins'>('overview');
-  const isAdmin = isAuthenticated && (user?.role === 'admin' || user?.role === 'super_admin');
+  const [adminSection, setAdminSection] = useState<'overview' | 'rooms' | 'schedule' | 'catalog' | 'admins'>('overview');
+  const [scheduleClock, setScheduleClock] = useState(() => Date.now());
+  const visibleBuildings = useMemo(() => applyScheduleStatus(buildings, new Date(scheduleClock)), [buildings, scheduleClock]);
+
+  useEffect(() => {
+    setViewMode(isAdmin ? '3d' : '2d');
+  }, [isAdmin]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setScheduleClock(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  // Load shared 3D building labels. If this is the first server-side save,
+  // migrate a customized value from the Super Admin browser once.
+  useEffect(() => {
+    let active = true;
+    const syncLabels = async () => {
+      const sharedLabels = await apiService.getCampusModelLabels();
+      if (!active) return;
+      if (sharedLabels) {
+        const merged = { ...CAMPUS_MODEL_LABELS, ...sharedLabels };
+        setCampusModelLabels(merged);
+        localStorage.setItem('siloka_campus_model_labels', JSON.stringify(merged));
+        return;
+      }
+
+      if (user?.role === 'super_admin' && token) {
+        const hasCustomizedLabel = Object.entries(CAMPUS_MODEL_LABELS).some(([id, label]) => campusModelLabels[id] && campusModelLabels[id] !== label);
+        if (hasCustomizedLabel) {
+          try {
+            await apiService.saveCampusModelLabels(campusModelLabels, token);
+          } catch (error) {
+            console.warn('Migrasi label gedung ke server gagal:', error);
+          }
+        }
+      }
+    };
+    void syncLabels();
+    return () => { active = false; };
+  }, [user?.role, token]);
 
   useEffect(() => {
     fetch('/api/analytics/visit', { method: 'POST' })
@@ -180,6 +217,16 @@ export const App: React.FC = () => {
         const { message } = event.data;
         setRecentNotification(`🎧 [Layanan CS] ${message}`);
         setTimeout(() => setRecentNotification(null), 6000);
+      } else if (event.type === 'CAMPUS_MODEL_LABELS_UPDATED') {
+        const labels = event.data?.labels;
+        if (labels && typeof labels === 'object' && !Array.isArray(labels)) {
+          const merged = { ...CAMPUS_MODEL_LABELS, ...labels };
+          setCampusModelLabels(merged);
+          localStorage.setItem('siloka_campus_model_labels', JSON.stringify(merged));
+        }
+      } else if (event.type === 'ADMIN_BUILDINGS_UPDATED' && Array.isArray(event.data?.buildings)) {
+        setBuildings(event.data.buildings);
+        localStorage.setItem('siloka_admin_buildings', JSON.stringify(event.data.buildings));
       }
     });
 
@@ -189,10 +236,12 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  const activeBuilding = (buildings && buildings.find(b => b.id === activeBuildingId)) || (buildings && buildings[0]) || BUILDINGS_DATA[0];
+  const activeBuilding = (visibleBuildings && visibleBuildings.find(b => b.id === activeBuildingId)) || (visibleBuildings && visibleBuildings[0]) || BUILDINGS_DATA[0];
+  const activeBuildingLabel = campusModelLabels[activeBuilding.id]?.trim() || activeBuilding.shortName;
   const activeFloor = (activeBuilding && activeBuilding.floors && activeBuilding.floors.find(f => f.floorNumber === activeFloorNumber)) || (activeBuilding && activeBuilding.floors && activeBuilding.floors[0]) || BUILDINGS_DATA[0].floors[0];
   const floorRooms = activeFloor?.rooms || [];
-  const allRooms = buildings.flatMap(building => building.floors.flatMap(floor => floor.rooms));
+  const allRooms = visibleBuildings.flatMap(building => building.floors.flatMap(floor => floor.rooms));
+  const selectedRoomForDetail = selectedRoom ? allRooms.find(room => room.id === selectedRoom.id) || selectedRoom : null;
   const roomStatusCounts = {
     available: allRooms.filter(room => room.status === 'available').length,
     occupied: allRooms.filter(room => room.status === 'occupied').length,
@@ -216,6 +265,13 @@ export const App: React.FC = () => {
   const handleCampusModelLabelsChange = (next: Record<string, string>) => {
     setCampusModelLabels(next);
     localStorage.setItem('siloka_campus_model_labels', JSON.stringify(next));
+    if (token) {
+      apiService.saveCampusModelLabels(next, token)
+        .catch(error => {
+          setRecentNotification(error.message || 'Label gedung gagal disimpan ke server.');
+          setTimeout(() => setRecentNotification(null), 5000);
+        });
+    }
   };
 
   const scrollTo3DModel = () => {
@@ -316,10 +372,13 @@ export const App: React.FC = () => {
     scrollTo3DModel();
   };
 
-  const openAdminSection = (section: 'overview' | 'rooms' | 'schedule' | 'admins') => {
+  const openAdminSection = (section: 'overview' | 'rooms' | 'schedule' | 'catalog' | 'admins') => {
     setAdminSection(section);
     window.dispatchEvent(new CustomEvent('admin-section', { detail: section }));
   };
+  const adminNavClass = (active: boolean) => `inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-xs transition-colors lg:w-full ${active
+    ? 'bg-emerald-50 font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+    : 'font-semibold text-slate-600 hover:bg-slate-100 hover:text-emerald-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-300'}`;
 
 
   return (
@@ -327,8 +386,8 @@ export const App: React.FC = () => {
       
       {isAdmin && (
         <>
-          <aside className="fixed inset-x-0 top-0 z-40 border-b border-emerald-100 bg-white/95 px-4 py-2 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95 md:inset-y-0 md:right-auto md:w-64 md:border-b-0 md:border-r md:px-5 md:py-6">
-            <div className="flex items-center justify-between md:h-full md:flex-col md:items-stretch">
+          <aside className="fixed inset-x-0 top-0 z-40 border-b border-emerald-100 bg-white/95 px-3 py-2 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95 sm:px-4 lg:inset-y-0 lg:right-auto lg:w-64 lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
+            <div className="flex flex-wrap items-center justify-between gap-y-2 lg:h-full lg:flex-nowrap lg:flex-col lg:items-stretch">
               <div className="flex items-center gap-3">
                 <CampusLogo size="sm" />
                 <div className="leading-tight">
@@ -336,20 +395,26 @@ export const App: React.FC = () => {
                   <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400">{user?.role === 'super_admin' ? 'Super Admin' : 'Administrasi kampus'}</div>
                 </div>
               </div>
-              <nav aria-label="Navigasi admin" className="flex items-center gap-1 md:mt-10 md:flex-col md:items-stretch">
-                <button type="button" onClick={() => openAdminSection('overview')} className="inline-flex items-center gap-3 rounded-lg bg-emerald-50 px-3 py-2.5 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900 md:w-full">
-                  <LayoutDashboard className="h-4 w-4" /><span className="hidden md:inline">Ringkasan</span>
+              <div className="flex items-center gap-1 lg:hidden">
+                <ThemeToggle showLabel={false} size="sm" />
+                <button type="button" onClick={logout} className="rounded-lg p-2 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40" aria-label="Keluar"><LogOut className="h-4 w-4" /></button>
+              </div>
+              <nav aria-label="Navigasi admin" className="hidden lg:mt-10 lg:flex lg:w-auto lg:flex-col lg:items-stretch lg:overflow-visible">
+                <button type="button" onClick={() => openAdminSection('overview')} aria-current={adminSection === 'overview' ? 'page' : undefined} className={adminNavClass(adminSection === 'overview')}>
+                  <LayoutDashboard className="h-4 w-4" /><span className="hidden lg:inline">Dashboard</span>
                 </button>
-                <button type="button" onClick={() => openAdminSection('rooms')} className="inline-flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-emerald-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-300 md:w-full">
-                  <ClipboardList className="h-4 w-4" /><span className="hidden md:inline">Ruang & fasilitas</span>
+                <button type="button" onClick={() => openAdminSection('rooms')} aria-current={adminSection === 'rooms' ? 'page' : undefined} className={adminNavClass(adminSection === 'rooms')}>
+                  <ClipboardList className="h-4 w-4" /><span className="hidden lg:inline">Ruang & fasilitas</span>
                 </button>
-                <button type="button" onClick={() => openAdminSection('schedule')} className="inline-flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-emerald-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-300 md:w-full">
-                  <CalendarDays className="h-4 w-4" /><span className="hidden md:inline">Jadwal ruangan</span>
+                <button type="button" onClick={() => openAdminSection('schedule')} aria-current={adminSection === 'schedule' ? 'page' : undefined} className={adminNavClass(adminSection === 'schedule')}>
+                  <CalendarDays className="h-4 w-4" /><span className="hidden lg:inline">Jadwal ruangan</span>
                 </button>
-                <button type="button" onClick={() => setIsCsModalOpen(true)} className="inline-flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-emerald-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-300 md:w-full"><TicketCheck className="h-4 w-4"/><span className="hidden md:inline">Antrean layanan</span><span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] dark:bg-slate-800">{activeCsTickets}</span></button>
-                {user?.role === 'super_admin' && <button type="button" onClick={() => openAdminSection('admins')} className="inline-flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-semibold text-emerald-900 transition-colors hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 dark:hover:bg-emerald-900 md:w-full"><Users className="h-4 w-4"/><span className="hidden md:inline">Kelola Admin</span></button>}
+                <button type="button" onClick={() => openAdminSection('catalog')} aria-current={adminSection === 'catalog' ? 'page' : undefined} className={adminNavClass(adminSection === 'catalog')}>
+                  <BookOpen className="h-4 w-4" /><span className="hidden lg:inline">Agenda & pengajar</span>
+                </button>
+                {user?.role === 'super_admin' && <button type="button" onClick={() => openAdminSection('admins')} aria-current={adminSection === 'admins' ? 'page' : undefined} className={adminNavClass(adminSection === 'admins')}><Users className="h-4 w-4"/><span className="hidden lg:inline">Kelola Admin</span></button>}
               </nav>
-              <div className="hidden border-t border-slate-200 pt-4 dark:border-slate-800 md:mt-auto md:block">
+              <div className="hidden border-t border-slate-200 pt-4 dark:border-slate-800 lg:mt-auto lg:block">
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-700 text-sm font-bold text-white">{user?.name?.charAt(0) || 'A'}</div>
                   <div className="min-w-0"><div className="truncate text-xs font-bold text-slate-800 dark:text-slate-100">{user?.name}</div><div className="truncate text-[10px] text-slate-500">{user?.department || 'Administrator'}</div></div>
@@ -358,62 +423,33 @@ export const App: React.FC = () => {
               </div>
             </div>
           </aside>
-          <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-slate-200 bg-white/95 px-2 py-2 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95 md:hidden">
-            <ThemeToggle showLabel={false} size="sm" />
-            <button type="button" onClick={logout} className="rounded-lg p-2 text-slate-500 hover:text-rose-600" aria-label="Keluar"><LogOut className="h-4 w-4" /></button>
-          </div>
+          <nav aria-label="Navigasi admin" className="fixed bottom-3 left-3 z-40 w-[calc(100%-4.5rem)] max-w-xl rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-xl shadow-slate-900/15 backdrop-blur-lg dark:border-slate-700 dark:bg-slate-900/95 lg:hidden">
+            <div className={`grid ${user?.role === 'super_admin' ? 'grid-cols-5' : 'grid-cols-4'} gap-0.5`}>
+              <button type="button" onClick={() => openAdminSection('overview')} aria-current={adminSection === 'overview' ? 'page' : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-2 text-[9px] font-semibold ${adminSection === 'overview' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}><LayoutDashboard className="h-5 w-5"/><span className="truncate">Dashboard</span></button>
+              <button type="button" onClick={() => openAdminSection('rooms')} aria-current={adminSection === 'rooms' ? 'page' : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-2 text-[9px] font-semibold ${adminSection === 'rooms' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}><ClipboardList className="h-5 w-5"/><span className="truncate">Ruang</span></button>
+              <button type="button" onClick={() => openAdminSection('schedule')} aria-current={adminSection === 'schedule' ? 'page' : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-2 text-[9px] font-semibold ${adminSection === 'schedule' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}><CalendarDays className="h-5 w-5"/><span className="truncate">Jadwal</span></button>
+              <button type="button" onClick={() => openAdminSection('catalog')} aria-current={adminSection === 'catalog' ? 'page' : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-2 text-[9px] font-semibold ${adminSection === 'catalog' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}><BookOpen className="h-5 w-5"/><span className="truncate">Agenda</span></button>
+              {user?.role === 'super_admin' && <button type="button" onClick={() => openAdminSection('admins')} aria-current={adminSection === 'admins' ? 'page' : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-2 text-[9px] font-semibold ${adminSection === 'admins' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}><Users className="h-5 w-5"/><span className="truncate">Admin</span></button>}
+            </div>
+          </nav>
         </>
       )}
 
       {/* Public navigation */}
       {!isAdmin && <Navbar
-        buildings={buildings}
-        activeBuildingId={activeBuildingId}
-        onSelectBuilding={handleSelectBuilding}
-        activeFloorNumber={activeFloorNumber}
-        onSelectFloor={handleSelectFloor}
         viewMode={viewMode}
         onChangeViewMode={handleChangeViewMode}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        onSelectRoomById={handleSelectRoomById}
-        onOpenMenu={() => setIsMenuOpen(true)}
-        onOpenSearch={() => setIsSearchModalOpen(true)}
-      />}
-
-      {/* 2. Slide-over Navigation Menu Drawer */}
-      {!isAdmin && <NavigationMenuDrawer
-        isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        buildings={buildings}
-        activeBuildingId={activeBuildingId}
-        onSelectBuilding={(id) => handleSelectBuilding(id)}
-        activeFloorNumber={activeFloorNumber}
-        onSelectFloor={(num) => handleSelectFloor(num)}
-        viewMode={viewMode}
-        onChangeViewMode={handleChangeViewMode}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onSelectRoomById={handleSelectRoomById}
-        user={user}
         onLoginClick={() => setShowLogin(true)}
-        logout={logout}
-        isBackendConnected={isBackendConnected}
         onOpenSearch={() => setIsSearchModalOpen(true)}
-        onOpenCs={() => setIsCsModalOpen(true)}
+        onOpenPanorama={() => setIsPanoramaModalOpen(true)}
         onOpenGuide={() => setIsGuideModalOpen(true)}
-        onOpenPanoramaRooms={() => setIsPanoramaModalOpen(true)}
       />}
 
       {/* 3. Main Workspace Area (Clean & Simple) */}
-      <main className={`flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 ${isAdmin ? 'pt-16 pb-16 md:ml-64 md:pt-6 md:pb-6' : 'pt-5'}`}>
+      <main className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 ${isAdmin ? 'pt-16 pb-36 sm:pt-16 lg:ml-64 lg:w-[calc(100%-16rem)] lg:pt-6 lg:pb-6' : 'pt-5 pb-36 lg:pb-0'}`}>
 
-        {isAdmin && <AdminWorkspace buildings={buildings} onBuildingsChange={handleAdminBuildingsChange} campusModelLabels={campusModelLabels} onCampusModelLabelsChange={handleCampusModelLabelsChange} isSuperAdmin={user?.role === 'super_admin'} token={token || ''} onSectionChange={setAdminSection} ticketCount={activeCsTickets} visitCount={visitCount} onOpenTickets={() => setIsCsModalOpen(true)} />}
-        {!(isAdmin && adminSection === 'admins') && <>
+        {isAdmin && <AdminWorkspace buildings={visibleBuildings} onBuildingsChange={handleAdminBuildingsChange} campusModelLabels={campusModelLabels} onCampusModelLabelsChange={handleCampusModelLabelsChange} isSuperAdmin={user?.role === 'super_admin'} token={token || ''} onSectionChange={setAdminSection} ticketCount={activeCsTickets} visitCount={visitCount} onOpenTickets={() => setIsCsModalOpen(true)} />}
+        {(!isAdmin || adminSection === 'overview') && <>
         
         {/* Toast Alert Banner if status updated */}
         {recentNotification && (
@@ -437,20 +473,22 @@ export const App: React.FC = () => {
               <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Operasional Kampus</div>
               <h2 className="mt-1 text-lg font-black text-slate-900 dark:text-white">Peta dan pengelolaan ruang</h2>
             </div>
-            <span className="hidden rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 sm:inline-flex">{activeBuilding.shortName} · Tingkat {activeFloorNumber}</span>
+            <span className="hidden rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 sm:inline-flex">{activeBuildingLabel} · Tingkat {activeFloorNumber}</span>
           </div>
         )}
 
         {/* Student Room Finder Bar (Mempermudah Mahasiswa Menemukan Ruangan Cepat) */}
         <StudentRoomFinder
-          buildings={buildings}
+          buildings={visibleBuildings}
+          buildingLabels={campusModelLabels}
           onSelectRoom={handleNavigateFromSearch}
           onOpenSearchEngine={() => setIsSearchModalOpen(true)}
         />
 
         {/* Dual Building Buttons (Gedung A & Gedung B) */}
         <BuildingCardSelector
-          buildings={buildings}
+          buildings={visibleBuildings}
+          buildingLabels={campusModelLabels}
           activeBuildingId={activeBuildingId}
           viewMode={viewMode}
           onSelectBuilding={handleSelectBuilding}
@@ -462,6 +500,8 @@ export const App: React.FC = () => {
         {/* 📱 Fitur Display Rotate Horizontal di Mobile (Banner, FAB, & Fullscreen Landscape) */}
         <MobileRotateDisplay
           building={activeBuilding}
+              buildingLabel={activeBuildingLabel}
+          showRotateButton={!isAdmin}
           activeFloorNumber={activeFloorNumber}
           onSelectFloor={handleSelectFloor}
           viewMode={viewMode}
@@ -476,7 +516,7 @@ export const App: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white">Pilih lantai</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Denah 2D {activeBuilding.shortName}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Denah 2D {activeBuildingLabel}</p>
               </div>
               <div className="flex items-center gap-2">
                 {activeBuilding.floors.map((floor) => (
@@ -497,6 +537,7 @@ export const App: React.FC = () => {
             </div>
             <FloorMapSvg
               floor={activeFloor}
+              buildingLabel={activeBuildingLabel}
               selectedRoom={selectedRoom}
               onSelectRoom={setSelectedRoom}
               statusFilter={statusFilter}
@@ -509,38 +550,44 @@ export const App: React.FC = () => {
 
         {viewMode === '3d' && (
           <div className="space-y-4">
-            {/* 🏛️ Sub-Mode Selector: Model Bangunan 3D Eksterior vs Denah Lantai Isometrik */}
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 max-w-lg mx-auto shadow-xs">
+            {/* Pilih tampilan kawasan atau denah */}
+            <div role="group" aria-label="Pilih tampilan" className="mx-auto grid w-full max-w-xl grid-cols-2 gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1.5 dark:border-slate-700 dark:bg-slate-800/80">
               <button
                 onClick={() => setView3DSubMode('building')}
-                className={`flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                aria-pressed={view3DSubMode === 'building'}
+                className={`flex min-h-12 items-center justify-center gap-2 rounded-lg px-3 py-2 text-left transition-colors cursor-pointer ${
                   view3DSubMode === 'building'
-                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-1 ring-emerald-500/20'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+                    ? 'border border-slate-200 bg-white text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white'
+                    : 'text-slate-600 hover:bg-white/70 dark:text-slate-300 dark:hover:bg-slate-700/50'
                 }`}
               >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Model Bangunan 3D</span>
-                <span className="text-[10px] opacity-80">(LABTEK 1 & FT.1)</span>
+                <Building2 className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                <span className="min-w-0">
+                  <span className="block text-xs font-semibold">Model Kawasan</span>
+                  <span className="mt-0.5 block text-[10px] font-normal text-slate-500 dark:text-slate-400">Seluruh gedung · 3D</span>
+                </span>
               </button>
 
               <button
                 onClick={() => setView3DSubMode('floorplan')}
-                className={`flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                aria-pressed={view3DSubMode === 'floorplan'}
+                className={`flex min-h-12 items-center justify-center gap-2 rounded-lg px-3 py-2 text-left transition-colors cursor-pointer ${
                   view3DSubMode === 'floorplan'
-                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-1 ring-emerald-500/20'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
+                    ? 'border border-slate-200 bg-white text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white'
+                    : 'text-slate-600 hover:bg-white/70 dark:text-slate-300 dark:hover:bg-slate-700/50'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Denah Lantai Isometrik</span>
-                <span className="text-[10px] opacity-80">(Tingkat 1 & 2)</span>
+                <Layers className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                <span className="min-w-0">
+                  <span className="block text-xs font-semibold">Denah Interaktif</span>
+                  <span className="mt-0.5 block text-[10px] font-normal text-slate-500 dark:text-slate-400">Lantai 1–2</span>
+                </span>
               </button>
             </div>
 
             {view3DSubMode === 'building' ? (
               <Campus3DBuildingViewer
-                buildings={buildings}
+                buildings={visibleBuildings}
                 buildingLabels={campusModelLabels}
                 activeBuildingId={activeBuildingId}
                 onSelectBuilding={(id) => handleSelectBuilding(id)}
@@ -555,6 +602,7 @@ export const App: React.FC = () => {
             ) : (
               <IsometricView
                 building={activeBuilding}
+                buildingLabel={activeBuildingLabel}
                 activeFloorNumber={activeFloorNumber}
                 onSelectFloor={(num) => setActiveFloorNumber(num)}
                 onSelectRoom={(room) => setSelectedRoom(room)}
@@ -625,12 +673,13 @@ export const App: React.FC = () => {
       </main>
 
       {/* Room Detail Modal / Drawer */}
-      {selectedRoom && (
+      {selectedRoomForDetail && (
         <RoomDetailModal
-          room={selectedRoom}
+          room={selectedRoomForDetail}
+          buildingName={campusModelLabels[selectedRoomForDetail.buildingId]?.trim() || visibleBuildings.find(building => building.id === selectedRoomForDetail.buildingId)?.shortName}
           onClose={() => setSelectedRoom(null)}
           onTogglePathGuide={handleTogglePathGuide}
-          isPathActive={activePathRoomId === selectedRoom.id}
+          isPathActive={activePathRoomId === selectedRoomForDetail.id}
           onUpdateRoomStatus={handleUpdateRoomStatus}
         />
       )}
@@ -639,41 +688,43 @@ export const App: React.FC = () => {
       <SearchEngineModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
-        buildings={buildings}
+        buildings={visibleBuildings}
+        buildingLabels={campusModelLabels}
         onNavigateToRoom={handleNavigateFromSearch}
       />
 
-            {/* 📖 Floating Panduan Pengguna Button */}
-      <button
-        type="button"
-        onClick={() => setIsGuideModalOpen(true)}
-        className="smooth-btn fixed bottom-5 right-36 sm:right-40 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-extrabold text-xs shadow-lg shadow-slate-900/10 dark:shadow-black/40 hover:shadow-emerald-500/20 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer group border border-emerald-200/90 dark:border-slate-700"
-        title="Buka Buku Panduan Pengguna (F1 / ?)"
-      >
-        <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-        <span className="inline font-bold">Panduan</span>
-        <kbd className="hidden md:inline text-[9px] font-mono bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1 py-0.5 rounded border border-slate-200 dark:border-slate-600">
-          F1
-        </kbd>
-      </button>
+      {/* Tombol bantuan di kanan bawah */}
+      <div className="fixed bottom-5 right-3 z-40 hidden items-center gap-2 sm:right-5 lg:flex">
+        <button
+          type="button"
+          onClick={() => setIsGuideModalOpen(true)}
+          className="smooth-btn inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white/95 px-3 text-xs font-semibold text-slate-700 shadow-md backdrop-blur-md transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700 sm:px-4"
+          title="Buka Buku Panduan Pengguna (F1 / ?)"
+        >
+          <BookOpen className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+          <span>Panduan</span>
+          <kbd className="hidden rounded border border-slate-200 bg-slate-100 px-1 py-0.5 font-mono text-[9px] font-normal text-slate-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 md:inline">F1</kbd>
+        </button>
 
-      {/* 🎧 Floating Customer Service (CS) & Pengaduan Button */}
-      <button
-        type="button"
-        onClick={() => setIsCsModalOpen(true)}
-        className="smooth-btn fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-700/35 hover:shadow-emerald-600/50 hover:-translate-y-1 active:translate-y-0.5 cursor-pointer group border border-white/25"
-        title="Buka Layanan CS & Pengaduan Kampus"
-      >
-        <Headphones className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
-        <span className="hidden sm:inline">Layanan CS</span>
-        <span className="w-2 h-2 rounded-full bg-emerald-300" />
+        <button
+          type="button"
+          onClick={() => setIsCsModalOpen(true)}
+          className="smooth-btn inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-emerald-800 bg-emerald-700 px-3 text-xs font-semibold text-white shadow-md transition-colors hover:bg-emerald-800 dark:border-emerald-500 dark:bg-emerald-600 dark:hover:bg-emerald-500 sm:px-4"
+          title="Buka Layanan CS & Pengaduan Kampus"
+        >
+          <Headphones className="h-4 w-4 shrink-0" />
+          <span>Layanan CS</span>
+        </button>
+      </div>
+
+      <button type="button" onClick={() => setIsCsModalOpen(true)} aria-label="Buka Layanan CS" title="Layanan CS" className="fixed bottom-20 right-3 z-40 flex h-11 items-center justify-center gap-2 rounded-full border border-emerald-700 bg-emerald-700 px-3 text-xs font-semibold text-white shadow-lg transition-colors hover:bg-emerald-800 dark:border-emerald-500 dark:bg-emerald-600 dark:hover:bg-emerald-500 lg:hidden">
+        <Headphones className="h-4 w-4" /><span>Layanan CS</span>
       </button>
 
       {/* Modal Layanan Customer Service (CS) & Pengaduan Kampus */}
       <CustomerServiceModal
         isOpen={isCsModalOpen}
         onClose={() => setIsCsModalOpen(false)}
-        isBackendConnected={isBackendConnected}
         onNotificationSent={(msg) => {
           setRecentNotification(`🎧 [Layanan CS] ${msg}`);
           setTimeout(() => setRecentNotification(null), 5000);
@@ -684,6 +735,7 @@ export const App: React.FC = () => {
       <UserGuideModal
         isOpen={isGuideModalOpen}
         onClose={() => setIsGuideModalOpen(false)}
+        role={user?.role ?? null}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onOpenCs={() => setIsCsModalOpen(true)}
       />
@@ -692,7 +744,7 @@ export const App: React.FC = () => {
       <PanoramaRoomsModal
         isOpen={isPanoramaModalOpen}
         onClose={() => setIsPanoramaModalOpen(false)}
-        buildings={buildings}
+        buildings={visibleBuildings}
         onOpenPanorama={(room) => setDirectPanoramaRoom(room)}
         onNavigateToRoom={(bId, fNum, r) => handleNavigateFromSearch(bId, fNum, r)}
         onOpenCs={() => setIsCsModalOpen(true)}
@@ -708,7 +760,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Minimalist Clean Footer */}
-      <div className={isAdmin ? 'md:ml-64' : ''}><Footer onOpenGuide={() => setIsGuideModalOpen(true)} /></div>
+      <div className={isAdmin ? 'lg:ml-64' : ''}><Footer onOpenGuide={() => setIsGuideModalOpen(true)} /></div>
 
       {/* Login Administrator */}
       {showLogin && (

@@ -6,8 +6,8 @@ const name = process.env.SUPER_ADMIN_NAME?.trim();
 const email = process.env.SUPER_ADMIN_EMAIL?.trim().toLowerCase();
 const password = process.env.SUPER_ADMIN_PASSWORD;
 
-if (!name || !email || !password || password.length < 12) {
-  console.error('Atur SUPER_ADMIN_NAME, SUPER_ADMIN_EMAIL, dan SUPER_ADMIN_PASSWORD (minimal 12 karakter) sebelum menjalankan bootstrap.');
+if (!name || !email || !password || password.length < 6) {
+  console.error('Atur SUPER_ADMIN_NAME, SUPER_ADMIN_EMAIL, dan SUPER_ADMIN_PASSWORD (minimal 6 karakter) sebelum menjalankan bootstrap.');
   process.exit(1);
 }
 

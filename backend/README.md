@@ -5,7 +5,7 @@ Super Admin pertama dibuat satu kali dari backend. Jalankan ini setelah database
 ```powershell
 $env:SUPER_ADMIN_NAME = 'Nama Pengelola'
 $env:SUPER_ADMIN_EMAIL = 'superadmin@kampus.ac.id'
-$env:SUPER_ADMIN_PASSWORD = 'Gunakan-kata-sandi-kuat-12-karakter'
+$env:SUPER_ADMIN_PASSWORD = 'Kata-sandi-minimal-6-karakter'
 npm run bootstrap:super-admin
 Remove-Item Env:\SUPER_ADMIN_NAME, Env:\SUPER_ADMIN_EMAIL, Env:\SUPER_ADMIN_PASSWORD
 ```

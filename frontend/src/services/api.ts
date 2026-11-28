@@ -23,6 +23,18 @@ export interface AdminActivity {
   targetEmail: string | null;
 }
 
+export interface CsContactSettings {
+  whatsappNumber: string;
+  email: string;
+  officeLocation: string;
+  officeHours: string;
+}
+
+export interface ScheduleCatalog {
+  agendas: string[];
+  lecturers: string[];
+}
+
 const superAdminRequest = async (path: string, token: string, method = 'GET', body?: unknown) => {
   const response = await fetch(`${API_BASE}/super-admin/admins${path}`, {
     method,
@@ -42,6 +54,10 @@ export const apiService = {
 
   async createManagedAdmin(input: { name: string; email: string; department: string; password: string }, token: string): Promise<void> {
     await superAdminRequest('', token, 'POST', input);
+  },
+
+  async updateManagedAdminProfile(id: string, input: { name: string; email: string }, token: string): Promise<void> {
+    await superAdminRequest(`/${encodeURIComponent(id)}/profile`, token, 'PUT', input);
   },
 
   async resetManagedAdminPassword(id: string, password: string, token: string): Promise<void> {
@@ -123,6 +139,69 @@ export const apiService = {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.message || 'Perubahan gagal disimpan ke server.');
     }
+  },
+
+  async getCampusModelLabels(): Promise<Record<string, string> | null> {
+    try {
+      const res = await fetch(`${API_BASE}/campus/model-labels`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.data && typeof json.data === 'object' && !Array.isArray(json.data) ? json.data : null;
+    } catch { return null; }
+  },
+
+  async saveCampusModelLabels(labels: Record<string, string>, token: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/campus/model-labels`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ labels })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Label gedung gagal disimpan ke server.');
+    }
+  },
+
+  async getCsContactSettings(): Promise<CsContactSettings | null> {
+    try {
+      const res = await fetch(`${API_BASE}/cs/contact-settings`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      const data = json.data;
+      return data && typeof data === 'object' && !Array.isArray(data) ? data as CsContactSettings : null;
+    } catch { return null; }
+  },
+
+  async saveCsContactSettings(settings: CsContactSettings, token: string): Promise<CsContactSettings> {
+    const res = await fetch(`${API_BASE}/cs/contact-settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ settings })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Kontak CS gagal disimpan.');
+    return data.data as CsContactSettings;
+  },
+
+  async getScheduleCatalog(): Promise<ScheduleCatalog | null> {
+    try {
+      const res = await fetch(`${API_BASE}/schedule/catalog`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      const data = json.data;
+      return data && Array.isArray(data.agendas) && Array.isArray(data.lecturers) ? data as ScheduleCatalog : null;
+    } catch { return null; }
+  },
+
+  async saveScheduleCatalog(catalog: ScheduleCatalog, token: string): Promise<ScheduleCatalog> {
+    const res = await fetch(`${API_BASE}/schedule/catalog`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ catalog })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Katalog jadwal gagal disimpan.');
+    return data.data as ScheduleCatalog;
   },
 
   // Update room status

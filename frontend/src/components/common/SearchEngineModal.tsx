@@ -1,173 +1,76 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  Search, 
-  X, 
-  MapPin, 
-  Compass, 
-  Sparkles, 
-  ArrowRight, 
-  GraduationCap, 
-  Laptop, 
-  FileText, 
-  Clock, 
-  Users, 
-  CheckCircle2, 
-  History, 
-  Building2, 
-  Calendar,
-  Layers,
-  Flame,
-  CornerDownLeft
-} from 'lucide-react';
-import { Building, Room, SearchResultRoom, RoomStatus } from '../../types';
-import { apiService } from '../../services/api';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Building, Room, SearchResultRoom } from '../../types';
 
 interface SearchEngineModalProps {
   isOpen: boolean;
   onClose: () => void;
   buildings: Building[];
+  buildingLabels?: Record<string, string>;
   onNavigateToRoom: (buildingId: string, floorNumber: number, room: Room) => void;
 }
 
-export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
-  isOpen,
-  onClose,
-  buildings,
-  onNavigateToRoom
-}) => {
+export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({ isOpen, onClose, buildings, buildingLabels = {}, onNavigateToRoom }) => {
   const [query, setQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const [searchResults, setSearchResults] = useState<SearchResultRoom[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('smartspace_recent_searches');
-      return saved ? JSON.parse(saved) : ['2A', '1A', '2F', '1D', 'Mushola'];
-    } catch {
-      return ['2A', '1A', '2F', '1D', 'Mushola'];
-    }
-  });
-
+  const [buildingFilter, setBuildingFilter] = useState('all');
+  const [floorFilter, setFloorFilter] = useState('all');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Popular search tags for university students with real active rooms
-  const popularTags = [
-    { label: '1J (R. Seminar Hybrid 360°)', q: '1J' },
-    { label: '1A (R. Prodi Informatika / KK ISI)', q: '1A' },
-    { label: '2F (R. Lab Riset IoT)', q: '2F' },
-    { label: '1D (R. Lab Riset Pembelajaran Mesin)', q: '1D' },
-    { label: '1L (R. Prodi Sistem Informasi)', q: '1L' },
-    { label: '2A (R. Lab Sistem Informasi)', q: '2A' },
-    { label: 'Mushola Kampus', q: 'Mushola' },
-    { label: 'Toilet Dosen & Mahasiswa', q: 'Toilet' }
-  ];
-
-  // Auto focus input when modal opens
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    } else {
-      setQuery('');
+      const timer = window.setTimeout(() => inputRef.current?.focus(), 50);
+      return () => window.clearTimeout(timer);
     }
+    setQuery('');
+    setBuildingFilter('all');
+    setFloorFilter('all');
   }, [isOpen]);
 
-  // Global keyboard shortcut: Ctrl+K or Cmd+K or '/' to toggle
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        if (isOpen) {
-          onClose();
-        } else {
-          // Trigger open via document event or parent handler if needed
-        }
-      }
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Debounced search query
-  useEffect(() => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      setIsLoading(false);
-      return;
-    }
+  const allRooms = useMemo<SearchResultRoom[]>(() => buildings.flatMap(building =>
+    building.floors.flatMap(floor => floor.rooms.map(room => ({
+      ...room,
+      buildingId: building.id,
+      buildingName: building.name,
+      buildingShortName: buildingLabels[building.id]?.trim() || building.shortName,
+      floorNumber: floor.floorNumber,
+      floorName: floor.name
+    })))
+  ), [buildings, buildingLabels]);
 
-    setIsLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const results = await apiService.searchRooms(query);
-        setSearchResults(results);
-      } catch (err) {
-        console.error('Search error:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 200);
+  const floors = useMemo(() => {
+    const scope = buildingFilter === 'all' ? buildings : buildings.filter(building => building.id === buildingFilter);
+    return [...new Set(scope.flatMap(building => building.floors.map(floor => floor.floorNumber)))].sort((a, b) => a - b);
+  }, [buildings, buildingFilter]);
 
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  // Save to recent searches
-  const recordSearch = (term: string) => {
-    const clean = term.trim();
-    if (!clean) return;
-    setRecentSearches(prev => {
-      const updated = [clean, ...prev.filter(item => item.toLowerCase() !== clean.toLowerCase())].slice(0, 6);
-      try {
-        localStorage.setItem('smartspace_recent_searches', JSON.stringify(updated));
-      } catch {}
-      return updated;
+  const results = useMemo(() => {
+    const normalized = query.trim().toLocaleLowerCase('id-ID');
+    return allRooms.filter(room => {
+      if (buildingFilter !== 'all' && room.buildingId !== buildingFilter) return false;
+      if (floorFilter !== 'all' && room.floorNumber !== Number(floorFilter)) return false;
+      if (!normalized) return buildingFilter !== 'all' || floorFilter !== 'all';
+      const searchableText = [
+        room.code,
+        room.name,
+        room.description,
+        room.buildingName || '',
+        room.currentActivity?.title || '',
+        room.currentActivity?.personInCharge || '',
+        ...(room.schedule || []).flatMap(schedule => [schedule.title, schedule.organizer, schedule.className || '']),
+        ...(room.facilities || []).flatMap(facility => [facility.name, facility.spec || ''])
+      ].join(' ').toLocaleLowerCase('id-ID');
+      return searchableText.includes(normalized);
     });
-  };
+  }, [allRooms, buildingFilter, floorFilter, query]);
 
-  const clearRecentSearches = () => {
-    setRecentSearches([]);
-    try {
-      localStorage.removeItem('smartspace_recent_searches');
-    } catch {}
-  };
-
-  // Flatten all rooms from buildings as base dataset
-  const allRoomsFromBuildings: SearchResultRoom[] = useMemo(() => {
-    return (buildings || []).flatMap(b =>
-      (b.floors || []).flatMap(f =>
-        (f.rooms || []).map(r => ({
-          ...r,
-          buildingId: b.id,
-          buildingName: b.name,
-          buildingShortName: b.shortName,
-          floorNumber: f.floorNumber,
-          floorName: f.name
-        }))
-      )
-    );
-  }, [buildings]);
-
-  // Filter results by category pills
-  const filteredResults = useMemo(() => {
-    const baseList = query.trim().length > 0 ? searchResults : allRoomsFromBuildings;
-    if (selectedFilter === 'all') {
-      return query.trim().length > 0 ? baseList : [];
-    }
-    if (selectedFilter === 'gedung-a') return baseList.filter(r => r.buildingId === 'gedung-a');
-    if (selectedFilter === 'gedung-b') return baseList.filter(r => r.buildingId === 'gedung-b');
-    if (selectedFilter === 'classroom') return baseList.filter(r => r.type === 'classroom' || r.type === 'auditorium');
-    if (selectedFilter === 'lab') return baseList.filter(r => r.type === 'laboratory' || r.name.toLowerCase().includes('lab'));
-    if (selectedFilter === 'dosen') return baseList.filter(r => r.type === 'office' || r.name.toLowerCase().includes('dekan') || (r.matchReason && r.matchReason.toLowerCase().includes('dosen')));
-    return baseList;
-  }, [searchResults, allRoomsFromBuildings, selectedFilter, query]);
-
-  const handleSelectRoom = (room: SearchResultRoom) => {
-    recordSearch(room.code + ' ' + room.name);
+  const selectRoom = (room: SearchResultRoom) => {
     onNavigateToRoom(room.buildingId, room.floorNumber, room);
     onClose();
   };
@@ -175,294 +78,69 @@ export const SearchEngineModal: React.FC<SearchEngineModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-16 p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in overflow-y-auto">
-      {/* Click outside backdrop */}
-      <div className="fixed inset-0" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/55 p-3 pt-8 sm:pt-14" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="room-search-title" className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+        <header className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+          <div>
+            <h2 id="room-search-title" className="text-base font-semibold text-slate-900 dark:text-white">Cari ruangan</h2>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Cari berdasarkan nama, kode, fasilitas, agenda, atau dosen.</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Tutup pencarian" className="rounded-lg px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Tutup</button>
+        </header>
 
-      {/* Main Search Palette Modal */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-emerald-100 dark:border-slate-800 overflow-hidden z-10 animate-modal-spring flex flex-col max-h-[85vh] text-slate-800 dark:text-slate-100 transition-colors">
-        
-        {/* Top Search Header Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-b from-emerald-50/50 dark:from-slate-800/80 to-white dark:to-slate-900">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-emerald-600 dark:bg-emerald-500 text-white shadow-md shadow-emerald-600/20">
-              <Search className="w-5 h-5 animate-pulse" />
-            </div>
+        <div className="space-y-3 border-b border-slate-200 p-4 dark:border-slate-800 sm:p-5">
+          <input
+            ref={inputRef}
+            type="search"
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            onKeyDown={event => { if (event.key === 'Enter' && results[0]) selectRoom(results[0]); }}
+            placeholder="Contoh: 1A, ruang seminar, atau Algoritma"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Gedung
+              <select value={buildingFilter} onChange={event => { setBuildingFilter(event.target.value); setFloorFilter('all'); }} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                <option value="all">Semua gedung</option>
+                {buildings.map(building => <option key={building.id} value={building.id}>{buildingLabels[building.id]?.trim() || building.shortName}</option>)}
+              </select>
+            </label>
+            <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Lantai
+              <select value={floorFilter} onChange={event => setFloorFilter(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                <option value="all">Semua lantai</option>
+                {floors.map(floor => <option key={floor} value={floor}>Lantai {floor}</option>)}
+              </select>
+            </label>
+          </div>
+        </div>
 
-            <div className="flex-1 relative">
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && filteredResults.length > 0) {
-                    handleSelectRoom(filteredResults[0]);
-                  }
-                }}
-                placeholder="Ketik ruang (A-101), lab, dosen, mata kuliah, atau fasilitas..."
-                className="w-full text-sm sm:text-base font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 bg-transparent border-none outline-none focus:ring-0 pr-8"
-              />
-              {query && (
-                <button
-                  onClick={() => setQuery('')}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  <X className="w-4 h-4" />
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+          {!query.trim() && buildingFilter === 'all' && floorFilter === 'all' ? (
+            <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">Masukkan kata pencarian atau pilih gedung dan lantai.</p>
+          ) : results.length ? (
+            <div className="divide-y divide-slate-200 dark:divide-slate-800">
+              <p className="pb-3 text-xs text-slate-500 dark:text-slate-400">{results.length} ruangan ditemukan</p>
+              {results.map(room => (
+                <button key={room.id} type="button" onClick={() => selectRoom(room)} className="flex w-full items-start justify-between gap-4 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">{room.code} · {room.name}</span>
+                    <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{room.buildingShortName} · Lantai {room.floorNumber} · Kapasitas {room.capacity}</span>
+                    {room.currentActivity && <span className="mt-1 block truncate text-xs text-emerald-700 dark:text-emerald-300">{room.currentActivity.title} · {room.currentActivity.startTime}–{room.currentActivity.endTime}</span>}
+                  </span>
+                  <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-medium ${room.status === 'available' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300' : room.status === 'occupied' ? 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300' : room.status === 'reserved' ? 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
+                    {room.status === 'available' ? 'Tersedia' : room.status === 'occupied' ? 'Digunakan' : room.status === 'reserved' ? 'Terjadwal' : room.status === 'maintenance' ? 'Perbaikan' : 'Rusak'}
+                  </span>
                 </button>
-              )}
+              ))}
             </div>
-
-            <div className="flex items-center gap-1.5">
-              <kbd className="hidden sm:inline-block px-2 py-1 text-[10px] font-bold font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xs">
-                ESC
-              </kbd>
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                title="Tutup Pencarian"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Quick Filter Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-0.5 scrollbar-none">
-            {[
-              { id: 'all', label: 'Semua Hasil' },
-              { id: 'gedung-a', label: '🏛️ LABKOM 1' },
-              { id: 'gedung-b', label: '🏛️ FT.1' },
-              { id: 'classroom', label: '🎓 Ruang Kuliah' },
-              { id: 'lab', label: '💻 Lab & Riset' },
-              { id: 'dosen', label: '👨‍🏫 Ruang Dosen & Dekanat' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedFilter(tab.id)}
-                className={`px-3 py-1 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
-                  selectedFilter === tab.id
-                    ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          ) : <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">Tidak ada ruangan yang sesuai dengan pencarian dan filter.</p>}
         </div>
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          
-          {/* State 1: Typing Query OR Category Filter Selected */}
-          {query.trim().length > 0 || selectedFilter !== 'all' ? (
-            <div>
-              <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400 px-1 mb-2">
-                <span>
-                  {isLoading 
-                    ? 'Sedang mencari di sistem kampus...' 
-                    : query.trim().length > 0 
-                      ? `Ditemukan ${filteredResults.length} Ruangan & Fasilitas`
-                      : `Ditemukan ${filteredResults.length} Ruangan dalam Kategori`}
-                </span>
-                <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                  <CornerDownLeft className="w-3.5 h-3.5" /> Tekan Enter untuk pilih yang teratas
-                </span>
-              </div>
-
-              {filteredResults.length > 0 ? (
-                <div className="space-y-2">
-                  {filteredResults.map((room, idx) => {
-                    const isAvail = room.status === 'available';
-                    const isOcc = room.status === 'occupied';
-                    const isRes = room.status === 'reserved';
-
-                    return (
-                      <div
-                        key={room.id}
-                        onClick={() => handleSelectRoom(room)}
-                        className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${
-                          idx === 0 
-                            ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 shadow-xs hover:border-emerald-500' 
-                            : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {/* Room Code Badge */}
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-mono font-black text-sm flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                            {room.code}
-                          </div>
-
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-800 dark:group-hover:text-emerald-300 transition-colors">
-                                {room.name}
-                              </h4>
-                              {room.matchReason && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 flex items-center gap-1">
-                                  <Sparkles className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                                  {room.matchReason}
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-1 flex-wrap">
-                              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                                {room.buildingShortName || (room.buildingId === 'gedung-a' ? 'LABKOM 1' : 'FT.1')}
-                              </span>
-                              <span>•</span>
-                              <span>Tingkat {room.floorNumber}</span>
-                              <span>•</span>
-                              <span className="flex items-center gap-1">
-                                <Users className="w-3 h-3 text-slate-400" /> Kapasitas {room.capacity}
-                              </span>
-                            </div>
-
-                            {room.currentActivity && (
-                              <div className="mt-1.5 text-[11px] font-medium text-emerald-900 dark:text-emerald-200 bg-emerald-100/60 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md inline-flex items-center gap-1.5">
-                                <Clock className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
-                                <span>{room.currentActivity.title} ({room.currentActivity.startTime} - {room.currentActivity.endTime})</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Status & Jump Button */}
-                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                            👥 {room.capacity} Kursi
-                          </span>
-
-                          <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer">
-                            <span>Buka di 3D</span>
-                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                !isLoading && (
-                  <div className="text-center py-10 px-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-                    <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                    <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Ruangan tidak ditemukan</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-                      Tidak ada hasil yang sesuai dengan kriteria pencarian.
-                    </p>
-                  </div>
-                )
-              )}
-            </div>
-          ) : (
-            /* State 2: Query is Empty -> Show Quick Suggestions, Popular Tags, and Recent History */
-            <div className="space-y-5">
-              
-              {/* Popular Quick Searches for Students */}
-              <div>
-                <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2.5">
-                  <Flame className="w-4 h-4 text-amber-500" />
-                  <span>Paling Sering Dicari Mahasiswa</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {popularTags.map(tag => (
-                    <button
-                      key={tag.q}
-                      onClick={() => {
-                        setQuery(tag.q);
-                        recordSearch(tag.q);
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      <span>{tag.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Searches */}
-              {recentSearches.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <History className="w-4 h-4 text-emerald-600" />
-                      <span>Riwayat Pencarian Anda</span>
-                    </div>
-                    <button
-                      onClick={clearRecentSearches}
-                      className="text-[11px] text-slate-400 hover:text-rose-600 font-medium cursor-pointer"
-                    >
-                      Hapus Riwayat
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {recentSearches.map((term, i) => (
-                      <div
-                        key={i}
-                        onClick={() => setQuery(term)}
-                        className="p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-emerald-300 text-xs font-medium text-slate-700 flex items-center justify-between cursor-pointer transition-all"
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{term}</span>
-                        </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-300" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Quick Campus Shortcuts Overview */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-xs">
-                    <Compass className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs sm:text-sm font-extrabold text-slate-900">
-                      Sistem Pencarian Kampus Cerdas
-                    </h5>
-                    <p className="text-[11px] text-slate-600">
-                      Mencakup 2 Gedung (LABKOM 1 & FT.1), 4 Lantai, 24 Ruangan, Jadwal Kuliah & Ruang Sidang.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="hidden sm:block font-mono text-[11px] font-bold text-emerald-800 bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-200 shadow-2xs">
-                  MySQL XAMPP Live
-                </div>
-              </div>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* Footer Shortcut Helper */}
-        <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 px-5">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-mono text-[10px]">↑</kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-mono text-[10px]">↓</kbd> Navigasi
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-mono text-[10px]">↵</kbd> Pilih Ruang
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-mono text-[10px]">ESC</kbd> Tutup
-            </span>
-          </div>
-
-          <span className="font-semibold text-emerald-700">
-            SILOKA • Siliwangi Location Assistant
-          </span>
-        </div>
-
-      </div>
+        <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-400 sm:px-5">
+          <span>Pilih ruangan untuk membuka detailnya.</span>
+          <span><kbd className="rounded border border-slate-300 px-1.5 py-0.5 dark:border-slate-700">Enter</kbd> pilih <span className="mx-1">·</span> <kbd className="rounded border border-slate-300 px-1.5 py-0.5 dark:border-slate-700">Esc</kbd> tutup</span>
+        </footer>
+      </section>
     </div>
   );
 };
-

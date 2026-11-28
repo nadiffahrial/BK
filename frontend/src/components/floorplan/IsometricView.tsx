@@ -5,6 +5,7 @@ import { ObservedBuildingModel } from './ObservedBuildingModel';
 
 interface IsometricViewProps {
   building: Building;
+  buildingLabel?: string;
   activeFloorNumber: number;
   onSelectFloor: (floorNumber: number) => void;
   onSelectRoom: (room: Room) => void;
@@ -15,6 +16,7 @@ interface IsometricViewProps {
 
 export const IsometricView: React.FC<IsometricViewProps> = ({
   building,
+  buildingLabel,
   activeFloorNumber,
   onSelectFloor,
   onSelectRoom,
@@ -32,7 +34,7 @@ export const IsometricView: React.FC<IsometricViewProps> = ({
         <div className="flex min-w-0 items-center gap-3">
           <div className="rounded-xl bg-emerald-700 p-2 text-white"><Building2 className="h-5 w-5" /></div>
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-extrabold text-slate-900 dark:text-white">Model potongan 3D · {building.shortName}</h2>
+            <h2 className="truncate text-sm font-extrabold text-slate-900 dark:text-white">Model Ruangan · {buildingLabel || building.shortName}</h2>
             <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Posisi ruang dari denah observasi. Pilih ruang untuk membuka detail.</p>
           </div>
         </div>

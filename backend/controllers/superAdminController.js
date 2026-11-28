@@ -47,9 +47,9 @@ export const getManagedAdmins = async (req, res) => {
 export const createManagedAdmin = async (req, res) => {
   const { name, email, department, password } = req.body || {};
   if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 150 || !validEmail(email) ||
-      typeof password !== 'string' || password.length < 10 || password.length > 128 ||
+      typeof password !== 'string' || password.length < 6 || password.length > 128 ||
       (department != null && (typeof department !== 'string' || department.length > 150))) {
-    return res.status(400).json({ success: false, message: 'Nama, email valid, dan kata sandi minimal 10 karakter wajib diisi.' });
+    return res.status(400).json({ success: false, message: 'Nama, email valid, dan kata sandi minimal 6 karakter wajib diisi.' });
   }
 
   try {
@@ -73,8 +73,8 @@ export const createManagedAdmin = async (req, res) => {
 
 export const resetManagedAdminPassword = async (req, res) => {
   const { password } = req.body || {};
-  if (typeof password !== 'string' || password.length < 10 || password.length > 128) {
-    return res.status(400).json({ success: false, message: 'Kata sandi baru harus terdiri dari 10–128 karakter.' });
+  if (typeof password !== 'string' || password.length < 6 || password.length > 128) {
+    return res.status(400).json({ success: false, message: 'Kata sandi baru harus terdiri dari 6–128 karakter.' });
   }
   try {
     const db = getDb();
@@ -86,6 +86,28 @@ export const resetManagedAdminPassword = async (req, res) => {
   } catch (error) {
     console.error('Gagal mereset kata sandi admin:', error);
     return res.status(500).json({ success: false, message: 'Kata sandi gagal direset.' });
+  }
+};
+
+export const updateManagedAdminProfile = async (req, res) => {
+  const { name, email } = req.body || {};
+  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 150 || !validEmail(email) || email.trim().length > 254) {
+    return res.status(400).json({ success: false, message: 'Nama minimal 2 karakter dan email harus valid.' });
+  }
+  try {
+    const db = getDb();
+    const normalizedEmail = email.trim().toLowerCase();
+    const [existingAdmin] = await db.query('SELECT id FROM users WHERE id = ? AND role = \'admin\' LIMIT 1', [req.params.id]);
+    if (!existingAdmin.length) return res.status(404).json({ success: false, message: 'Akun admin tidak ditemukan.' });
+    const [existingEmail] = await db.query('SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1', [normalizedEmail, req.params.id]);
+    if (existingEmail.length) return res.status(409).json({ success: false, message: 'Email tersebut sudah digunakan akun lain.' });
+    await db.query('UPDATE users SET name = ?, email = ? WHERE id = ? AND role = \'admin\'', [name.trim(), normalizedEmail, req.params.id]);
+    await audit(db, req, 'admin_profile_updated', req.params.id, `Profil admin diperbarui: ${normalizedEmail}`);
+    return res.json({ success: true, message: 'Nama dan email admin berhasil diperbarui.', data: { id: req.params.id, name: name.trim(), email: normalizedEmail } });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'Email tersebut sudah digunakan akun lain.' });
+    console.error('Gagal memperbarui profil admin:', error);
+    return res.status(500).json({ success: false, message: 'Profil admin gagal diperbarui.' });
   }
 };
 

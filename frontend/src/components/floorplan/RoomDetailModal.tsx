@@ -6,6 +6,7 @@ import { X, Users, Clock, MapPin, Navigation, ArrowRight, ShieldCheck, Eye } fro
 
 interface RoomDetailModalProps {
   room: Room | null;
+  buildingName?: string;
   onClose: () => void;
   onTogglePathGuide: (roomId: string) => void;
   isPathActive: boolean;
@@ -14,6 +15,7 @@ interface RoomDetailModalProps {
 
 export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   room,
+  buildingName,
   onClose,
   onTogglePathGuide,
   isPathActive,
@@ -60,7 +62,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                 {room.code}
               </span>
               <span className="text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border dark:border-slate-700">
-                {room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'} • Tingkat {room.floorNumber}
+                {buildingName || (room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1')} • Tingkat {room.floorNumber}
               </span>
               {!isUtilityRoom && <span className={`text-xs px-2.5 py-1 rounded-lg border font-bold ${badge.color}`}>{badge.label}</span>}
             </div>
@@ -117,7 +119,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="text-xs text-slate-500 dark:text-slate-400">{room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'} · Lantai {room.floorNumber}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{buildingName || (room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1')} · Lantai {room.floorNumber}</p>
                 {!isUtilityRoom && <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{room.description}</p>}
               </div>
             </div>
@@ -173,7 +175,8 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               <h4 className="mt-1 text-base font-semibold text-slate-900 dark:text-slate-100">{room.currentActivity.title}</h4>
               <div className="mt-2 space-y-0.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                 <p><span className="text-slate-500 dark:text-slate-400">Penanggung jawab:</span> {room.currentActivity.personInCharge}</p>
-                <p><span className="text-slate-500 dark:text-slate-400">Unit:</span> {room.currentActivity.department}</p>
+                {room.currentActivity.className && <p><span className="text-slate-500 dark:text-slate-400">Kelas:</span> {room.currentActivity.className}</p>}
+                <p><span className="text-slate-500 dark:text-slate-400">Jenis agenda:</span> {room.currentActivity.department}</p>
               </div>
             </div>
           )}
@@ -202,6 +205,28 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
           </div>
           </>
           )}
+
+          {!isUtilityRoom && <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100">Jadwal ruangan</h4>
+              {room.currentActivity && <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Sedang berlangsung</span>}
+            </div>
+            {room.schedule?.length ? (
+              <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                {room.schedule.map(item => {
+                  const [startTime] = item.timeRange.split(/\s*-\s*/);
+                  const isActive = room.currentActivity?.title === item.title && room.currentActivity?.startTime === startTime;
+                  return <div key={item.id} className="py-3 first:pt-0 last:pb-0">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{item.title}</span>
+                      <span className={`text-xs ${isActive ? 'font-semibold text-emerald-700 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400'}`}>{item.day || 'Hari belum ditentukan'} · {item.timeRange}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{item.className ? `Kelas ${item.className} · ` : ''}{item.organizer}{item.type ? ` · ${item.type}` : ''}</p>
+                  </div>;
+                })}
+              </div>
+            ) : <p className="text-sm text-slate-500 dark:text-slate-400">Belum ada jadwal untuk ruangan ini.</p>}
+          </section>}
 
         </div>
 

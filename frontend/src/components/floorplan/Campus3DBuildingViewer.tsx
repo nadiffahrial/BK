@@ -3,22 +3,14 @@ import * as THREE from 'three';
 import { Building, Room } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import {
-  Building2,
-  Layers,
-  Sparkles,
-  Camera,
   Sun,
   Sunset,
-  Moon,
   RotateCw,
   Eye,
   ChevronRight,
   Info,
-  CheckCircle2,
-  Lock,
   Compass,
   MapPin,
-  Image as ImageIcon,
   Car,
   Flag,
   Navigation,
@@ -76,7 +68,7 @@ const FLOORPLAN_BUILDINGS = ALL_CAMPUS_BUILDINGS.filter(building => building.has
 // =========================================================================
 
 // 1. Generate Procedural HDR Equirectangular Sky Map (Lumen-style IBL)
-function generateUnrealHdrSky(timeOfDay: 'day' | 'sunset' | 'night'): THREE.CanvasTexture {
+function generateUnrealHdrSky(timeOfDay: 'day' | 'sunset'): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 2048;
   canvas.height = 1024;
@@ -148,37 +140,6 @@ function generateUnrealHdrSky(timeOfDay: 'day' | 'sunset' | 'night'): THREE.Canv
     ctx.arc(sunX, sunY, 400, 0, Math.PI * 2);
     ctx.fill();
 
-  } else {
-    // Cyber Night / Midnight Sky
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, 1024);
-    skyGrad.addColorStop(0, '#020617');
-    skyGrad.addColorStop(0.48, '#0f172a');
-    skyGrad.addColorStop(0.52, '#1e293b');
-    skyGrad.addColorStop(1, '#020617');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, 2048, 1024);
-
-    // Bulan Terang
-    const moonX = 500;
-    const moonY = 220;
-    const moonGrad = ctx.createRadialGradient(moonX, moonY, 8, moonX, moonY, 140);
-    moonGrad.addColorStop(0, '#ffffff');
-    moonGrad.addColorStop(0.2, '#e0f2fe');
-    moonGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0.2)');
-    moonGrad.addColorStop(1, 'rgba(2, 6, 23, 0)');
-    ctx.fillStyle = moonGrad;
-    ctx.beginPath();
-    ctx.arc(moonX, moonY, 140, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Bintang-bintang
-    ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 600; i++) {
-      const sx = Math.random() * 2048;
-      const sy = Math.random() * 500;
-      const sr = Math.random() * 1.5 + 0.5;
-      ctx.fillRect(sx, sy, sr, sr);
-    }
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -835,13 +796,21 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   // State Kontrol
   const [cameraPreset, setCameraPreset] = useState<'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso'>('front');
   const [graphicsQuality, setGraphicsQuality] = useState<'ue5_ultra' | 'ue5_high'>('ue5_ultra');
-  const [isExploded, setIsExploded] = useState<boolean>(false);
   const [isAutoRotate, setIsAutoRotate] = useState<boolean>(false);
-  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('day');
-  const [showPhotoModal, setShowPhotoModal] = useState<boolean>(false);
-  const [activePhotoIndex, setActivePhotoIndex] = useState<number>(0);
+  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset'>(() => isDark ? 'day' : 'sunset');
+  const timeOfDayRef = useRef<'day' | 'sunset'>(timeOfDay);
   const [hoveredBuildingId, setHoveredBuildingId] = useState<string | null>(null);
   const [selectedCampusBuilding, setSelectedCampusBuilding] = useState<CampusBuildingDef>(FLOORPLAN_BUILDINGS[0]);
+
+  useEffect(() => {
+    const defaultTimeOfDay = isDark ? 'day' : 'sunset';
+    timeOfDayRef.current = defaultTimeOfDay;
+    setTimeOfDay(defaultTimeOfDay);
+  }, [isDark]);
+
+  useEffect(() => {
+    timeOfDayRef.current = timeOfDay;
+  }, [timeOfDay]);
 
   // Three.js References
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -853,8 +822,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   const flagMeshRef = useRef<THREE.Mesh | null>(null);
 
   const buildingGroupsRef = useRef<Map<string, THREE.Group>>(new Map());
-  const buildingRoofsRef = useRef<Map<string, THREE.Group>>(new Map());
-  const buildingFloor2sRef = useRef<Map<string, THREE.Group>>(new Map());
   const highlightMeshesRef = useRef<Map<string, THREE.LineSegments>>(new Map());
   const hitBoxesRef = useRef<THREE.Mesh[]>([]);
 
@@ -971,37 +938,8 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       hemi.groundColor.set('#78350f');
       hemi.intensity = 0.65;
       renderer.toneMappingExposure = 1.15;
-    } else {
-      scene.fog = new THREE.FogExp2('#030712', 0.0075);
-      sun.color.set('#38bdf8');
-      sun.intensity = 0.5;
-      sun.position.set(-45, 60, -45);
-      ambient.color.set('#1e293b');
-      ambient.intensity = 0.55;
-      hemi.color.set('#1e3a8a');
-      hemi.groundColor.set('#022c22');
-      hemi.intensity = 0.45;
-      renderer.toneMappingExposure = 1.05;
     }
   }, [timeOfDay, isDark]);
-
-  // Mode Potongan Lantai (Exploded View)
-  useEffect(() => {
-    const targetYRoof = isExploded ? 10.5 : 0;
-    const targetYFloor2 = isExploded ? 5.0 : 0;
-
-    const animateLift = () => {
-      buildingRoofsRef.current.forEach((roof) => {
-        roof.position.y += (targetYRoof - roof.position.y) * 0.15;
-      });
-      buildingFloor2sRef.current.forEach((fl2) => {
-        fl2.position.y += (targetYFloor2 - fl2.position.y) * 0.15;
-      });
-    };
-
-    const interval = setInterval(animateLift, 16);
-    return () => clearInterval(interval);
-  }, [isExploded]);
 
   // Inisialisasi WebGL Scene (Unreal Engine 5 Engine Pipeline)
   useEffect(() => {
@@ -1038,7 +976,8 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     pmrem.compileEquirectangularShader();
     pmremGeneratorRef.current = pmrem;
 
-    const skyTex = generateUnrealHdrSky('day');
+    const initialTimeOfDay = timeOfDayRef.current;
+    const skyTex = generateUnrealHdrSky(initialTimeOfDay);
     const envMap = pmrem.fromEquirectangular(skyTex).texture;
     scene.environment = envMap;
     scene.background = skyTex;
@@ -1072,6 +1011,19 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     sunLight.shadow.bias = -0.0001;
     sunLight.shadow.normalBias = 0.025;
     scene.add(sunLight);
+
+    if (initialTimeOfDay === 'sunset') {
+      scene.fog = new THREE.FogExp2('#c2825b', 0.0042);
+      ambientLight.color.set('#fed7aa');
+      ambientLight.intensity = 0.7;
+      hemiLight.color.set('#fdba74');
+      hemiLight.groundColor.set('#78350f');
+      hemiLight.intensity = 0.65;
+      sunLight.color.set('#fb923c');
+      sunLight.intensity = 3.2;
+      sunLight.position.set(90, 48, 65);
+      renderer.toneMappingExposure = 1.15;
+    }
 
     // 5. TEKSTUR PBR & NORMAL BUMP
     const { diffuse: wallDiff, bump: wallBump } = generateSkyBlueWallTextures();
@@ -1431,8 +1383,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     // 11. BUILDER SEMUA BANGUNAN KAMPUS LENGKAP
     hitBoxesRef.current = [];
     buildingGroupsRef.current.clear();
-    buildingRoofsRef.current.clear();
-    buildingFloor2sRef.current.clear();
     highlightMeshesRef.current.clear();
 
     ALL_CAMPUS_BUILDINGS.forEach((bldg) => {
@@ -1597,7 +1547,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       }
 
       bldgGroup.add(floor2Group);
-      buildingFloor2sRef.current.set(bldg.id, floor2Group);
 
       // 4. Atap Limasan PBR
       const roofGroup = new THREE.Group();
@@ -1625,7 +1574,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       roofGroup.add(ridgeMesh);
 
       bldgGroup.add(roofGroup);
-      buildingRoofsRef.current.set(bldg.id, roofGroup);
 
       const displayName = buildingLabels[bldg.id] || buildings.find(building => building.id === bldg.id)?.shortName || bldg.shortName;
       const labelCanvas = document.createElement('canvas');
@@ -1916,44 +1864,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     };
   }, [isAutoRotate, onSelectBuilding, isDark, buildings, buildingLabels]);
 
-  const CAMPUS_REAL_PHOTOS = [
-    {
-      title: 'Tampak Depan Fasad Dekanat & Kanopi "FAKULTAS TEKNIK"',
-      subtitle: 'Plang Timbul FAKULTAS TEKNIK, Panel Biru SBSN 2022-2023, Tiang Bendera & Deretan Parkir',
-      image: './images/ft-depan-dekanat.jpg',
-      presetKey: 'front' as const,
-      description: 'Menampilkan fasad megah depan Fakultas Teknik: kanopi biru bertuliskan FAKULTAS TEKNIK, ornamen batik chevron di panel biru SBSN, tiang bendera Merah Putih, dan barisan motor parkir.'
-    },
-    {
-      title: 'Akses Jalan Depan & Talud Batu Kali (Menuju FT.2)',
-      subtitle: 'Jalan Aspal, Talud Batu Kali dengan Kanstin Belang, dan Plang FT.2 Teknik Elektro',
-      image: './images/ft-jalan-akses-ft2.jpg',
-      presetKey: 'road_side' as const,
-      description: 'Sudut pandang dari jalan aspal depan menelusuri talud batu kali, pembatas kanstin hitam-putih, pohon pelindung, dan deretan motor di sisi FT.2.'
-    },
-    {
-      title: 'Koridor Tengah Paving Herringbone & Jembatan Kanopi',
-      subtitle: 'Jalan Koridor Penghubung Antar Sayap Bangunan',
-      image: './images/ft-koridor-tengah.jpg',
-      presetKey: 'courtyard' as const,
-      description: 'Paving block saling mengunci abu-abu (herringbone) di antara barisan gedung dengan jembatan kanopi biru penghubung kedua sayap.'
-    },
-    {
-      title: 'Plang Identitas 3D FT.1 (Informatika & SI)',
-      subtitle: 'Huruf Balok Timbul FT.1, Kisi Ventilasi Kotak & Garis Lisplang Putih',
-      image: './images/ft-gedung-ft1.jpg',
-      presetKey: 'labtek_ft1' as const,
-      description: 'Fasad ujung timur Gedung FT.1 yang memuat tulisan timbul 3D FT.1 INFORMATIKA & SISTEM INFORMASI.'
-    },
-    {
-      title: 'Foto Udara Kompleks Fakultas Teknik (Drone)',
-      subtitle: 'Kawasan Lengkap Gedung Kuliah Terpadu & Laboratorium FT Kampus 2 Mugarsari',
-      image: './images/gedung-labtek-ft1-unsil.jpg',
-      presetKey: 'drone' as const,
-      description: 'Foto udara kawasan; area yang diberi lingkaran merah menjadi acuan model dua gedung.'
-    }
-  ];
-
   return (
     <div className="relative w-full bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100 dark:border-slate-800 shadow-2xl overflow-hidden text-slate-800 dark:text-slate-100 transition-colors">
       
@@ -1963,13 +1873,11 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
           <div className="flex items-center gap-1 rounded-lg border border-slate-200 p-1 dark:border-slate-700">
             {([['front', 'Depan'], ['labtek_ft1', 'Isometrik'], ['drone', 'Atas']] as const).map(([preset, label]) => <button key={preset} type="button" onClick={() => applyCameraPreset(preset)} aria-pressed={cameraPreset === preset} className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${cameraPreset === preset ? 'bg-emerald-700 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>{label}</button>)}
           </div>
-          <button type="button" onClick={() => setIsExploded(value => !value)} className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${isExploded ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'}`}><Layers className="mr-1.5 inline h-3.5 w-3.5"/>{isExploded ? 'Turunkan atap' : 'Lihat lantai'}</button>
           <div className="flex items-center gap-1 rounded-lg border border-slate-200 p-1 dark:border-slate-700" aria-label="Tampilan cuaca dan waktu">
-            {([{ id: 'day', label: 'Siang', Icon: Sun }, { id: 'sunset', label: 'Senja', Icon: Sunset }, { id: 'night', label: 'Malam', Icon: Moon }] as const).map(({ id, label, Icon }) => (
+            {([{ id: 'day', label: 'Siang', Icon: Sun }, { id: 'sunset', label: 'Senja', Icon: Sunset }] as const).map(({ id, label, Icon }) => (
               <button key={id} type="button" onClick={() => setTimeOfDay(id)} aria-label={label} aria-pressed={timeOfDay === id} title={`Tampilan ${label.toLowerCase()}`} className={`rounded-md p-2 transition-colors ${timeOfDay === id ? 'bg-emerald-700 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}><Icon className="h-4 w-4"/></button>
             ))}
           </div>
-          <button type="button" onClick={() => setShowPhotoModal(true)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"><ImageIcon className="mr-1.5 inline h-3.5 w-3.5"/>Foto acuan</button>
         </div>
       </div>
 
@@ -1980,209 +1888,114 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
         <div ref={containerRef} className="w-full h-full touch-none" />
 
         <div className="absolute right-4 top-4 z-20 rounded-md border border-white/20 bg-slate-950/70 px-3 py-1.5 text-[11px] font-medium text-white backdrop-blur-sm">2 denah interaktif</div>
-        <div className="absolute left-4 top-4 z-20 flex max-h-[45%] max-w-[260px] flex-col gap-1.5 overflow-y-auto">
-          <div className="rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-semibold text-white shadow-lg backdrop-blur-sm">Gedung kampus</div>
-          {ALL_CAMPUS_BUILDINGS.map(building => {
-            const data = buildings.find(item => item.id === building.id);
-            const title = buildingLabels[building.id] || data?.shortName || building.shortName;
-            const isSelected = selectedCampusBuilding.id === building.id;
-            return <button key={building.id} type="button" onClick={() => { setSelectedCampusBuilding(building); if (building.hasFloorPlan) onSelectBuilding(building.id); }} className={`rounded-lg border px-3 py-2 text-left text-sm font-semibold shadow-lg backdrop-blur-sm transition-colors ${isSelected ? 'border-emerald-400 bg-emerald-700/95 text-white' : 'border-white/20 bg-slate-950/75 text-white hover:border-emerald-400 hover:bg-slate-900/90'}`}><span className="mr-2 text-emerald-300">{isSelected ? 'Aktif' : building.hasFloorPlan ? 'Denah' : 'Kampus'}</span>{title}</button>;
-          })}
+        <div className="absolute left-4 top-4 z-20 max-h-[45%] w-[min(230px,calc(100%-2rem))] overflow-y-auto rounded-xl border border-white/50 bg-white/90 shadow-md backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-950/85">
+          <div className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/95 px-3 py-2 text-[11px] font-semibold text-slate-700 backdrop-blur-md dark:border-slate-700 dark:bg-slate-950/95 dark:text-slate-200">
+            Pilih gedung
+          </div>
+          <div className="space-y-0.5 p-1.5">
+            {ALL_CAMPUS_BUILDINGS.map(building => {
+              const data = buildings.find(item => item.id === building.id);
+              const title = buildingLabels[building.id] || data?.shortName || building.shortName;
+              const isSelected = selectedCampusBuilding.id === building.id;
+              return (
+                <button
+                  key={building.id}
+                  type="button"
+                  onClick={() => { setSelectedCampusBuilding(building); if (building.hasFloorPlan) onSelectBuilding(building.id); }}
+                  aria-pressed={isSelected}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors ${isSelected ? 'bg-emerald-50 text-emerald-950 dark:bg-emerald-900/40 dark:text-emerald-100' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'}`}
+                >
+                  <span className={`flex h-7 w-8 shrink-0 items-center justify-center rounded-md font-mono text-[10px] font-semibold ${isSelected ? 'bg-emerald-700 text-white dark:bg-emerald-600' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
+                    {building.code}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-medium leading-4">{title}</span>
+                    <span className="block text-[10px] leading-4 text-slate-500 dark:text-slate-400">{building.hasFloorPlan ? 'Denah tersedia' : 'Model kawasan'}</span>
+                  </span>
+                  {isSelected && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600 dark:bg-emerald-300" aria-hidden="true" />}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-                {/* 📋 Floating Bottom Inspector Card untuk Bangunan Terpilih */}
-        <div className="absolute bottom-4 left-4 right-4 z-20 max-w-2xl mx-auto p-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-emerald-200 dark:border-slate-700 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-modal-spring">
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-extrabold shadow-md shrink-0 ${
-              selectedCampusBuilding.hasFloorPlan
-                ? 'bg-gradient-to-tr from-emerald-600 to-teal-600'
-                : selectedCampusBuilding.isDekanat
-                ? 'bg-gradient-to-tr from-blue-700 to-indigo-800'
-                : 'bg-gradient-to-tr from-blue-600 to-indigo-700'
-            }`}>
+        {/* Ringkasan gedung terpilih */}
+        <div className="absolute bottom-4 left-4 right-4 z-20 mx-auto flex max-w-3xl flex-col gap-3 rounded-xl border border-slate-200/90 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-sm font-semibold text-white dark:bg-emerald-600">
               {selectedCampusBuilding.code}
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                   {buildingLabels[selectedCampusBuilding.id] || buildings.find(building => building.id === selectedCampusBuilding.id)?.name || selectedCampusBuilding.name}
                 </h4>
-                {selectedCampusBuilding.hasFloorPlan ? (
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>Denah 3D Aktif</span>
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700 flex items-center gap-1">
-                    <Lock className="w-3 h-3" />
-                    <span>Hanya Model Eksterior 3D</span>
-                  </span>
-                )}
+                <span className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${selectedCampusBuilding.hasFloorPlan ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
+                  {selectedCampusBuilding.hasFloorPlan ? 'Denah tersedia' : 'Model kawasan'}
+                </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
-                {selectedCampusBuilding.description}
-              </p>
+              <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-500 dark:text-slate-400">{selectedCampusBuilding.description}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+          <div className="flex shrink-0 items-center justify-end gap-1.5">
             {selectedCampusBuilding.hasFloorPlan ? (
               <>
-                <button
-                  onClick={() => {
-                    onSelectBuilding(selectedCampusBuilding.id);
-                    onSelectFloor(1);
-                    if (onSwitchToFloorPlan) onSwitchToFloorPlan();
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 text-xs font-extrabold transition-all cursor-pointer"
-                >
-                  Lantai 1
-                </button>
-
-                <button
-                  onClick={() => {
-                    onSelectBuilding(selectedCampusBuilding.id);
-                    onSelectFloor(2);
-                    if (onSwitchToFloorPlan) onSwitchToFloorPlan();
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 text-xs font-extrabold transition-all cursor-pointer"
-                >
-                  Lantai 2
-                </button>
-
+                {[1, 2].map(floor => {
+                  const isActiveFloor = activeBuildingId === selectedCampusBuilding.id && activeFloorNumber === floor;
+                  return (
+                    <button
+                      key={floor}
+                      type="button"
+                      onClick={() => {
+                        onSelectBuilding(selectedCampusBuilding.id);
+                        onSelectFloor(floor);
+                        onSwitchToFloorPlan?.();
+                      }}
+                      aria-pressed={isActiveFloor}
+                      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${isActiveFloor ? 'border-emerald-700 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-600' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'}`}
+                    >
+                      Lantai {floor}
+                    </button>
+                  );
+                })}
                 {onSwitchToFloorPlan && (
                   <button
-                    onClick={() => {
-                      onSelectBuilding(selectedCampusBuilding.id);
-                      onSwitchToFloorPlan();
-                    }}
-                    className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-sm flex items-center gap-1 cursor-pointer active:scale-95"
+                    type="button"
+                    onClick={() => { onSelectBuilding(selectedCampusBuilding.id); onSwitchToFloorPlan(); }}
+                    className="ml-1 inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
                   >
-                    <span>Buka Denah Isometrik</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    Buka denah <ChevronRight className="h-3.5 w-3.5" />
                   </button>
                 )}
               </>
             ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-slate-400 hidden sm:inline">
-                  Denah dikhususkan untuk:
-                </span>
-                <button
-                  onClick={() => {
-                    const labtek = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'gedung-a')!;
-                    setSelectedCampusBuilding(labtek);
-                    onSelectBuilding('gedung-a');
-                    if (onSwitchToFloorPlan) onSwitchToFloorPlan();
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
-                >
-                  Buka {buildingLabels['gedung-a'] || 'LT 1'}
-                </button>
-                <button
-                  onClick={() => {
-                    const ft1 = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'gedung-b')!;
-                    setSelectedCampusBuilding(ft1);
-                    onSelectBuilding('gedung-b');
-                    if (onSwitchToFloorPlan) onSwitchToFloorPlan();
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
-                >
-                  Buka {buildingLabels['gedung-b'] || 'FT 1'}
-                </button>
-              </div>
+              <>
+                <span className="mr-1 hidden text-[11px] text-slate-500 dark:text-slate-400 sm:inline">Denah tersedia di:</span>
+                {(['gedung-a', 'gedung-b'] as const).map(id => {
+                  const floorPlanBuilding = ALL_CAMPUS_BUILDINGS.find(building => building.id === id)!;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCampusBuilding(floorPlanBuilding);
+                        onSelectBuilding(id);
+                        onSelectFloor(1);
+                        onSwitchToFloorPlan?.();
+                      }}
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      {buildingLabels[id] || floorPlanBuilding.shortName}
+                    </button>
+                  );
+                })}
+              </>
             )}
           </div>
         </div>
 
       </div>
-
-      {/* 3. Modal Lightbox Foto Asli Lapangan Lengkap */}
-      {showPhotoModal && (
-        <div 
-          className="fixed inset-0 z-[150] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
-          onClick={() => setShowPhotoModal(false)}
-        >
-          <div 
-            className="relative max-w-5xl w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-modal-spring flex flex-col max-h-[92vh]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 bg-slate-950 flex items-center justify-between border-b border-white/10 shrink-0">
-              <div className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-amber-400" />
-                <div>
-                  <h4 className="text-white text-sm sm:text-base font-extrabold">
-                    Galeri Foto Asli Lapangan Fakultas Teknik UNSIL
-                  </h4>
-                  <p className="text-[11px] text-slate-400">
-                    Bandingkan langsung setiap detail arsitektur 3D dengan foto dokumentasi asli
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowPhotoModal(false)}
-                className="text-white/70 hover:text-white px-3 py-1.5 rounded-xl text-sm font-bold bg-white/10 hover:bg-white/20 transition-all cursor-pointer"
-              >
-                ✕ Tutup
-              </button>
-            </div>
-
-            <div className="p-2.5 bg-slate-900 border-b border-white/10 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-none">
-              {CAMPUS_REAL_PHOTOS.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActivePhotoIndex(idx)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    activePhotoIndex === idx
-                      ? 'bg-amber-500 text-slate-950 shadow-md'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  {idx + 1}. {item.title.split('&')[0]}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative p-3 bg-slate-950 flex flex-col items-center justify-center overflow-y-auto flex-1">
-              <img 
-                src={CAMPUS_REAL_PHOTOS[activePhotoIndex].image} 
-                alt={CAMPUS_REAL_PHOTOS[activePhotoIndex].title} 
-                className="max-h-[58vh] w-auto object-contain rounded-2xl shadow-xl border border-white/10"
-              />
-              <div className="mt-3 text-center max-w-2xl px-4">
-                <h5 className="text-white font-extrabold text-sm sm:text-base">
-                  {CAMPUS_REAL_PHOTOS[activePhotoIndex].title}
-                </h5>
-                <p className="text-xs text-amber-300 font-medium mt-0.5">
-                  {CAMPUS_REAL_PHOTOS[activePhotoIndex].subtitle}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  {CAMPUS_REAL_PHOTOS[activePhotoIndex].description}
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-900 border-t border-white/10 text-xs text-slate-300 flex items-center justify-between flex-wrap gap-2 shrink-0">
-              <button
-                onClick={() => {
-                  applyCameraPreset(CAMPUS_REAL_PHOTOS[activePhotoIndex].presetKey);
-                  setShowPhotoModal(false);
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold transition-all shadow-md cursor-pointer"
-              >
-                <Camera className="w-4 h-4" />
-                <span>Lihat Sudut Ini di Model 3D</span>
-              </button>
-              <button
-                onClick={() => setShowPhotoModal(false)}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all cursor-pointer"
-              >
-                Kembali ke Model 3D
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

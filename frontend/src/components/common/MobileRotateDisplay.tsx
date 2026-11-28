@@ -17,6 +17,7 @@ import { FloorMapSvg } from '../floorplan/FloorMapSvg';
 
 interface MobileRotateDisplayProps {
   building: Building;
+  buildingLabel?: string;
   activeFloorNumber: number;
   onSelectFloor: (floorNumber: number) => void;
   viewMode: ViewMode;
@@ -24,16 +25,19 @@ interface MobileRotateDisplayProps {
   selectedRoom: Room | null;
   onSelectRoom: (room: Room) => void;
   onOpen3dView?: () => void;
+  showRotateButton?: boolean;
 }
 
 export const MobileRotateDisplay: React.FC<MobileRotateDisplayProps> = ({
   building,
+  buildingLabel,
   activeFloorNumber,
   onSelectFloor,
   viewMode,
   onChangeViewMode,
   selectedRoom,
-  onSelectRoom
+  onSelectRoom,
+  showRotateButton = true
 }) => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isLandscape, setIsLandscape] = useState<boolean>(false);
@@ -176,10 +180,10 @@ export const MobileRotateDisplay: React.FC<MobileRotateDisplayProps> = ({
       )}
 
       {/* 3. 🔘 Tombol Mengambang (Floating Action Button) Rotasi Horizontal di Mobile */}
-      {isMobile && !isVirtualLandscapeOpen && (
+      {isMobile && showRotateButton && !isVirtualLandscapeOpen && (
         <button
           onClick={handleActivateHorizontalMode}
-          className="md:hidden fixed bottom-6 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-xl shadow-emerald-600/35 border border-emerald-400/40 active:scale-95 transition-all cursor-pointer"
+          className="md:hidden fixed bottom-20 right-[9.5rem] z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-xl shadow-emerald-600/35 border border-emerald-400/40 active:scale-95 transition-all cursor-pointer"
           title="Tampilkan Denah Mode Horizontal"
         >
           <Smartphone className="w-4 h-4 text-emerald-200 animate-phone-tilt" />
@@ -196,7 +200,7 @@ export const MobileRotateDisplay: React.FC<MobileRotateDisplayProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <h3 className="font-extrabold text-xs sm:text-sm text-white">
-                {building.shortName} • Tingkat {activeFloorNumber}
+                {buildingLabel || building.shortName} • Tingkat {activeFloorNumber}
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 border border-emerald-800">
                 Mode Horizontal
@@ -266,6 +270,7 @@ export const MobileRotateDisplay: React.FC<MobileRotateDisplayProps> = ({
               <div className="w-full max-w-6xl mx-auto">
                 <IsometricView
                   building={building}
+                  buildingLabel={buildingLabel}
                   activeFloorNumber={activeFloorNumber}
                   onSelectFloor={onSelectFloor}
                   onSelectRoom={onSelectRoom}
@@ -277,6 +282,7 @@ export const MobileRotateDisplay: React.FC<MobileRotateDisplayProps> = ({
               <div className="w-full max-w-6xl mx-auto">
                 <FloorMapSvg
                   floor={activeFloor}
+                  buildingLabel={buildingLabel}
                   selectedRoom={selectedRoom}
                   onSelectRoom={onSelectRoom}
                   statusFilter="all"

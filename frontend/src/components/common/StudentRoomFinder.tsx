@@ -1,313 +1,145 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Building, Room } from '../../types';
-import { 
-  Search, 
-  ArrowRight, 
-  X,
-  Navigation,
-  CornerDownLeft,
-} from 'lucide-react';
 
 interface StudentRoomFinderProps {
   buildings: Building[];
+  buildingLabels?: Record<string, string>;
   onSelectRoom: (buildingId: string, floorNumber: number, room: Room) => void;
   onOpenSearchEngine?: () => void;
 }
 
-export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
-  buildings,
-  onSelectRoom,
-  onOpenSearchEngine
-}) => {
+export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({ buildings, buildingLabels = {}, onSelectRoom }) => {
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [buildingFilter, setBuildingFilter] = useState('all');
+  const [floorFilter, setFloorFilter] = useState('all');
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Flatten all rooms across buildings & floors
-  const allRooms = useMemo(() => {
-    return buildings.flatMap(b =>
-      b.floors.flatMap(f =>
-        f.rooms.map(r => ({
-          ...r,
-          buildingName: b.name,
-          buildingShortName: b.shortName,
-          buildingCode: b.code,
-          floorName: f.name
-        }))
-      )
-    );
-  }, [buildings]);
+  const allRooms = useMemo(() => buildings.flatMap(building =>
+    building.floors.flatMap(floor => floor.rooms.map(room => ({
+      ...room,
+      buildingShortName: buildingLabels[building.id]?.trim() || building.shortName,
+      floorName: `Lantai ${floor.floorNumber} ${buildingLabels[building.id]?.trim() || building.shortName}`
+    })))
+  ), [buildings, buildingLabels]);
 
-  // Simple, practical categories
-  const categories = [
-    { id: 'all', label: 'Semua' },
-    { id: 'panorama', label: 'Ruang 360°' },
-    { id: 'classroom', label: 'Kelas kuliah' },
-    { id: 'laboratory', label: 'Laboratorium' },
-    { id: 'skripsi', label: 'Ruang sidang' },
-    { id: 'office', label: 'Layanan kampus' },
-  ];
+  const floors = useMemo(() => {
+    const scope = buildingFilter === 'all' ? buildings : buildings.filter(building => building.id === buildingFilter);
+    return [...new Set(scope.flatMap(building => building.floors.map(floor => floor.floorNumber)))].sort((a, b) => a - b);
+  }, [buildings, buildingFilter]);
 
-  // Filtered rooms
   const filteredRooms = useMemo(() => {
-    let result = allRooms;
+    const normalized = query.trim().toLocaleLowerCase('id-ID');
+    return allRooms.filter(room => {
+      if (buildingFilter !== 'all' && room.buildingId !== buildingFilter) return false;
+      if (floorFilter !== 'all' && room.floorNumber !== Number(floorFilter)) return false;
+      if (!normalized) return buildingFilter !== 'all' || floorFilter !== 'all';
+      const content = [
+        room.name,
+        room.code,
+        room.description,
+        room.currentActivity?.title || '',
+        room.currentActivity?.personInCharge || '',
+        ...(room.schedule || []).flatMap(schedule => [schedule.title, schedule.organizer, schedule.className || '']),
+        ...(room.facilities || []).flatMap(facility => [facility.name, facility.spec || '']),
+        ...(room.schedule || []).flatMap(item => [item.title, item.organizer, item.className || '']),
+        ...(room.facilities || []).flatMap(item => [item.name, item.spec || ''])
+      ].join(' ').toLocaleLowerCase('id-ID');
+      return content.includes(normalized);
+    });
+  }, [allRooms, buildingFilter, floorFilter, query]);
 
-    if (activeCategory === 'panorama') {
-      result = result.filter(r => Boolean(r.panoramaUrl));
-    } else if (activeCategory === 'classroom') {
-      result = result.filter(r => r.type === 'classroom' || r.type === 'auditorium');
-    } else if (activeCategory === 'laboratory') {
-      result = result.filter(r => r.type === 'laboratory' || r.name.toLowerCase().includes('lab'));
-    } else if (activeCategory === 'skripsi') {
-      result = result.filter(r => r.name.toLowerCase().includes('skripsi') || r.name.toLowerCase().includes('sidang'));
-    } else if (activeCategory === 'office') {
-      result = result.filter(r => r.type === 'office' || r.name.toLowerCase().includes('baak') || r.name.toLowerCase().includes('dosen'));
-    }
-
-    if (query.trim().length > 0) {
-      const q = query.toLowerCase();
-      result = result.filter(r =>
-        r.name.toLowerCase().includes(q) ||
-        r.code.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q) ||
-        (r.currentActivity && (
-          r.currentActivity.title.toLowerCase().includes(q) ||
-          r.currentActivity.personInCharge.toLowerCase().includes(q)
-        ))
-      );
-    }
-
-    return result;
-  }, [allRooms, query, activeCategory]);
-
-  // Click outside listener to close dropdown
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setIsOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Keyboard navigation (ArrowDown, ArrowUp, Enter, Escape)
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen && (e.key === 'ArrowDown' || e.key === 'Enter')) {
-      setIsOpen(true);
-      return;
-    }
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev < filteredRooms.length - 1 ? prev + 1 : 0));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev > 0 ? prev - 1 : filteredRooms.length - 1));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (selectedIndex >= 0 && selectedIndex < filteredRooms.length) {
-        handleSelect(filteredRooms[selectedIndex]);
-      } else if (filteredRooms.length > 0) {
-        handleSelect(filteredRooms[0]);
-      }
-    } else if (e.key === 'Escape') {
-      setIsOpen(false);
-      inputRef.current?.blur();
-    }
-  };
-
-  const handleSelect = (room: typeof allRooms[0]) => {
+  const selectRoom = (room: (typeof allRooms)[number]) => {
     onSelectRoom(room.buildingId, room.floorNumber, room);
     setIsOpen(false);
     setQuery('');
   };
 
-  // Quick recommendations when user first focuses
-  const recommendations = useMemo(() => {
-    return allRooms.filter(r => 
-      r.id === 'labkom1-1a' || // Lab Pemrograman
-      r.id === 'labkom1-2a' || // Lab AI
-      r.id === 'ft1-2f' || // Ruang Sidang Skripsi
-      r.id === 'ft1-1a' || // BAAK
-      r.id === 'ft1-1b'        // Smart Classroom Dekanat
-    ).slice(0, 4);
-  }, [allRooms]);
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setIsOpen(true);
+      setSelectedIndex(index => filteredRooms.length ? (index + 1) % filteredRooms.length : -1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setSelectedIndex(index => filteredRooms.length ? (index <= 0 ? filteredRooms.length - 1 : index - 1) : -1);
+    } else if (event.key === 'Enter' && filteredRooms.length) {
+      event.preventDefault();
+      selectRoom(filteredRooms[selectedIndex >= 0 ? selectedIndex : 0]);
+    } else if (event.key === 'Escape') {
+      setIsOpen(false);
+      inputRef.current?.blur();
+    }
+  };
 
   return (
-    <div ref={containerRef} className="mb-5 relative z-30">
-      
-      {/* Sleek, Minimalist Interactive Search Bar */}
-      <div className={`relative flex items-center bg-white dark:bg-slate-900 rounded-2xl border transition-all duration-200 shadow-xs ${
-        isOpen
-          ? 'border-emerald-500 ring-4 ring-emerald-500/10 shadow-md'
-          : 'border-slate-200/90 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-slate-700'
-      }`}>
-        
-        {/* Left: Interactive Search Icon */}
-        <div className="pl-4 pr-2 text-emerald-600 dark:text-emerald-400 flex items-center pointer-events-none">
-          <Search className={`w-4 h-4 transition-transform ${isOpen ? 'scale-110 text-emerald-600' : 'text-slate-400'}`} />
-        </div>
-
-        {/* Search Input */}
+    <div ref={containerRef} className="relative z-30 mb-5">
+      <div className={`flex items-center rounded-xl border bg-white transition-colors dark:bg-slate-900 ${isOpen ? 'border-emerald-600 ring-2 ring-emerald-600/10' : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'}`}>
         <input
           ref={inputRef}
-          type="text"
+          type="search"
           value={query}
           onFocus={() => setIsOpen(true)}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-            setSelectedIndex(-1);
-          }}
+          onChange={event => { setQuery(event.target.value); setIsOpen(true); setSelectedIndex(-1); }}
           onKeyDown={handleKeyDown}
-          placeholder="Cari ruang kuliah, lab, ruang sidang skripsi, BAAK, atau dosen..."
-          className="flex-1 py-3 px-1 text-xs sm:text-sm bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none font-medium"
+          placeholder="Cari nama atau kode ruang, mata kuliah, dosen, dan fasilitas"
+          aria-label="Cari ruangan"
+          className="min-w-0 flex-1 rounded-xl bg-transparent px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
         />
-
-        {/* Clear Button (appears when query has text) */}
-        {query && (
-          <button
-            type="button"
-            onClick={() => {
-              setQuery('');
-              inputRef.current?.focus();
-            }}
-            className="p-1.5 mr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-            title="Hapus pencarian"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
+        {query && <button type="button" onClick={() => { setQuery(''); setSelectedIndex(-1); inputRef.current?.focus(); }} className="mr-3 rounded-md px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">Hapus</button>}
       </div>
 
-      {/* Compact category filter keeps the search area quiet while preserving filtering. */}
-      <div className="mt-2 flex justify-end">
-        <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          <span>Jenis ruang</span>
-          <select
-            value={activeCategory}
-            onChange={(event) => {
-              setActiveCategory(event.target.value);
-              setIsOpen(true);
-              setSelectedIndex(-1);
-            }}
-            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-          >
-            {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <label className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <span className="shrink-0">Gedung</span>
+          <select value={buildingFilter} onChange={event => { setBuildingFilter(event.target.value); setFloorFilter('all'); setSelectedIndex(-1); setIsOpen(true); }} className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+            <option value="all">Semua gedung</option>
+            {buildings.map(building => <option key={building.id} value={building.id}>{buildingLabels[building.id]?.trim() || building.shortName}</option>)}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <span className="shrink-0">Lantai</span>
+          <select value={floorFilter} onChange={event => { setFloorFilter(event.target.value); setSelectedIndex(-1); setIsOpen(true); }} className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+            <option value="all">Semua lantai</option>
+            {floors.map(floor => <option key={floor} value={floor}>Lantai {floor}</option>)}
           </select>
         </label>
       </div>
 
-      {/* Floating Interactive Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl rounded-2xl border border-emerald-100 dark:border-slate-800 shadow-2xl overflow-hidden animate-slide-down max-h-[380px] flex flex-col z-50">
-          
-          {/* Header count */}
-          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400">
-            <span>
-              {query ? `Hasil pencarian (${filteredRooms.length})` : 'Pilihan Ruangan Cepat'}
-            </span>
-            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
-              <CornerDownLeft className="w-3 h-3" /> Tekan Enter untuk navigasi
-            </span>
+        <section className="absolute left-0 right-0 top-full z-50 mt-2 flex max-h-[380px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900" aria-label="Hasil pencarian ruangan">
+          <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
+            {query.trim() || buildingFilter !== 'all' || floorFilter !== 'all'
+              ? `${filteredRooms.length} ruangan ditemukan`
+              : 'Ketik pencarian atau pilih gedung dan lantai.'}
           </div>
-
-          {/* Results List */}
-          <div className="overflow-y-auto p-2 space-y-1">
-            {filteredRooms.length > 0 ? (
-              filteredRooms.map((room, idx) => {
-                const isSelected = selectedIndex === idx;
-                const isAvail = room.status === 'available';
-                const isOcc = room.status === 'occupied';
-                const isRes = room.status === 'reserved';
-
-                return (
-                  <div
-                    key={room.id}
-                    onClick={() => handleSelect(room)}
-                    onMouseEnter={() => setSelectedIndex(idx)}
-                    className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-between group ${
-                      isSelected
-                        ? 'bg-emerald-500 text-white shadow-xs'
-                        : 'hover:bg-emerald-50/80 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={`font-mono text-xs font-black px-2 py-1 rounded-lg shrink-0 transition-colors ${
-                        isSelected 
-                          ? 'bg-white text-emerald-900' 
-                          : 'bg-slate-100 dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-slate-700'
-                      }`}>
-                        {room.code}
-                      </span>
-                      <div className="min-w-0">
-                        <div className={`text-xs sm:text-sm font-extrabold truncate ${
-                          isSelected ? 'text-white' : 'text-slate-900 dark:text-white'
-                        }`}>
-                          {room.name}
-                        </div>
-                        <div className={`text-[10px] truncate flex items-center gap-1.5 mt-0.5 ${
-                          isSelected ? 'text-emerald-100' : 'text-slate-400'
-                        }`}>
-                          <span>{room.buildingShortName} • Tingkat {room.floorNumber}</span>
-                          {room.currentActivity && (
-                            <span>• {room.currentActivity.title}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 ml-2">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isSelected 
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-                      }`}>
-                        👥 {room.capacity} Kursi
-                      </span>
-                      <ArrowRight className={`w-3.5 h-3.5 transition-transform ${
-                        isSelected ? 'text-white translate-x-1' : 'text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600'
-                      }`} />
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="py-6 text-center text-xs text-slate-400">
-                Tidak ada ruangan ditemukan untuk "{query}". Coba ketik "LAB" atau "A-101".
-              </div>
-            )}
+          <div className="overflow-y-auto">
+            {filteredRooms.map((room, index) => {
+              const active = selectedIndex === index;
+              const status = room.status === 'available' ? 'Tersedia' : room.status === 'occupied' ? 'Digunakan' : room.status === 'reserved' ? 'Terjadwal' : room.status === 'maintenance' ? 'Perbaikan' : 'Rusak';
+              return <button key={room.id} type="button" onClick={() => selectRoom(room)} onMouseEnter={() => setSelectedIndex(index)} className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-left last:border-0 dark:border-slate-800 ${active ? 'bg-emerald-700 text-white' : 'text-slate-800 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800/70'}`}>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold">{room.code} · {room.name}</span>
+                  <span className={`mt-0.5 block truncate text-xs ${active ? 'text-emerald-100' : 'text-slate-500 dark:text-slate-400'}`}>{room.buildingShortName} · Lantai {room.floorNumber}{room.currentActivity ? ` · ${room.currentActivity.title}` : ''}</span>
+                </span>
+                <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-medium ${active ? 'bg-white/15 text-white' : room.status === 'available' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>{status} · {room.capacity} kursi</span>
+              </button>;
+            })}
+            {!filteredRooms.length && (query.trim() || buildingFilter !== 'all' || floorFilter !== 'all') && <p className="px-4 py-7 text-center text-sm text-slate-500 dark:text-slate-400">Tidak ada ruangan yang sesuai.</p>}
           </div>
-
-          {/* Quick Recommendations Footer when empty query */}
-          {!query && recommendations.length > 0 && (
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-emerald-600" />
-                Rekomendasi Ruangan Terpopuler:
-              </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {recommendations.map(r => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => handleSelect(r)}
-                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-800 text-[11px] font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-                  >
-                    {r.code} - {r.name.split('(')[0]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
+          {(query.trim() || buildingFilter !== 'all' || floorFilter !== 'all') && <div className="border-t border-slate-200 px-4 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">Gunakan tombol panah untuk memilih dan Enter untuk membuka.</div>}
+        </section>
       )}
-
     </div>
   );
 };

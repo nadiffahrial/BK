@@ -1,19 +1,5 @@
 import React, { useState } from 'react';
-import { Room, RoomType, RoomStatus } from '../../types';
-import { 
-  Users, 
-  CheckCircle2,
-  Thermometer, 
-  Tv, 
-  Wifi, 
-  Cpu, 
-  Clock, 
-  Sparkles, 
-  ArrowRight, 
-  Layers, 
-  Filter,
-  Eye
-} from 'lucide-react';
+import { Room, RoomStatus } from '../../types';
 
 interface RoomCardGridProps {
   rooms: Room[];
@@ -23,22 +9,42 @@ interface RoomCardGridProps {
   statusFilter?: RoomStatus | 'all';
 }
 
+const utilityRoomPattern = /\b(wc|toilet|kamar mandi|tangga|r\.?\s*panel|ruang panel|panel listrik|wudhu|mushola|musala)\b/i;
+
+const statusLabels: Record<RoomStatus, string> = {
+  available: 'Tersedia',
+  occupied: 'Sedang digunakan',
+  reserved: 'Terjadwal',
+  maintenance: 'Dalam perbaikan',
+  broken: 'Tidak dapat digunakan'
+};
+
 export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
   rooms,
   selectedRoom,
   onSelectRoom,
-  onNavigateRoom,
   statusFilter = 'all'
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'code' | 'capacity' | 'name'>('code');
 
+  const filters = [
+    { id: 'all', label: 'Semua' },
+    { id: 'panorama', label: 'Panorama 360°' },
+    { id: 'classroom', label: 'Kelas' },
+    { id: 'laboratory', label: 'Laboratorium' },
+    { id: 'meeting', label: 'Rapat' },
+    { id: 'auditorium', label: 'Auditorium' },
+    { id: 'facility', label: 'Fasilitas' },
+    { id: 'lounge', label: 'Lounge' }
+  ];
+
   const filtered = rooms
-    .filter(r => {
-      if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    .filter(room => {
+      if (statusFilter !== 'all' && room.status !== statusFilter) return false;
       if (filterType === 'all') return true;
-      if (filterType === 'panorama') return Boolean(r.panoramaUrl);
-      return r.type === filterType;
+      if (filterType === 'panorama') return Boolean(room.panoramaUrl);
+      return room.type === filterType;
     })
     .sort((a, b) => {
       if (sortBy === 'capacity') return b.capacity - a.capacity;
@@ -46,160 +52,109 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
       return a.code.localeCompare(b.code);
     });
 
-
   return (
     <div className="space-y-4">
-      {/* Filters & Sorters Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-emerald-100 shadow-sm">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-slate-500 font-bold flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5 text-emerald-600" /> Tipe Ruang:
-          </span>
-          {[
-            { id: 'all', label: 'Semua Tipe' },
-            { id: 'panorama', label: '🌐 Ruang 360°' },
-            { id: 'classroom', label: 'Kelas Teori' },
-            { id: 'laboratory', label: 'Laboratorium' },
-            { id: 'meeting', label: 'Ruang Rapat' },
-            { id: 'auditorium', label: 'Auditorium' },
-            { id: 'facility', label: 'Fasilitas' },
-            { id: 'lounge', label: 'Lounge' }
-          ].map(tab => (
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
+          <span className="shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">Jenis ruang</span>
+          {filters.map(filter => (
             <button
-              key={tab.id}
-              onClick={() => setFilterType(tab.id)}
-              className={`smooth-btn px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                filterType === tab.id
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-800'
-              }`}
+              key={filter.id}
+              type="button"
+              aria-pressed={filterType === filter.id}
+              onClick={() => setFilterType(filter.id)}
+              className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${filterType === filter.id
+                ? 'bg-emerald-700 text-white'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
             >
-              {tab.label}
+              {filter.label}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-          <span>Urutkan:</span>
+        <label className="flex shrink-0 items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <span>Urutkan</span>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-emerald-500 cursor-pointer"
+            onChange={event => setSortBy(event.target.value as typeof sortBy)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
           >
-            <option value="code">Kode Ruangan</option>
-            <option value="capacity">Kapasitas Terbesar</option>
-            <option value="name">Nama Ruangan</option>
+            <option value="code">Kode ruang</option>
+            <option value="capacity">Kapasitas</option>
+            <option value="name">Nama ruang</option>
           </select>
-        </div>
+        </label>
       </div>
 
-      {/* Room Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((room) => {
-          const isSelected = selectedRoom?.id === room.id;
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map(room => {
+            const isSelected = selectedRoom?.id === room.id;
+            const isUtilityRoom = utilityRoomPattern.test(room.name);
+            const facilities = room.facilities.slice(0, 2).map(facility => facility.name);
+            const remainingFacilities = Math.max(0, room.facilities.length - facilities.length);
 
-          return (
-            <div
-              key={room.id}
-              onClick={() => onSelectRoom(room)}
-              className={`modern-card-hover p-5 rounded-2xl bg-white dark:bg-slate-800 border transition-all duration-200 flex flex-col justify-between cursor-pointer group shadow-sm ${
-                isSelected
-                  ? 'border-emerald-600 ring-2 ring-emerald-600/30 shadow-md'
-                  : 'border-slate-200/90 hover:border-emerald-400 hover:shadow-md'
-              }`}
-            >
-              <div>
-                {/* Top Code & Capacity */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      {room.code}
-                    </span>
-                    {room.panoramaUrl && (
-                      <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-teal-100 text-teal-800 border border-teal-300 flex items-center gap-1">
-                        <Eye className="w-3 h-3 text-teal-600 animate-pulse" />
-                        <span>360°</span>
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{room.capacity} Kursi</span>
-                  </span>
+            return (
+              <article
+                key={room.id}
+                onClick={() => onSelectRoom(room)}
+                className={`flex cursor-pointer flex-col rounded-xl border bg-white p-4 transition-colors dark:bg-slate-900 ${isSelected
+                  ? 'border-emerald-600 ring-1 ring-emerald-600/30'
+                  : 'border-slate-200 hover:border-emerald-400 dark:border-slate-800 dark:hover:border-emerald-700'}`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-xs font-semibold text-emerald-800 dark:text-emerald-300">{room.code}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Kapasitas {room.capacity}</span>
                 </div>
 
-                {/* Title & Description */}
-                <h4 className="text-base font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                  {room.name}
-                </h4>
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                  {room.description}
-                </p>
+                {room.panoramaUrl && <span className="mt-2 self-start text-[11px] text-slate-500 dark:text-slate-400">Panorama 360°</span>}
+                <h2 className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100">{room.name}</h2>
+                <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-600 dark:text-slate-400">{room.description}</p>
 
-                {/* Current Activity Banner */}
-                {room.currentActivity ? (
-                  <div className="mt-3 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs">
-                    <div className="text-[10px] uppercase font-bold text-amber-800 tracking-wider flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-amber-600" /> Sedang Berlangsung ({room.currentActivity.startTime} - {room.currentActivity.endTime})
+                <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  {isUtilityRoom ? (
+                    <p className={`text-xs font-medium ${room.status === 'broken' ? 'text-rose-700 dark:text-rose-300' : room.status === 'maintenance' ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'}`}>
+                      {statusLabels[room.status]}
+                    </p>
+                  ) : room.currentActivity ? (
+                    <div>
+                      <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Sedang berlangsung · {room.currentActivity.startTime}–{room.currentActivity.endTime}</p>
+                      <p className="mt-1 truncate text-sm font-medium text-slate-800 dark:text-slate-200">{room.currentActivity.title}</p>
+                      <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{room.currentActivity.className ? `Kelas ${room.currentActivity.className} · ` : ''}{room.currentActivity.personInCharge}</p>
                     </div>
-                    <div className="text-xs font-bold text-slate-900 mt-0.5 truncate">
-                      {room.currentActivity.title}
-                    </div>
-                    <div className="text-[10px] text-slate-600 truncate">
-                      {room.currentActivity.personInCharge}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-[11px] text-slate-500 flex items-center gap-1.5 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Tidak ada agenda perkuliahan aktif.</span>
-                  </div>
-                )}
-
-                {/* Facility Tags */}
-                <div className="flex items-center gap-1.5 flex-wrap mt-3">
-                  {room.facilities.slice(0, 3).map((f, i) => (
-                    <span
-                      key={i}
-                      className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50/60 text-slate-700 border border-emerald-100 truncate max-w-[150px] font-medium"
-                    >
-                      {f.name}
-                    </span>
-                  ))}
-                  {room.facilities.length > 3 && (
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      +{room.facilities.length - 3} lagi
-                    </span>
+                  ) : (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{statusLabels[room.status]}</p>
                   )}
                 </div>
-              </div>
 
-              {/* Bottom Card Actions & Specs */}
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs text-slate-600 font-semibold">
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-emerald-600" /> {room.capacity}
-                  </span>
-                  <span className="flex items-center gap-1" title="Peralatan tersedia"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> {room.facilities.filter(f => f.available).length} alat</span>
-                </div>
+                {facilities.length > 0 && (
+                  <p className="mt-3 truncate text-xs text-slate-500 dark:text-slate-400" title={room.facilities.map(facility => facility.name).join(', ')}>
+                    {facilities.join(' · ')}{remainingFacilities > 0 ? ` · +${remainingFacilities}` : ''}
+                  </p>
+                )}
 
-                <div className="flex items-center gap-2">
+                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Lantai {room.floorNumber}</span>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    type="button"
+                    onClick={event => {
+                      event.stopPropagation();
                       onSelectRoom(room);
                     }}
-                    className="smooth-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer"
+                    className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-800"
                   >
-                    Pilih Ruang
+                    Lihat detail
                   </button>
                 </div>
-              </div>
-
-            </div>
-          );
-        })}
-      </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+          Tidak ada ruangan yang sesuai dengan filter.
+        </p>
+      )}
     </div>
   );
 };

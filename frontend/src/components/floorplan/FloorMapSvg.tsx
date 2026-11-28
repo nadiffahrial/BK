@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Room, Floor } from '../../types';
 import { RoomPanoramaModal } from './RoomPanoramaModal';
 import { 
-  Users, 
   Thermometer, 
   Navigation, 
   ZoomIn, 
@@ -22,6 +21,7 @@ import {
 
 interface FloorMapSvgProps {
   floor: Floor;
+  buildingLabel?: string;
   selectedRoom: Room | null;
   onSelectRoom: (room: Room) => void;
   statusFilter: string;
@@ -32,6 +32,7 @@ interface FloorMapSvgProps {
 
 export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
   floor,
+  buildingLabel,
   selectedRoom,
   onSelectRoom,
   statusFilter,
@@ -45,6 +46,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
 
   const { width, height } = floor.dimensions;
   const entrancePoint = { x: 90, y: 250 };
+  const floorDisplayName = buildingLabel ? `Lantai ${floor.floorNumber} ${buildingLabel}` : floor.name;
 
   const getStatusFill = (status: Room['status'], isSelected: boolean) => {
     if (isSelected) return 'rgba(16, 185, 129, 0.22)';
@@ -101,12 +103,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
             <MapPin className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">{floor.name}</h3>
-              <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                Skala 1:100 • 2D Blueprint
-              </span>
-            </div>
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">{floorDisplayName}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{floor.description}</p>
           </div>
         </div>
@@ -399,20 +396,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                         </div>
                       </foreignObject>
 
-                      {/* Room Bottom Meta Icons (Capacity & Temp) */}
-                      <g transform={`translate(${x + (isCompact ? 6 : 10)}, ${y + h - 22})`}>
-                        <rect width={w - (isCompact ? 12 : 20)} height="16" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
-                        <text
-                          x={isCompact ? (w - 12) / 2 : 6}
-                          y="12"
-                          textAnchor={isCompact ? "middle" : "start"}
-                          fill="#475569"
-                          fontSize="9"
-                          fontWeight="bold"
-                        >
-                          👥 {room.capacity} org
-                        </text>
-                      </g>
                     </>
                   )}
 
@@ -482,7 +465,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
         {/* Architecture Info */}
         <div className="flex items-center gap-2 text-slate-500 font-medium">
           <Leaf className="w-4 h-4 text-emerald-600" />
-          <span>Denah Arsitektur Resmi {floor.name}. Ketuk ruangan untuk melihat fasilitas dan panduan rute.</span>
+          <span>Denah Arsitektur Resmi {floorDisplayName}. Ketuk ruangan untuk melihat fasilitas dan panduan rute.</span>
         </div>
 
         {/* Quick Action Controls */}

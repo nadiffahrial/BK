@@ -15,6 +15,7 @@ export interface RoomScheduleItem {
   organizer: string;
   timeRange: string;
   type: string;
+  className?: string;
   day?: string;
   holidayDates?: string[];
 }
@@ -47,6 +48,7 @@ export interface Room {
     department: string;
     startTime: string;
     endTime: string;
+    className?: string;
   };
   schedule: RoomScheduleItem[];
   // SVG Coordinates on layout canvas (width, height, x, y in grid units)

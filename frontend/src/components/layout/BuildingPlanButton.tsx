@@ -8,6 +8,7 @@ interface BuildingPlanButtonProps {
   isActive: boolean;
   onSelect: () => void;
   activeFloorNumber: number;
+  buildingLabel?: string;
   onSelectFloor?: (floorNumber: number) => void;
   viewMode?: ViewMode;
 }
@@ -17,11 +18,13 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
   isActive,
   onSelect,
   activeFloorNumber,
+  buildingLabel,
   onSelectFloor,
   viewMode = '3d'
 }) => {
   const { isDark } = useTheme();
   const isGedungA = building.code === 'A';
+  const displayName = buildingLabel?.trim() || building.shortName;
   const allRooms = building.floors.flatMap(f => f.rooms);
   const availableRooms = allRooms.filter(r => r.status === 'available').length;
   const occupiedRooms = allRooms.filter(r => r.status === 'occupied').length;
@@ -37,7 +40,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
           onSelect();
         }
       }}
-      title={`Pilih ${building.name} pada denah ${viewMode === '2d' ? '2D' : '3D'}`}
+      title={`Pilih ${displayName} pada denah ${viewMode === '2d' ? '2D' : '3D'}`}
       className={`relative cursor-pointer transition-all duration-300 ease-smooth transform select-none group flex flex-col items-center focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-2xl p-2 ${
         isActive
           ? 'scale-[1.02] -translate-y-1'
@@ -51,7 +54,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
           <div className="flex items-center gap-1.5">
             <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
             <span className={`text-[11px] font-extrabold ${isActive ? 'text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}>
-              {building.shortName}
+              {displayName}
             </span>
           </div>
 
@@ -211,7 +214,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
                 fill="#713f12"
                 letterSpacing="0.2"
               >
-                {isGedungA ? 'Gd. LABKOM 1' : 'Gd. FT.1'}
+                {`Gd. ${displayName}`}
               </text>
             </g>
 

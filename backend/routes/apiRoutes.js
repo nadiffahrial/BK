@@ -12,16 +12,23 @@ import { getAllCsTickets, createCsTicket, updateCsTicketStatus, getCsTicketMessa
 import { addClient } from '../sse.js';
 import { rateLimit } from 'express-rate-limit';
 import { recordVisit } from '../controllers/analyticsController.js';
-import { getAdminBuildings, saveAdminBuildings } from '../controllers/adminContentController.js';
-import { createManagedAdmin, deleteManagedAdmin, getManagedAdmins, resetManagedAdminPassword } from '../controllers/superAdminController.js';
+import { getAdminBuildings, saveAdminBuildings, getCampusModelLabels, saveCampusModelLabels, getCsContactSettings, saveCsContactSettings, getScheduleCatalog, saveScheduleCatalog } from '../controllers/adminContentController.js';
+import { createManagedAdmin, deleteManagedAdmin, getManagedAdmins, resetManagedAdminPassword, updateManagedAdminProfile } from '../controllers/superAdminController.js';
 
 const router = Router();
 
 router.post('/analytics/visit', recordVisit);
 router.get('/admin/buildings', getAdminBuildings);
 router.put('/admin/buildings', authenticateToken, authorizeRoles('admin', 'super_admin'), saveAdminBuildings);
+router.get('/campus/model-labels', getCampusModelLabels);
+router.put('/campus/model-labels', authenticateToken, authorizeRoles('admin', 'super_admin'), saveCampusModelLabels);
+router.get('/cs/contact-settings', getCsContactSettings);
+router.put('/cs/contact-settings', authenticateToken, authorizeRoles('admin', 'super_admin'), saveCsContactSettings);
+router.get('/schedule/catalog', getScheduleCatalog);
+router.put('/schedule/catalog', authenticateToken, authorizeRoles('admin', 'super_admin'), saveScheduleCatalog);
 router.get('/super-admin/admins', authenticateToken, authorizeRoles('super_admin'), getManagedAdmins);
 router.post('/super-admin/admins', authenticateToken, authorizeRoles('super_admin'), createManagedAdmin);
+router.put('/super-admin/admins/:id/profile', authenticateToken, authorizeRoles('super_admin'), updateManagedAdminProfile);
 router.put('/super-admin/admins/:id/password', authenticateToken, authorizeRoles('super_admin'), resetManagedAdminPassword);
 router.delete('/super-admin/admins/:id', authenticateToken, authorizeRoles('super_admin'), deleteManagedAdmin);
 
