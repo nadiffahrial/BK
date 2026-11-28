@@ -135,7 +135,7 @@ export const updateRoomStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  const validStatuses = ['available', 'occupied', 'reserved', 'maintenance'];
+  const validStatuses = ['available', 'occupied', 'reserved', 'maintenance', 'broken'];
   if (!status || !validStatuses.includes(status)) {
     return res.status(400).json({
       success: false,
@@ -190,7 +190,7 @@ export const getCampusStats = async (req, res) => {
       const [peopleRow] = await db.query('SELECT SUM(current_occupancy) as total_people FROM `rooms`');
       const [bldgCount] = await db.query('SELECT COUNT(*) as total_bldgs FROM `buildings`');
 
-      const counts = { available: 0, occupied: 0, reserved: 0, maintenance: 0 };
+      const counts = { available: 0, occupied: 0, reserved: 0, maintenance: 0, broken: 0 };
       statusRows.forEach(r => { counts[r.status] = r.cnt; });
 
       const total = totalRow[0].total;
@@ -226,7 +226,7 @@ export const getCampusStats = async (req, res) => {
       availableRooms: allRooms.filter(r => r.status === 'available').length,
       occupiedRooms: allRooms.filter(r => r.status === 'occupied').length,
       reservedRooms: allRooms.filter(r => r.status === 'reserved').length,
-      maintenanceRooms: allRooms.filter(r => r.status === 'maintenance').length,
+      maintenanceRooms: allRooms.filter(r => r.status === 'maintenance' || r.status === 'broken').length,
       occupancyPercentage: 35,
       totalPeopleInCampus: 350,
       serverTime: new Date().toISOString()

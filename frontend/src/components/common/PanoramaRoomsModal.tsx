@@ -269,6 +269,9 @@ export const PanoramaRoomsModal: React.FC<PanoramaRoomsModalProps> = ({
                               Pemeliharaan
                             </span>
                           )}
+                          {room.status === 'broken' && (
+                            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">Rusak</span>
+                          )}
                         </div>
 
                         <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-snug">

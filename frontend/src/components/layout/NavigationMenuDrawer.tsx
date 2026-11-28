@@ -229,7 +229,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                     <div className="text-left">
                       <div className="flex items-center gap-1.5">
                         <span className="font-extrabold text-sm">Katalog Ruangan 360°</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
                       </div>
                       <p className="text-[10px] text-emerald-100 font-medium">Tur interaktif Ultra-HD tanpa distorsi</p>
                     </div>
@@ -460,7 +460,8 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
                   { id: 'available', label: 'Tersedia', dot: 'bg-emerald-500' },
                   { id: 'occupied', label: 'Kuliah/Terisi', dot: 'bg-rose-500' },
                   { id: 'reserved', label: 'Terjadwal', dot: 'bg-amber-500' },
-                  { id: 'maintenance', label: 'Servis', dot: 'bg-slate-400' }
+                  { id: 'maintenance', label: 'Maintenance', dot: 'bg-amber-500' },
+                  { id: 'broken', label: 'Rusak', dot: 'bg-rose-600' }
                 ].map(item => {
                   const isFilterActive = statusFilter === item.id;
                   return (

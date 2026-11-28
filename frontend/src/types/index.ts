@@ -1,4 +1,4 @@
-export type RoomStatus = 'available' | 'occupied' | 'reserved' | 'maintenance';
+export type RoomStatus = 'available' | 'occupied' | 'reserved' | 'maintenance' | 'broken';
 
 export type RoomType = 
   | 'classroom' 
@@ -15,6 +15,8 @@ export interface RoomScheduleItem {
   organizer: string;
   timeRange: string;
   type: string;
+  day?: string;
+  holidayDates?: string[];
 }
 
 export interface RoomFacility {

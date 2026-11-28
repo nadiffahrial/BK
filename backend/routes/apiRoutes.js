@@ -11,8 +11,19 @@ import { getCampusProfile, getTodaySchedules, getStudentCategories } from '../co
 import { getAllCsTickets, createCsTicket, updateCsTicketStatus, getCsTicketMessages, sendCsTicketMessage, getVisitorCsTicketMessages, sendVisitorCsTicketMessage } from '../controllers/csController.js';
 import { addClient } from '../sse.js';
 import { rateLimit } from 'express-rate-limit';
+import { recordVisit } from '../controllers/analyticsController.js';
+import { getAdminBuildings, saveAdminBuildings } from '../controllers/adminContentController.js';
+import { createManagedAdmin, deleteManagedAdmin, getManagedAdmins, resetManagedAdminPassword } from '../controllers/superAdminController.js';
 
 const router = Router();
+
+router.post('/analytics/visit', recordVisit);
+router.get('/admin/buildings', getAdminBuildings);
+router.put('/admin/buildings', authenticateToken, authorizeRoles('admin', 'super_admin'), saveAdminBuildings);
+router.get('/super-admin/admins', authenticateToken, authorizeRoles('super_admin'), getManagedAdmins);
+router.post('/super-admin/admins', authenticateToken, authorizeRoles('super_admin'), createManagedAdmin);
+router.put('/super-admin/admins/:id/password', authenticateToken, authorizeRoles('super_admin'), resetManagedAdminPassword);
+router.delete('/super-admin/admins/:id', authenticateToken, authorizeRoles('super_admin'), deleteManagedAdmin);
 
 // Rate Limit untuk Login
 const loginLimiter = rateLimit({

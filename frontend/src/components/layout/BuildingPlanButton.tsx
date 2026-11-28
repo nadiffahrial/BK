@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building } from '../../types';
+import { Building, ViewMode } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { Box, Sparkles, ArrowDownRight } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface BuildingPlanButtonProps {
   onSelect: () => void;
   activeFloorNumber: number;
   onSelectFloor?: (floorNumber: number) => void;
+  viewMode?: ViewMode;
 }
 
 export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
@@ -16,7 +17,8 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
   isActive,
   onSelect,
   activeFloorNumber,
-  onSelectFloor
+  onSelectFloor,
+  viewMode = '3d'
 }) => {
   const { isDark } = useTheme();
   const isGedungA = building.code === 'A';
@@ -35,7 +37,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
           onSelect();
         }
       }}
-      title={`Ketuk untuk langsung beralih ke Denah 3D Multi-Lantai ${building.name}`}
+      title={`Pilih ${building.name} pada denah ${viewMode === '2d' ? '2D' : '3D'}`}
       className={`relative cursor-pointer transition-all duration-300 ease-smooth transform select-none group flex flex-col items-center focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-2xl p-2 ${
         isActive
           ? 'scale-[1.02] -translate-y-1'
@@ -47,7 +49,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
         {/* Top 3D Floating Mode Indicator Badge */}
         <div className="flex items-center justify-between mb-1.5 px-1">
           <div className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 animate-ping' : 'bg-slate-400'}`} />
+            <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
             <span className={`text-[11px] font-extrabold ${isActive ? 'text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}>
               {building.shortName}
             </span>
@@ -59,7 +61,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
               : 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 group-hover:bg-emerald-600 group-hover:text-white'
           }`}>
             <Box className="w-3 h-3 text-emerald-300 group-hover:text-white" />
-            <span>{isActive ? '✦ Denah 3D Aktif' : 'Tap untuk Denah 3D'}</span>
+            <span>{isActive ? `Denah ${viewMode === '2d' ? '2D' : '3D'} Aktif` : `Pilih Denah ${viewMode === '2d' ? '2D' : '3D'}`}</span>
           </span>
         </div>
         <svg 
@@ -221,8 +223,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
                 cy="0"
                 r="11"
                 fill="#ef4444"
-                fillOpacity="0.3"
-                className="animate-ping"
+                fillOpacity="0.16"
               />
               {/* Red pin */}
               <circle
@@ -253,7 +254,6 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
                 stroke="#10b981"
                 strokeWidth="2.5"
                 strokeDasharray="6 4"
-                className="animate-pulse"
               />
             )}
           </g>
@@ -274,10 +274,10 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
                 ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-emerald-600/30 ring-1 ring-emerald-400'
                 : 'bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
             }`}
-            title="Klik untuk langsung membuka Model Denah 3D"
+            title={`Pilih gedung pada mode ${viewMode === '2d' ? '2D' : '3D'}`}
           >
             <Box className="w-3 h-3" />
-            <span>Denah 3D</span>
+            <span>Denah {viewMode === '2d' ? '2D' : '3D'}</span>
           </button>
           <span className="text-[10.5px] text-slate-400 dark:text-slate-500 font-medium hidden sm:inline">
             • {allRooms.length} Ruangan
@@ -304,7 +304,7 @@ export const BuildingPlanButton: React.FC<BuildingPlanButtonProps> = ({
                     ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-xs scale-105 ring-2 ring-emerald-500/20'
                     : 'bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                 }`}
-                title={`Buka Denah 3D Tingkat ${fl.floorNumber}`}
+                title={`Buka denah ${viewMode === '2d' ? '2D' : '3D'} lantai ${fl.floorNumber}`}
               >
                 Lt {fl.floorNumber}
               </button>

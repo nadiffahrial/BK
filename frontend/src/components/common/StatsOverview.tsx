@@ -29,10 +29,11 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
   const occupiedRooms = allRooms.filter(r => r.status === 'occupied').length;
   const reservedRooms = allRooms.filter(r => r.status === 'reserved').length;
   const maintenanceRooms = allRooms.filter(r => r.status === 'maintenance').length;
+  const brokenRooms = allRooms.filter(r => r.status === 'broken').length;
   const totalPeople = allRooms.reduce((acc, r) => acc + (r.currentOccupancy || 0), 0);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
       
       {/* Total Rooms Card */}
       <div 
@@ -117,6 +118,22 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
         </div>
         <div className="text-2xl font-extrabold text-slate-700">{maintenanceRooms}</div>
         <div className="text-[10px] text-slate-500 mt-0.5">Pemeliharaan</div>
+      </div>
+
+      <div
+        onClick={() => onFilterChange('broken')}
+        className={`modern-card-hover p-3.5 rounded-2xl bg-white dark:bg-slate-800 border transition-all cursor-pointer shadow-sm ${
+          activeFilter === 'broken'
+            ? 'border-rose-600 ring-2 ring-rose-500/20 bg-rose-50/50'
+            : 'border-slate-200/80 hover:border-rose-300 hover:shadow-md'
+        }`}
+      >
+        <div className="flex items-center justify-between text-rose-700 mb-1">
+          <span className="text-[11px] font-bold uppercase tracking-wider">Rusak</span>
+          <AlertTriangle className="w-4 h-4 text-rose-600" />
+        </div>
+        <div className="text-2xl font-extrabold text-rose-700">{brokenRooms}</div>
+        <div className="text-[10px] text-rose-600 mt-0.5">Perlu perbaikan</div>
       </div>
 
       {/* Estimated Occupants Card */}

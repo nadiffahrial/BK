@@ -2,16 +2,10 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Building, Room } from '../../types';
 import { 
   Search, 
-  Sparkles, 
   ArrowRight, 
-  GraduationCap, 
-  Laptop, 
-  FileText, 
-  Compass, 
   X,
   Navigation,
   CornerDownLeft,
-  Eye
 } from 'lucide-react';
 
 interface StudentRoomFinderProps {
@@ -50,11 +44,11 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
   // Simple, practical categories
   const categories = [
     { id: 'all', label: 'Semua' },
-    { id: 'panorama', label: '🌐 Ruang 360°', icon: Eye },
-    { id: 'classroom', label: 'Kelas Kuliah', icon: GraduationCap },
-    { id: 'laboratory', label: 'Lab Komputer & Riset', icon: Laptop },
-    { id: 'skripsi', label: 'Ruang Sidang', icon: FileText },
-    { id: 'office', label: 'Layanan Kampus', icon: Compass },
+    { id: 'panorama', label: 'Ruang 360°' },
+    { id: 'classroom', label: 'Kelas kuliah' },
+    { id: 'laboratory', label: 'Laboratorium' },
+    { id: 'skripsi', label: 'Ruang sidang' },
+    { id: 'office', label: 'Layanan kampus' },
   ];
 
   // Filtered rooms
@@ -190,29 +184,22 @@ export const StudentRoomFinder: React.FC<StudentRoomFinderProps> = ({
         )}
       </div>
 
-      {/* Interactive Quick Category Pills (Compact & Simple) */}
-      <div className="flex items-center gap-1.5 mt-2 overflow-x-auto pb-1 scrollbar-none">
-        {categories.map((cat) => {
-          const isCatActive = activeCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                setActiveCategory(cat.id);
-                setIsOpen(true);
-                setSelectedIndex(-1);
-              }}
-              className={`smooth-btn px-3 py-1 rounded-xl text-[11px] font-bold shrink-0 transition-all cursor-pointer border ${
-                isCatActive
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs scale-102'
-                  : 'bg-white dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800'
-              }`}
-            >
-              {cat.label}
-            </button>
-          );
-        })}
+      {/* Compact category filter keeps the search area quiet while preserving filtering. */}
+      <div className="mt-2 flex justify-end">
+        <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span>Jenis ruang</span>
+          <select
+            value={activeCategory}
+            onChange={(event) => {
+              setActiveCategory(event.target.value);
+              setIsOpen(true);
+              setSelectedIndex(-1);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none transition-colors focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          >
+            {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
+          </select>
+        </label>
       </div>
 
       {/* Floating Interactive Results Dropdown */}

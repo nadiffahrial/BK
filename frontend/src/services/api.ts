@@ -3,7 +3,55 @@ import { BUILDINGS_DATA } from '../data/buildingsData';
 
 const API_BASE = '/api';
 
+export interface ManagedAdmin {
+  id: string;
+  name: string;
+  email: string;
+  department: string | null;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export interface AdminActivity {
+  id: number;
+  action: string;
+  details: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  actorName: string | null;
+  targetName: string | null;
+  targetEmail: string | null;
+}
+
+const superAdminRequest = async (path: string, token: string, method = 'GET', body?: unknown) => {
+  const response = await fetch(`${API_BASE}/super-admin/admins${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    ...(body ? { body: JSON.stringify(body) } : {})
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.success === false) throw new Error(payload.message || 'Permintaan pengelolaan admin gagal.');
+  return payload;
+};
+
 export const apiService = {
+  async getManagedAdmins(token: string): Promise<{ admins: ManagedAdmin[]; activity: AdminActivity[] }> {
+    const result = await superAdminRequest('', token);
+    return result.data;
+  },
+
+  async createManagedAdmin(input: { name: string; email: string; department: string; password: string }, token: string): Promise<void> {
+    await superAdminRequest('', token, 'POST', input);
+  },
+
+  async resetManagedAdminPassword(id: string, password: string, token: string): Promise<void> {
+    await superAdminRequest(`/${encodeURIComponent(id)}/password`, token, 'PUT', { password });
+  },
+
+  async deleteManagedAdmin(id: string, token: string): Promise<void> {
+    await superAdminRequest(`/${encodeURIComponent(id)}`, token, 'DELETE');
+  },
+
   // Check backend health
   async checkHealth(): Promise<boolean> {
     try {
@@ -54,6 +102,27 @@ export const apiService = {
       console.warn('Backend unavailable, using local buildings dataset');
     }
     return BUILDINGS_DATA;
+  },
+
+  async getAdminBuildings(): Promise<Building[] | null> {
+    try {
+      const res = await fetch(`${API_BASE}/admin/buildings`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      return Array.isArray(json.data) ? json.data : null;
+    } catch { return null; }
+  },
+
+  async saveAdminBuildings(buildings: Building[], token: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/admin/buildings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ buildings })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Perubahan gagal disimpan ke server.');
+    }
   },
 
   // Update room status

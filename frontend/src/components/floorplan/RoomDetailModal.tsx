@@ -2,27 +2,7 @@ import React, { useState } from 'react';
 import { Room, RoomStatus } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { RoomPanoramaModal } from './RoomPanoramaModal';
-import { 
-  X, 
-  Users, 
-  Thermometer, 
-  Wind, 
-  Wifi, 
-  Tv, 
-  Cpu, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Navigation, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Sparkles, 
-  ArrowRight, 
-  ShieldCheck, 
-  Leaf,
-  Eye,
-  Compass
-} from 'lucide-react';
+import { X, Users, Clock, MapPin, Navigation, ArrowRight, ShieldCheck, Eye } from 'lucide-react';
 
 interface RoomDetailModalProps {
   room: Room | null;
@@ -43,7 +23,11 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   const [isPanoramaOpen, setIsPanoramaOpen] = useState<boolean>(false);
   if (!room) return null;
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isUtilityRoom = /\b(wc|toilet|kamar mandi|tangga|r\.?\s*panel|ruang panel|panel listrik|wudhu|mushola|musala)\b/i.test(room.name);
+  const statusOptions: RoomStatus[] = isUtilityRoom
+    ? ['available', 'maintenance', 'broken']
+    : ['available', 'occupied', 'reserved', 'maintenance', 'broken'];
 
   const getStatusBadge = (status: RoomStatus) => {
     switch (status) {
@@ -54,7 +38,9 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
       case 'reserved':
         return { label: 'Memiliki Jadwal', color: 'bg-amber-100 text-amber-800 border-amber-300' };
       case 'maintenance':
-        return { label: 'Dalam Pemeliharaan / Servis', color: 'bg-slate-100 text-slate-800 border-slate-300' };
+        return { label: 'Dalam Maintenance', color: 'bg-amber-100 text-amber-900 border-amber-300' };
+      case 'broken':
+        return { label: 'Rusak', color: 'bg-rose-100 text-rose-800 border-rose-300' };
     }
   };
 
@@ -76,9 +62,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               <span className="text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border dark:border-slate-700">
                 {room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'} • Tingkat {room.floorNumber}
               </span>
-              <span className={`text-xs px-2.5 py-1 rounded-lg border font-bold ${badge.color}`}>
-                {badge.label}
-              </span>
+              {!isUtilityRoom && <span className={`text-xs px-2.5 py-1 rounded-lg border font-bold ${badge.color}`}>{badge.label}</span>}
             </div>
             <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{room.name}</h3>
           </div>
@@ -92,232 +76,150 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6 text-sm text-slate-600">
+        <div className="p-5 sm:p-6 space-y-5 text-sm text-slate-600 dark:text-slate-300">
           
-          {/* 🌟 Fitur Unggulan: Tampilan Panorama 360° Interaktif 🌟 */}
-          {room.panoramaUrl && (
-            <div className="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-xl shadow-emerald-600/25 border border-emerald-400/30 group transition-all">
-              <div className="absolute -right-8 -bottom-8 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
-              
-              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner border border-white/25 group-hover:rotate-6 transition-transform">
-                    <Eye className="w-6 h-6 text-white animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/25 backdrop-blur-md border border-white/20 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping" />
-                        <span>Panorama 360° Tersedia</span>
-                      </span>
-                      <span className="text-[11px] font-bold text-emerald-100">
-                        Foto Riil Laboratorium
-                      </span>
-                    </div>
-                    <h4 className="font-extrabold text-white text-base">
-                      Eksplorasi Ruangan Virtual 360 Derajat
-                    </h4>
-                    <p className="text-xs text-emerald-100/90 mt-0.5 leading-relaxed max-w-lg">
-                      Putar dan jelajahi kondisi fisik {room.name} secara interaktif 360° dari sudut pandang nyata mahasiswa di dalam kelas.
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsPanoramaOpen(true)}
-                  className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-black shadow-lg shadow-black/10 transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-95 group-hover:shadow-emerald-950/20"
-                >
-                  <Compass className="w-4 h-4 text-emerald-600 animate-spin-slow" />
-                  <span>Buka Tampilan 360°</span>
-                </button>
+          {isUtilityRoom ? (
+            <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60" aria-live="polite">
+              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Status fasilitas</div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${room.status === 'broken' ? 'bg-rose-600' : room.status === 'maintenance' ? 'bg-amber-500' : 'bg-emerald-600'}`} />
+                <span className="text-base font-bold text-slate-900 dark:text-white">{badge.label}</span>
               </div>
+            </section>
+          ) : (
+          <>
+          {/* Panorama details are shown only for regular rooms. */}
+          {room.panoramaUrl && (
+            <div className="flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900/70 dark:bg-emerald-950/25 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-700 dark:bg-slate-900 dark:text-emerald-300">
+                  <Eye className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-900 dark:text-slate-100">Panorama 360°</h4>
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Lihat foto panorama ruangan ini.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPanoramaOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-700 bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-800 dark:border-emerald-600 dark:bg-emerald-700 dark:hover:bg-emerald-600"
+              >
+                Buka panorama <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
 
-          {/* ⭐ Petunjuk Arah Jalan untuk Mahasiswa (Student Wayfinding Guide) ⭐ */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white border border-emerald-200 shadow-xs">
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-800 uppercase tracking-wider">
-                <Navigation className="w-4 h-4 text-emerald-600" />
-                <span>Panduan Menuju Ruangan Ini (Untuk Mahasiswa)</span>
-              </div>
-              <span className="text-[10px] font-mono font-bold bg-white text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
-                Tingkat {room.floorNumber}
-              </span>
+          <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="mb-3 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100">Lokasi & akses</h4>
             </div>
-
-            <div className="space-y-2 text-xs text-slate-700 leading-relaxed">
-              <div className="flex items-start gap-2">
-                <span className="font-extrabold text-emerald-800 shrink-0">1. Gedung:</span>
-                <span>Masuk melalui Lobi Utama {room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'}.</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="font-extrabold text-emerald-800 shrink-0">2. Akses Lantai:</span>
-                <span>{room.floorNumber === 1 ? 'Ruangan berada di Lantai Dasar (Tingkat 1) sepanjang koridor utama.' : 'Gunakan Lift atau Tangga Utama naik 1 lantai menuju Tingkat 2.'}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="font-extrabold text-emerald-800 shrink-0">3. Posisi Ruang:</span>
-                <span>{room.description}</span>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs text-slate-500 dark:text-slate-400">{room.buildingId === 'gedung-a' ? 'Gedung LABTEK 1' : 'Gedung FT.1'} · Lantai {room.floorNumber}</p>
+                {!isUtilityRoom && <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{room.description}</p>}
               </div>
             </div>
-
-            <div className="mt-3 pt-2.5 border-t border-emerald-200/70 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11px] text-emerald-800 font-semibold">Tampilkan garis rute pejalan kaki di peta denah:</span>
-              <button
-                type="button"
-                onClick={() => onTogglePathGuide(room.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  isPathActive
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300'
-                }`}
-              >
-                <Navigation className="w-3.5 h-3.5" />
-                <span>{isPathActive ? '✓ Rute Aktif di Denah' : 'Tampilkan Garis Rute Jalan'}</span>
-              </button>
-            </div>
-          </div>
+          </section>
           
           {/* Admin Quick Status Switcher */}
           {isAdmin && onUpdateRoomStatus && (
-            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200">
-              <div className="flex items-center gap-2 mb-2.5 text-xs font-bold text-emerald-800">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Panel Kontrol Admin — Ubah Status Real-time:</span>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+              <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                <ShieldCheck className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                <span>Ubah status ruangan</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {(['available', 'occupied', 'reserved', 'maintenance'] as RoomStatus[]).map((st) => (
+                {statusOptions.map((st) => (
                   <button
                     key={st}
                     onClick={() => onUpdateRoomStatus(room.id, st)}
                     className={`py-1.5 px-2 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
                       room.status === st
                         ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-white hover:bg-emerald-100 text-slate-700 border border-slate-200'
+                        : 'border border-slate-300 bg-white text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
                     }`}
                   >
-                    {st === 'available' ? 'Tersedia' : st === 'occupied' ? 'Digunakan' : st === 'reserved' ? 'Terjadwal' : 'Servis'}
+                    {st === 'available' ? (isUtilityRoom ? 'Baik' : 'Tersedia') : st === 'occupied' ? 'Digunakan' : st === 'reserved' ? 'Terjadwal' : st === 'maintenance' ? 'Maintenance' : 'Rusak'}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Description */}
-          <p className="text-slate-700 leading-relaxed text-sm font-medium">
-            {room.description}
-          </p>
-
-          {/* Environmental Sensor Telemetry Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-bold">Kapasitas Maks</span>
-                <Users className="w-4 h-4 text-emerald-600" />
+          {/* Room details for rooms with occupancy and equipment. */}
+          {/* Room capacity and equipment availability */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {[
+              { label: 'Kapasitas', value: `${room.capacity} orang` },
+              { label: 'Penghuni', value: `${room.currentOccupancy ?? 0} orang` },
+              { label: 'Peralatan tersedia', value: `${room.facilities.filter(item => item.available).length} dari ${room.facilities.length}` }
+            ].map(item => (
+              <div key={item.label} className="rounded-lg border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800/50">
+                <div className="text-xs text-slate-500 dark:text-slate-400">{item.label}</div>
+                <div className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{item.value}</div>
               </div>
-              <div className="text-lg font-extrabold text-slate-900">{room.capacity} <span className="text-xs font-normal text-slate-500">orang</span></div>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-bold">Suhu Ruangan</span>
-                <Thermometer className="w-4 h-4 text-teal-600" />
-              </div>
-              <div className="text-lg font-extrabold text-teal-700">{room.temperature ?? 22}°C</div>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-bold">Unit AC</span>
-                <Wind className="w-4 h-4 text-emerald-600" />
-              </div>
-              <div className="text-lg font-extrabold text-slate-900">{room.acUnits ?? 2} <span className="text-xs font-normal text-slate-500">Unit</span></div>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-white border border-emerald-100 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-bold">WiFi Kampus</span>
-                <Wifi className="w-4 h-4 text-emerald-600" />
-              </div>
-              <div className="text-lg font-extrabold text-emerald-700">500 <span className="text-xs font-normal text-slate-500">Mbps</span></div>
-            </div>
+            ))}
           </div>
 
           {/* Current Ongoing Activity */}
           {room.currentActivity && (
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-              <div className="flex items-center gap-2 text-amber-800 text-xs font-bold uppercase tracking-wider mb-1">
-                <Clock className="w-4 h-4 text-amber-600" />
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+              <div className="mb-1 flex items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                <Clock className="h-4 w-4 text-amber-700 dark:text-amber-400" />
                 <span>Sedang Berlangsung Saat Ini ({room.currentActivity.startTime} - {room.currentActivity.endTime} WIB)</span>
               </div>
-              <h4 className="text-base font-extrabold text-slate-900 mt-1">{room.currentActivity.title}</h4>
-              <div className="mt-2 text-xs text-slate-700 space-y-0.5 font-medium">
-                <p>👤 <span className="text-slate-500">Penanggung Jawab:</span> {room.currentActivity.personInCharge}</p>
-                <p>🏛 <span className="text-slate-500">Departemen / Unit:</span> {room.currentActivity.department}</p>
+              <h4 className="mt-1 text-base font-semibold text-slate-900 dark:text-slate-100">{room.currentActivity.title}</h4>
+              <div className="mt-2 space-y-0.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                <p><span className="text-slate-500 dark:text-slate-400">Penanggung jawab:</span> {room.currentActivity.personInCharge}</p>
+                <p><span className="text-slate-500 dark:text-slate-400">Unit:</span> {room.currentActivity.department}</p>
               </div>
             </div>
           )}
 
           {/* Facilities List */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-600" />
-              Fasilitas & Perlengkapan Ruangan
+            <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              Peralatan
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {room.facilities.map((fac, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div key={idx} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800/50">
                   <div className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${fac.available ? 'bg-emerald-600' : 'bg-rose-600'}`} />
                     <div>
-                      <div className="text-xs font-bold text-slate-800">{fac.name}</div>
-                      {fac.spec && <div className="text-[10px] text-slate-500">{fac.spec}</div>}
+                      <div className="text-xs font-medium text-slate-800 dark:text-slate-100">{fac.name}</div>
+                      {fac.spec && <div className="text-[10px] text-slate-500 dark:text-slate-400">{fac.spec}</div>}
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                    Siap Pakai
+                  <span className={`text-[10px] font-semibold ${fac.available ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                    {fac.available ? 'Tersedia' : 'Tidak tersedia'}
                   </span>
                 </div>
               ))}
             </div>
           </div>
+          </>
+          )}
 
         </div>
 
         {/* Modal Footer Controls */}
-        <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/80 sm:px-6">
+          {isUtilityRoom ? (
             <button
-              onClick={() => {
-                onTogglePathGuide(room.id);
-              }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                isPathActive
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
-              }`}
+              type="button"
+              onClick={() => onTogglePathGuide(room.id)}
+              className={`inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-xs font-semibold transition-colors ${isPathActive ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-emerald-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200'}`}
             >
-              <Navigation className="w-4 h-4 animate-pulse" />
-              <span>{isPathActive ? 'Sembunyikan Rute Jalan' : 'Tampilkan Rute Jalan ke Ruangan'}</span>
+              <Navigation className="h-4 w-4" />
+              {isPathActive ? 'Sembunyikan rute' : 'Tampilkan rute'}
             </button>
-
-            {room.panoramaUrl && (
-              <button
-                type="button"
-                onClick={() => setIsPanoramaOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-md shadow-teal-600/25 transition-all cursor-pointer active:scale-95"
-                title="Buka Tur Panorama 360 Derajat Ruangan"
-              >
-                <Eye className="w-4 h-4 animate-pulse" />
-                <span>Tur Panorama 360°</span>
-              </button>
-            )}
-          </div>
-
+          ) : <span />}
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           >
             Tutup
           </button>

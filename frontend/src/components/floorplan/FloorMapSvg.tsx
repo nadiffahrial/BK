@@ -57,6 +57,8 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
         return '#fffbeb'; // Light amber
       case 'maintenance':
         return '#f8fafc'; // Light slate
+      case 'broken':
+        return '#fff1f2';
       default:
         return '#ffffff';
     }
@@ -73,6 +75,8 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
         return '#f59e0b';
       case 'maintenance':
         return '#94a3b8';
+      case 'broken':
+        return '#dc2626';
       default:
         return '#cbd5e1';
     }
@@ -234,22 +238,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
               KORIDOR UTAMA LANTAI {floor.floorNumber}
             </text>
 
-            {/* Entrance / Elevator / Staircase Zone */}
-            <g transform={`translate(35, 237)`}>
-              <rect
-                width="110"
-                height="26"
-                rx="6"
-                fill="#065f46"
-                stroke="#047857"
-                strokeWidth="1.5"
-              />
-              <circle cx="14" cy="13" r="4" fill="#34d399" />
-              <text x="26" y="17" fill="#ffffff" fontSize="9" fontWeight="bold">
-                LIFT & TANGGA
-              </text>
-            </g>
-
             {/* Render Rooms */}
             {floor.rooms.map((room) => {
               const { x, y, w, h, doorPosition } = room.coordinates;
@@ -390,7 +378,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                         cy={y + 18}
                         r="4"
                         fill={getStatusStroke(room.status, false)}
-                        className={room.status === 'occupied' ? 'animate-pulse' : ''}
                       />
 
                       {/* Room Title */}
@@ -425,11 +412,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                         >
                           👥 {room.capacity} org
                         </text>
-                        {!isCompact && room.temperature && (
-                          <text x={w - 55} y="12" fill="#0284c7" fontSize="9" fontWeight="bold">
-                            ❄ {room.temperature}°C
-                          </text>
-                        )}
                       </g>
                     </>
                   )}
@@ -437,7 +419,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                   {/* Pulsing Selection Pin if Selected */}
                   {isSelected && (
                     <g transform={`translate(${x + w / 2 - 12}, ${y + 6})`}>
-                      <circle cx="12" cy="12" r="10" fill="#10b981" fillOpacity="0.4" className="animate-ping" />
+                      <circle cx="12" cy="12" r="10" fill="#10b981" fillOpacity="0.18" />
                       <circle cx="12" cy="12" r="6" fill="#059669" />
                     </g>
                   )}
@@ -470,10 +452,6 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeDasharray="6 8"
-                    style={{
-                      strokeDashoffset: '100',
-                      animation: 'dash 1.5s linear infinite'
-                    }}
                   />
                   {/* Target beacon */}
                   <circle
@@ -481,8 +459,7 @@ export const FloorMapSvg: React.FC<FloorMapSvgProps> = ({
                     cy={target.coordinates.y + target.coordinates.h / 2}
                     r="14"
                     fill="#10b981"
-                    opacity="0.4"
-                    className="animate-ping"
+                    opacity="0.18"
                   />
                   <circle
                     cx={target.coordinates.x + target.coordinates.w / 2}

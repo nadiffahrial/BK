@@ -1,7 +1,7 @@
 import React from 'react';
-import { Building, Room } from '../../types';
+import { Building, Room, ViewMode } from '../../types';
 import { BuildingPlanButton } from './BuildingPlanButton';
-import { Compass, Sparkles, Box, MapPin } from 'lucide-react';
+import { Box, MapPin } from 'lucide-react';
 
 interface BuildingCardSelectorProps {
   buildings: Building[];
@@ -10,6 +10,7 @@ interface BuildingCardSelectorProps {
   activeFloorNumber?: number;
   onSelectFloor?: (floorNumber: number) => void;
   onSelectRoom?: (room: Room) => void;
+  viewMode?: ViewMode;
 }
 
 export const BuildingCardSelector: React.FC<BuildingCardSelectorProps> = ({
@@ -17,7 +18,8 @@ export const BuildingCardSelector: React.FC<BuildingCardSelectorProps> = ({
   activeBuildingId,
   onSelectBuilding,
   activeFloorNumber = 1,
-  onSelectFloor
+  onSelectFloor,
+  viewMode = '3d'
 }) => {
   return (
     <div className="mb-6">
@@ -44,15 +46,11 @@ export const BuildingCardSelector: React.FC<BuildingCardSelectorProps> = ({
               </a>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Gedung LABTEK 1 & FT.1 • Ketuk ikon gedung untuk beralih denah 3D isometrik
+              Gedung LABTEK 1 & FT.1 • Pilih gedung untuk memperbarui denah yang sedang dibuka
             </p>
           </div>
         </div>
 
-        <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 hidden sm:flex items-center gap-1.5 shadow-xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-          Beralih ke Denah 3D
-        </span>
       </div>
 
       {/* Standalone Building Icons (NO CARD CONTAINER) */}
@@ -65,6 +63,7 @@ export const BuildingCardSelector: React.FC<BuildingCardSelectorProps> = ({
             onSelect={() => onSelectBuilding(b.id)}
             activeFloorNumber={activeFloorNumber}
             onSelectFloor={onSelectFloor}
+            viewMode={viewMode}
           />
         ))}
       </div>

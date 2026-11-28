@@ -56,6 +56,20 @@ export const initDatabase = async () => {
 };
 
 const createTables = async () => {
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`campus_content\` (
+    \`content_key\` VARCHAR(50) NOT NULL PRIMARY KEY,
+    \`content_json\` JSON NOT NULL,
+    \`updated_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS \`campus_visits\` (
+      \`id\` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      \`visited_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      KEY \`visited_at\` (\`visited_at\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   // Users
   await pool.query(`
     CREATE TABLE IF NOT EXISTS \`users\` (
@@ -69,6 +83,18 @@ const createTables = async () => {
       \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+  await pool.query("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('admin', 'super_admin', 'staff', 'student', 'guest') NOT NULL DEFAULT 'staff'");
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`admin_activity_logs\` (
+    \`id\` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    \`actor_id\` VARCHAR(50) NOT NULL,
+    \`target_user_id\` VARCHAR(50) DEFAULT NULL,
+    \`action\` VARCHAR(64) NOT NULL,
+    \`details\` VARCHAR(255) DEFAULT NULL,
+    \`ip_address\` VARCHAR(45) DEFAULT NULL,
+    \`created_at\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY \`actor_created\` (\`actor_id\`, \`created_at\`),
+    KEY \`target_created\` (\`target_user_id\`, \`created_at\`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
   // Buildings
   await pool.query(`
@@ -108,7 +134,7 @@ const createTables = async () => {
       \`building_id\` VARCHAR(50) NOT NULL,
       \`floor_number\` INT NOT NULL,
       \`type\` VARCHAR(50) DEFAULT 'classroom',
-      \`status\` ENUM('available', 'occupied', 'reserved', 'maintenance') DEFAULT 'available',
+      \`status\` ENUM('available', 'occupied', 'reserved', 'maintenance', 'broken') DEFAULT 'available',
       \`capacity\` INT DEFAULT 30,
       \`current_occupancy\` INT DEFAULT 0,
       \`temperature\` INT DEFAULT 22,
@@ -120,6 +146,8 @@ const createTables = async () => {
       FOREIGN KEY (\`building_id\`) REFERENCES \`buildings\`(\`id\`) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  await pool.query("ALTER TABLE `rooms` MODIFY COLUMN `status` ENUM('available', 'occupied', 'reserved', 'maintenance', 'broken') NOT NULL DEFAULT 'available'");
 
   // Room Facilities
   await pool.query(`

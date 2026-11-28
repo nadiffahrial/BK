@@ -30,6 +30,7 @@ import { UNSIL_LOGO_BASE64 } from './logoBase64';
 
 interface Campus3DBuildingViewerProps {
   buildings: Building[];
+  buildingLabels?: Record<string, string>;
   activeBuildingId: string;
   onSelectBuilding: (buildingId: string) => void;
   activeFloorNumber: number;
@@ -994,6 +995,7 @@ function createHipRoofGeometry(
 
 export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   buildings,
+  buildingLabels = {},
   activeBuildingId,
   onSelectBuilding,
   activeFloorNumber,
@@ -2475,7 +2477,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${selectedCampusBuilding.id === 'dekanat-ft' ? 'bg-amber-300 animate-ping' : 'bg-blue-500'}`} />
               <div>
-                <span className="block font-bold">Gedung Dekanat FT</span>
+                <span className="block font-bold">{buildingLabels['dekanat-ft'] || 'Gedung Dekanat FT'}</span>
                 <span className="text-[10px] font-normal opacity-80 block">SBSN 2022-2023 & Kanopi</span>
               </div>
             </div>
@@ -2500,7 +2502,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${selectedCampusBuilding.id === 'gedung-a' ? 'bg-white animate-ping' : 'bg-emerald-500'}`} />
               <div>
-                <span className="block font-bold">Gedung LABTEK 1</span>
+                <span className="block font-bold">{buildingLabels['gedung-a'] || 'Gedung LABTEK 1'}</span>
                 <span className="text-[10px] font-normal opacity-80 block">Labkom & Riset Terpadu</span>
               </div>
             </div>
@@ -2525,7 +2527,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${selectedCampusBuilding.id === 'gedung-b' ? 'bg-white animate-ping' : 'bg-emerald-500'}`} />
               <div>
-                <span className="block font-bold">Gedung FT.1</span>
+                <span className="block font-bold">{buildingLabels['gedung-b'] || 'Gedung FT.1'}</span>
                 <span className="text-[10px] font-normal opacity-80 block">Informatika & SI</span>
               </div>
             </div>
@@ -2547,7 +2549,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
                 : 'bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-white'
             }`}
           >
-            <span className="font-semibold text-[11px]">Gedung FT.2 (Elektro)</span>
+            <span className="font-semibold text-[11px]">{buildingLabels['gedung-ft2'] || 'Gedung FT.2 (Elektro)'}</span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
               Eksterior
             </span>
@@ -2570,7 +2572,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">
-                  {selectedCampusBuilding.name}
+                  {buildingLabels[selectedCampusBuilding.id] || selectedCampusBuilding.name}
                 </h4>
                 {selectedCampusBuilding.hasFloorPlan ? (
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">

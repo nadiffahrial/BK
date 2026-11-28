@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Room, RoomType, RoomStatus } from '../../types';
 import { 
   Users, 
+  CheckCircle2,
   Thermometer, 
   Tv, 
   Wifi, 
@@ -179,11 +180,7 @@ export const RoomCardGrid: React.FC<RoomCardGridProps> = ({
                   <span className="flex items-center gap-1">
                     <Users className="w-3.5 h-3.5 text-emerald-600" /> {room.capacity}
                   </span>
-                  {room.temperature && (
-                    <span className="flex items-center gap-1">
-                      <Thermometer className="w-3.5 h-3.5 text-teal-600" /> {room.temperature}°C
-                    </span>
-                  )}
+                  <span className="flex items-center gap-1" title="Peralatan tersedia"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> {room.facilities.filter(f => f.available).length} alat</span>
                 </div>
 
                 <div className="flex items-center gap-2">

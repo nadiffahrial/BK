@@ -1,20 +1,15 @@
-# SmartCampus 3D - Backend Server
-Backend API Express & Real-time Server (SSE) dengan integrasi MySQL phpMyAdmin (smartspace_db).
+# Bootstrap Super Admin
 
-## 🚀 Cara Menjalankan
+Super Admin pertama dibuat satu kali dari backend. Jalankan ini setelah database aktif dan backend dependencies sudah terpasang:
 
-```bash
-# 1. Masuk ke folder backend
-cd backend
-
-# 2. Install dependencies (jika pertama kali)
-npm install
-
-# 3. Jalankan server
-npm run dev
-# atau
-npm start
+```powershell
+$env:SUPER_ADMIN_NAME = 'Nama Pengelola'
+$env:SUPER_ADMIN_EMAIL = 'superadmin@kampus.ac.id'
+$env:SUPER_ADMIN_PASSWORD = 'Gunakan-kata-sandi-kuat-12-karakter'
+npm run bootstrap:super-admin
+Remove-Item Env:\SUPER_ADMIN_NAME, Env:\SUPER_ADMIN_EMAIL, Env:\SUPER_ADMIN_PASSWORD
 ```
 
-Server akan berjalan pada: `http://localhost:5000`
-Dokumentasi endpoint: `http://localhost:5000/`
+Jika email tersebut sudah menjadi Admin, bootstrap akan menaikkan akun itu menjadi Super Admin dan mengganti kata sandinya. Jika belum, akun Super Admin baru akan dibuat. Bootstrap berhenti jika Super Admin sudah ada.
+
+Setelah masuk, menu **Kelola Admin** tersedia di sidebar Super Admin. Dari sana akun Admin dapat dibuat, dilihat waktu login terakhirnya, kata sandinya direset, dan akunnya dihapus. Reset dan penghapusan dicatat pada log aktivitas.

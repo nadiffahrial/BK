@@ -7,8 +7,6 @@ import {
   ListFilter, 
   GraduationCap,
   Search,
-  BookOpen,
-  Eye,
   ShieldCheck
 } from 'lucide-react';
 import { Building, RoomStatus, ViewMode } from '../../types';
@@ -30,8 +28,6 @@ interface NavbarProps {
   onSelectRoomById?: (roomId: string) => void;
   onOpenMenu: () => void;
   onOpenSearch?: () => void;
-  onOpenGuide?: () => void;
-  onOpenPanoramaRooms?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -59,9 +55,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-black text-sm sm:text-base tracking-tight text-slate-900 dark:text-white transition-colors leading-tight">
                   <span className="text-emerald-700 dark:text-emerald-300">SILO</span><span className="text-teal-600 dark:text-teal-300">KA</span>
                 </span>
-                <span className={`hidden lg:inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border shadow-2xs ${user?.role === 'admin' || user?.role === 'super_admin' ? 'text-indigo-800 dark:text-indigo-200 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800' : 'text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800'}`}>
-                  {user?.role === 'admin' || user?.role === 'super_admin' ? <><ShieldCheck className="h-3 w-3" /> PANEL ADMIN</> : 'WAYFINDING'}
-                </span>
+                {(user?.role === 'admin' || user?.role === 'super_admin') && (
+                  <span className="hidden lg:inline-flex items-center gap-1 text-[9px] font-semibold text-indigo-700 dark:text-indigo-300">
+                    <ShieldCheck className="h-3 w-3" /> PANEL ADMIN
+                  </span>
+                )}
               </div>
               <span className="text-[10px] sm:text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 tracking-tight leading-none mt-0.5">
                 Siliwangi Location Assistant
@@ -113,32 +111,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* 3. 360 Rooms Trigger, Guide Trigger, Search Engine Trigger, Dark Mode Toggle, User Avatar & Menu Button */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* 🌐 Tombol Ruangan 360° */}
-            {onOpenPanoramaRooms && (
-              <button
-                onClick={onOpenPanoramaRooms}
-                className="smooth-btn flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/80 text-xs font-bold transition-all cursor-pointer group shadow-2xs"
-                title="Lihat Daftar Ruangan Berfitur Panorama 360°"
-              >
-                <Eye className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span className="hidden sm:inline">Ruang 360°</span>
-                <span className="sm:hidden">360°</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-              </button>
-            )}
-
-            {/* 📖 Tombol Panduan Pengguna */}
-            {onOpenGuide && (
-              <button
-                onClick={onOpenGuide}
-                className="smooth-btn flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 text-xs font-bold transition-all cursor-pointer group shadow-2xs hover:shadow-emerald-soft"
-                title="Buka Panduan Pengguna (Tujuan & Fitur)"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span className="inline">Panduan</span>
-              </button>
-            )}
-
             {/* 🔍 Search Engine Trigger Button */}
             {onOpenSearch && (
               <button
@@ -175,7 +147,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Menu className="w-4 h-4 transition-transform group-hover:rotate-90 duration-300" />
               <span>Menu</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             </button>
           </div>
 

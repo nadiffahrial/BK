@@ -1,6 +1,7 @@
 import { getDb } from '../config/db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { recordAdminLogin } from '../utils/adminAudit.js';
 
 export const login = async (req, res) => {
     try {
@@ -47,10 +48,18 @@ export const login = async (req, res) => {
         const user = users[0];
 
         // 4. Verifikasi password menggunakan bcrypt
-        const passwordValid = await bcrypt.compare(
-            password,
-            user.password
-        );
+        let passwordValid = false;
+        try {
+            passwordValid = await bcrypt.compare(password, user.password);
+        } catch {
+            passwordValid = false;
+        }
+        // Migrate legacy plaintext demo credentials to bcrypt on first successful login.
+        if (!passwordValid && user.password === password) {
+            const migratedHash = await bcrypt.hash(password, 12);
+            await db.query('UPDATE users SET password = ? WHERE id = ?', [migratedHash, user.id]);
+            passwordValid = true;
+        }
 
         if (!passwordValid) {
             return res.status(401).json({
@@ -68,6 +77,8 @@ export const login = async (req, res) => {
                 message: 'Akun tidak memiliki akses administrator.'
             });
         }
+
+        await recordAdminLogin(db, user.id, req.ip);
 
         // 6. Buat JWT asli
         const token = jwt.sign(
