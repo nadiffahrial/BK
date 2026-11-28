@@ -26,7 +26,6 @@ import {
   Zap,
   Maximize2
 } from 'lucide-react';
-import { UNSIL_LOGO_BASE64 } from './logoBase64';
 
 interface Campus3DBuildingViewerProps {
   buildings: Building[];
@@ -55,144 +54,22 @@ interface CampusBuildingDef {
   hasFrontCanopy?: boolean;
   canopyX?: number;
   isDekanat?: boolean;
-  signType?: 'ft1' | 'ft2' | 'labtek1' | 'sipil' | 'dekanat' | 'generic';
+  signType?: 'ft1' | 'ft2' | 'labtek1' | 'dekanat' | 'generic';
   description: string;
 }
 
 const ALL_CAMPUS_BUILDINGS: CampusBuildingDef[] = [
-  // 1. Gedung LABTEK 1 (Lajur Barat-Depan, Dilingkari Merah, Denah Lantai 1 & 2 Tersedia ✓)
-  {
-    id: 'gedung-a',
-    name: 'Gedung LABTEK 1',
-    shortName: 'LABTEK 1',
-    code: 'A',
-    role: 'Laboratorium Komputer & Riset Teknik Terpadu',
-    hasFloorPlan: true,
-    x: -28,
-    z: 14,
-    length: 50,
-    depth: 13.5,
-    height: 7.8,
-    roofHeight: 5.2,
-    hasFrontCanopy: true,
-    canopyX: 8,
-    signType: 'labtek1',
-    description: 'Pusat laboratorium komputer, jaringan, multimedia, dan riset AI Fakultas Teknik (Denah Tersedia).'
-  },
-  // 2. Gedung FT.1 (Lajur Barat-Tengah, Dilingkari Merah, Denah Lantai 1 & 2 Tersedia ✓)
-  {
-    id: 'gedung-b',
-    name: 'Gedung FT.1 (Informatika & SI)',
-    shortName: 'FT.1',
-    code: 'B',
-    role: 'Informatika & Sistem Informasi (Kuliah & Sidang)',
-    hasFloorPlan: true,
-    x: -26,
-    z: -16,
-    length: 52,
-    depth: 13.5,
-    height: 7.8,
-    roofHeight: 5.2,
-    hasFrontCanopy: true,
-    canopyX: -12,
-    signType: 'ft1',
-    description: 'Gedung perkuliahan program studi Informatika dan Sistem Informasi, serta ruang sidang skripsi (Denah Tersedia).'
-  },
-  // 3. Gedung Dekanat & Pusat Administrasi Fakultas Teknik (Lajur Tengah-Depan, Sesuai Google Earth Pin Merah & Foto Fasad)
-  {
-    id: 'dekanat-ft',
-    name: 'Gedung Dekanat & Ruang Kuliah Terpadu FT',
-    shortName: 'DEKANAT FT',
-    code: 'DK',
-    role: 'Dekanat & Ruang Kuliah Terpadu (SBSN 2022-2023)',
-    hasFloorPlan: false,
-    x: 26,
-    z: 14,
-    length: 48,
-    depth: 14.5,
-    height: 8.6,
-    roofHeight: 5.5,
-    hasFrontCanopy: true,
-    canopyX: -4,
-    isDekanat: true,
-    signType: 'dekanat',
-    description: 'Gedung Dekanat, kantor pimpinan, dan Ruang Kuliah Terpadu SBSN 2022-2023 dengan kanopi FAKULTAS TEKNIK dan logo resmi UNSIL.'
-  },
-  // 4. Gedung FT.2 - Teknik Elektro (Lajur Tengah, Sejajar di Belakang Dekanat)
-  {
-    id: 'gedung-ft2',
-    name: 'Gedung FT.2 (Teknik Elektro)',
-    shortName: 'FT.2',
-    code: 'FT2',
-    role: 'Perkuliahan & Laboratorium Teknik Elektro',
-    hasFloorPlan: false,
-    x: 28,
-    z: -16,
-    length: 50,
-    depth: 13.5,
-    height: 7.8,
-    roofHeight: 5.2,
-    hasFrontCanopy: true,
-    canopyX: -10,
-    signType: 'ft2',
-    description: 'Gedung perkuliahan teori, ruang dosen, dan laboratorium praktikum program studi Teknik Elektro.'
-  },
-  // 5. Gedung Laboratorium Teknik Sipil Mugarsari (Lajur Timur-Depan, Sesuai Google Earth)
-  {
-    id: 'lab-sipil',
-    name: 'Gedung Lab Teknik Sipil Mugarsari',
-    shortName: 'LAB SIPIL',
-    code: 'TS',
-    role: 'Laboratorium Rekayasa Struktur & Uji Bahan Sipil',
-    hasFloorPlan: false,
-    x: 62,
-    z: 14,
-    length: 50,
-    depth: 14.0,
-    height: 8.0,
-    roofHeight: 5.4,
-    hasFrontCanopy: true,
-    canopyX: -6,
-    signType: 'sipil',
-    description: 'Fasilitas pengujian bahan konstruksi, mekanika tanah, struktur beton, dan rekayasa hidrolika Teknik Sipil Mugarsari.'
-  },
-  // 6. Gedung Kuliah & Lab Riset Terpadu Panjang (Lajur Tengah-Utara, Gedung Terpanjang di Google Earth)
-  {
-    id: 'lab-terpadu-panjang',
-    name: 'Gedung Kuliah & Lab Riset Terpadu',
-    shortName: 'KULIAH TERPADU',
-    code: 'KTP',
-    role: 'Gedung Kuliah Terpadu Bersama & Riset Keteknikan',
-    hasFloorPlan: false,
-    x: 2,
-    z: -46,
-    length: 68,
-    depth: 14.0,
-    height: 8.2,
-    roofHeight: 5.5,
-    hasFrontCanopy: true,
-    canopyX: 0,
-    signType: 'generic',
-    description: 'Gedung perkuliahan terpanjang di kampus untuk kelas bersama lintas program studi dan riset keteknikan terpadu.'
-  },
-  // 7. Gedung Laboratorium Teknik Mesin & Energi Terbarukan (Lajur Timur-Utara)
-  {
-    id: 'lab-mesin',
-    name: 'Gedung Lab Teknik Mesin & Energi',
-    shortName: 'LAB MESIN',
-    code: 'TM',
-    role: 'Laboratorium Konversi Energi & Manufaktur CNC',
-    hasFloorPlan: false,
-    x: 62,
-    z: -40,
-    length: 48,
-    depth: 13.5,
-    height: 7.6,
-    roofHeight: 5.0,
-    signType: 'generic',
-    description: 'Fasilitas praktikum manufaktur, CNC, permesinan, pengelasan, dan riset konversi energi Fakultas Teknik.'
-  }
+  { id: 'gedung-ft3', name: 'Gedung FT 3', shortName: 'FT 3', code: 'FT3', role: 'Gedung FT 3', hasFloorPlan: false, x: -30, z: -37, length: 40, depth: 13, height: 7.8, roofHeight: 5.2, signType: 'generic', description: 'Gedung FT 3, posisi baris utara sisi barat pada denah kawasan.' },
+  { id: 'gedung-lt3', name: 'Gedung LT 3', shortName: 'LT 3', code: 'LT3', role: 'Gedung LT 3', hasFloorPlan: false, x: 26, z: -40, length: 46, depth: 16, height: 7.8, roofHeight: 5.2, signType: 'generic', description: 'Gedung LT 3, posisi baris utara sisi timur pada denah kawasan.' },
+  { id: 'gedung-b', name: 'Gedung FT 1', shortName: 'FT 1', code: 'B', role: 'Ruang kuliah dan fasilitas Fakultas Teknik', hasFloorPlan: true, x: -30, z: -19, length: 40, depth: 13, height: 7.8, roofHeight: 5.2, hasFrontCanopy: true, canopyX: 0, signType: 'ft1', description: 'Gedung FT 1, baris tengah sisi barat. Denah lantai interaktif tersedia.' },
+  { id: 'gedung-ft2', name: 'Gedung FT 2', shortName: 'FT 2', code: 'FT2', role: 'Gedung FT 2', hasFloorPlan: false, x: 27, z: -19, length: 40, depth: 13, height: 7.8, roofHeight: 5.2, signType: 'ft2', description: 'Gedung FT 2, baris tengah sisi timur pada denah kawasan.' },
+  { id: 'gedung-a', name: 'Gedung LT 1', shortName: 'LT 1', code: 'A', role: 'Laboratorium dan ruang kuliah terpadu', hasFloorPlan: true, x: -26, z: 2, length: 47, depth: 17, height: 7.8, roofHeight: 5.2, hasFrontCanopy: true, canopyX: 0, signType: 'labtek1', description: 'Gedung LT 1, baris selatan sisi barat. Denah lantai interaktif tersedia.' },
+  { id: 'gedung-lt2', name: 'Gedung LT 2', shortName: 'LT 2', code: 'LT2', role: 'Gedung LT 2', hasFloorPlan: false, x: 27, z: 2, length: 47, depth: 17, height: 7.8, roofHeight: 5.2, signType: 'generic', description: 'Gedung LT 2, baris selatan sisi timur pada denah kawasan.' },
+  { id: 'dekanat-ft', name: 'Gedung Dekan', shortName: 'DEKAN', code: 'DK', role: 'Dekan Fakultas Teknik', hasFloorPlan: false, x: 1, z: 24, length: 44, depth: 16, height: 8.2, roofHeight: 5.2, hasFrontCanopy: true, canopyX: 0, isDekanat: true, signType: 'dekanat', description: 'Gedung Dekan di bagian depan kawasan.' }
 ];
+
+// All campus masses remain visible; only two currently have interactive floor plans.
+const FLOORPLAN_BUILDINGS = ALL_CAMPUS_BUILDINGS.filter(building => building.hasFloorPlan);
 
 // =========================================================================
 // UNREAL ENGINE 5 PBR PROCEDURAL TEXTURES & NORMAL MAP GENERATORS
@@ -511,88 +388,86 @@ function generateHerringbonePbrTextures(): { diffuse: THREE.CanvasTexture; bump:
   return { diffuse, bump };
 }
 
-// 5. Panel Fasad Biru SBSN Dekanat Resolusi Tinggi (Ornamen Batik Chevron, Logo Resmi UNSIL Asli, Teks Emas SBSN)
+// 5. Panel Fasad Biru SBSN Dekanat Resolusi Tinggi (Ornamen Batik Chevron, Lambang UNSIL Emas)
 function generateDekanatFeatureWallTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 1024;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  const texture = new THREE.CanvasTexture(canvas);
+  // Latar biru tua cobalt megah
+  ctx.fillStyle = '#0d3875';
+  ctx.fillRect(0, 0, 1024, 512);
 
-  const drawContent = (logoImg?: HTMLImageElement) => {
-    // Latar biru tua cobalt megah
-    ctx.fillStyle = '#0d3875';
-    ctx.fillRect(0, 0, 1024, 512);
+  // Ornamen Batik Geometris Putih Sisi Kiri
+  ctx.save();
+  ctx.strokeStyle = '#ffffff';
+  ctx.fillStyle = '#ffffff';
+  ctx.lineWidth = 4;
 
-    // Ornamen Batik Geometris Putih Sisi Kiri
-    ctx.save();
-    ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = '#ffffff';
-    ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(40, 460);
+  ctx.lineTo(140, 256);
+  ctx.lineTo(40, 60);
+  ctx.lineTo(95, 60);
+  ctx.lineTo(195, 256);
+  ctx.lineTo(95, 460);
+  ctx.closePath();
+  ctx.fill();
 
+  ctx.strokeStyle = '#0d3875';
+  ctx.lineWidth = 3;
+  for (let y = 80; y < 450; y += 32) {
     ctx.beginPath();
-    ctx.moveTo(40, 460);
-    ctx.lineTo(140, 256);
-    ctx.lineTo(40, 60);
-    ctx.lineTo(95, 60);
-    ctx.lineTo(195, 256);
-    ctx.lineTo(95, 460);
-    ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(60, y);
+    ctx.lineTo(170, y);
+    ctx.stroke();
+  }
+  ctx.restore();
 
-    ctx.strokeStyle = '#0d3875';
-    ctx.lineWidth = 3;
-    for (let y = 80; y < 450; y += 32) {
-      ctx.beginPath();
-      ctx.moveTo(60, y);
-      ctx.lineTo(170, y);
-      ctx.stroke();
-    }
-    ctx.restore();
+  // Logo Universitas Siliwangi Emas & Hijau
+  const logoCenterX = 560;
+  const logoCenterY = 120;
+  const logoRadius = 52;
 
-    // Gambar Logo Resmi Universitas Siliwangi (Perisai Hijau & Harimau Maung Siliwangi Asli)
-    const logoCenterX = 560;
-    const logoCenterY = 118;
-    const logoSize = 135;
+  ctx.beginPath();
+  ctx.arc(logoCenterX, logoCenterY, logoRadius + 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#eab308';
+  ctx.fill();
 
-    if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
-      ctx.drawImage(logoImg, logoCenterX - logoSize / 2, logoCenterY - logoSize / 2, logoSize, logoSize);
-    } else {
-      ctx.beginPath();
-      ctx.arc(logoCenterX, logoCenterY, 52, 0, Math.PI * 2);
-      ctx.fillStyle = '#15803d';
-      ctx.fill();
-    }
+  ctx.beginPath();
+  ctx.arc(logoCenterX, logoCenterY, logoRadius, 0, Math.PI * 2);
+  ctx.fillStyle = '#15803d';
+  ctx.fill();
 
-    // Teks Emas Resmi SBSN
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#fde047';
+  ctx.beginPath();
+  ctx.arc(logoCenterX, logoCenterY, 20, 0, Math.PI * 2);
+  ctx.fill();
 
-    const drawGoldText = (text: string, x: number, y: number, font: string) => {
-      ctx.font = font;
-      ctx.fillStyle = '#061c40';
-      ctx.fillText(text, x + 2, y + 2);
-      ctx.fillStyle = '#fbbf24';
-      ctx.fillText(text, x, y);
-    };
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 9px "Plus Jakarta Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('UNIVERSITAS SILIWANGI', logoCenterX, logoCenterY + 44);
 
-    drawGoldText('LABORATORIUM DAN RUANG KULIAH TERPADU', logoCenterX, 225, '800 28px "Plus Jakarta Sans", sans-serif');
-    drawGoldText('UNIVERSITAS SILIWANGI', logoCenterX, 275, '900 36px "Plus Jakarta Sans", sans-serif');
-    drawGoldText('FAKULTAS TEKNIK', logoCenterX, 330, '900 38px "Plus Jakarta Sans", sans-serif');
-    drawGoldText('SBSN TAHUN ANGGARAN 2022-2023', logoCenterX, 395, '800 24px "Plus Jakarta Sans", sans-serif');
+  // Teks Emas Resmi SBSN
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
 
-    texture.needsUpdate = true;
+  const drawGoldText = (text: string, x: number, y: number, font: string) => {
+    ctx.font = font;
+    ctx.fillStyle = '#061c40';
+    ctx.fillText(text, x + 2, y + 2);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText(text, x, y);
   };
 
-  const img = new Image();
-  img.onload = () => {
-    drawContent(img);
-  };
-  img.src = UNSIL_LOGO_BASE64;
-  drawContent();
+  drawGoldText('LABORATORIUM DAN RUANG KULIAH TERPADU', logoCenterX, 225, '800 28px "Plus Jakarta Sans", sans-serif');
+  drawGoldText('UNIVERSITAS SILIWANGI', logoCenterX, 275, '900 36px "Plus Jakarta Sans", sans-serif');
+  drawGoldText('FAKULTAS TEKNIK', logoCenterX, 330, '900 38px "Plus Jakarta Sans", sans-serif');
+  drawGoldText('SBSN TAHUN ANGGARAN 2022-2023', logoCenterX, 395, '800 24px "Plus Jakarta Sans", sans-serif');
 
-  return texture;
+  return new THREE.CanvasTexture(canvas);
 }
 
 // 6. Plang Kanopi Depan: "FAKULTAS TEKNIK"
@@ -744,54 +619,6 @@ function generateLabtek1SignTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#ffffff';
   ctx.fillText('LABORATORIUM TEKNIK TERPADU', 256, 280);
   ctx.fillText('INFORMATIKA • ELEKTRO • SIPIL', 256, 315);
-
-  return new THREE.CanvasTexture(canvas);
-}
-
-function generateSipilSignTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d')!;
-
-  ctx.fillStyle = '#3ea6ff';
-  ctx.fillRect(0, 0, 512, 512);
-
-  ctx.fillStyle = '#0f172a';
-  ctx.strokeStyle = '#1e3a8a';
-  ctx.lineWidth = 3;
-  const ventTopY = 70;
-  [110, 207, 304, 401].forEach((vx) => {
-    ctx.fillRect(vx - 20, ventTopY - 20, 40, 40);
-    ctx.strokeRect(vx - 20, ventTopY - 20, 40, 40);
-  });
-
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  ctx.font = '900 82px "Plus Jakarta Sans", sans-serif';
-  ctx.fillStyle = '#1e3a8a';
-  ctx.fillText('LAB SIPIL', 258, 208);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('LAB SIPIL', 256, 205);
-
-  ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
-  ctx.fillStyle = '#1e3a8a';
-  ctx.fillText('TEKNIK SIPIL MUGARSARI', 257, 281);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('TEKNIK SIPIL MUGARSARI', 256, 280);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(50, 350, 412, 10);
-
-  const ventBotY = 425;
-  [110, 207, 304, 401].forEach((vx) => {
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(vx - 20, ventBotY - 20, 40, 40);
-    ctx.strokeRect(vx - 20, ventBotY - 20, 40, 40);
-  });
 
   return new THREE.CanvasTexture(canvas);
 }
@@ -1006,7 +833,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // State Kontrol
-  const [cameraPreset, setCameraPreset] = useState<'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso' | 'satellite'>('front');
+  const [cameraPreset, setCameraPreset] = useState<'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso'>('front');
   const [graphicsQuality, setGraphicsQuality] = useState<'ue5_ultra' | 'ue5_high'>('ue5_ultra');
   const [isExploded, setIsExploded] = useState<boolean>(false);
   const [isAutoRotate, setIsAutoRotate] = useState<boolean>(false);
@@ -1014,9 +841,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   const [showPhotoModal, setShowPhotoModal] = useState<boolean>(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState<number>(0);
   const [hoveredBuildingId, setHoveredBuildingId] = useState<string | null>(null);
-  const [selectedCampusBuilding, setSelectedCampusBuilding] = useState<CampusBuildingDef>(
-    ALL_CAMPUS_BUILDINGS.find(b => b.id === 'dekanat-ft') || ALL_CAMPUS_BUILDINGS[2]
-  );
+  const [selectedCampusBuilding, setSelectedCampusBuilding] = useState<CampusBuildingDef>(FLOORPLAN_BUILDINGS[0]);
 
   // Three.js References
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -1045,11 +870,11 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     prevY: 0,
     azimuth: 0.04,
     polar: 1.40,
-    distance: 50,
-    target: new THREE.Vector3(24, 4.5, 14),
+    distance: 140,
+    target: new THREE.Vector3(0, 5, -5),
     targetAzimuth: 0.04,
-    targetPolar: 1.40,
-    targetDistance: 50
+    targetPolar: 1.05,
+    targetDistance: 140
   });
 
   useEffect(() => {
@@ -1064,51 +889,44 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
   }, [selectedCampusBuilding]);
 
   // Preset Kamera Akurat (Unreal Engine Cinematic Focal Points)
-  const applyCameraPreset = useCallback((preset: 'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso' | 'satellite') => {
+  const applyCameraPreset = useCallback((preset: 'drone' | 'labtek_ft1' | 'courtyard' | 'front' | 'road_side' | 'iso') => {
     setCameraPreset(preset);
     const os = orbitState.current;
 
     if (preset === 'front') {
-      // PERSIS FOTO 1: Tampak Depan Fasad Dekanat & Kanopi "FAKULTAS TEKNIK" (SBSN 2022-2023)
-      os.targetAzimuth = 0.04;
-      os.targetPolar = 1.40;
-      os.targetDistance = 48;
-      os.target.set(24, 4.5, 14);
+      os.targetAzimuth = 0.20;
+      os.targetPolar = 1.18;
+      os.targetDistance = 100;
+      os.target.set(0, 5, 10);
     } else if (preset === 'road_side') {
       // PERSIS FOTO 2: Akses Jalan Aspal Depan, Talud Batu Kali, Barisan Motor & Gedung FT.2
       os.targetAzimuth = 0.42;
       os.targetPolar = 1.42;
-      os.targetDistance = 56;
-      os.target.set(32, 4.0, -8);
+      os.targetDistance = 110;
+      os.target.set(0, 5, 10);
     } else if (preset === 'courtyard') {
       // PERSIS FOTO 3: Sudut Jalan Paving Herringbone Tengah & Kanopi Penghubung
       os.targetAzimuth = 0.02;
       os.targetPolar = 1.34;
-      os.targetDistance = 52;
-      os.target.set(2, 4, 0);
+      os.targetDistance = 95;
+      os.target.set(0, 5, 0);
     } else if (preset === 'labtek_ft1') {
       // Fokus ke LABTEK 1 & FT.1 (yang dilingkari merah)
       os.targetAzimuth = 0.52;
       os.targetPolar = 0.88;
-      os.targetDistance = 72;
-      os.target.set(-26, 5, -2);
+      os.targetDistance = 62;
+      os.target.set(-30, 5, -9);
     } else if (preset === 'drone') {
       // PERSIS FOTO DRONE: Sudut Udara Seluruh Kawasan Fakultas
       os.targetAzimuth = 0.58;
       os.targetPolar = 0.82;
       os.targetDistance = 140;
-      os.target.set(16, 4, -14);
+      os.target.set(0, 5, -5);
     } else if (preset === 'iso') {
       os.targetAzimuth = 0.785;
       os.targetPolar = 0.95;
-      os.targetDistance = 130;
-      os.target.set(16, 4, -14);
-    } else if (preset === 'satellite') {
-      // PERSIS GOOGLE EARTH SATELIT: Sudut Atas Miring Satelit Mugarsari
-      os.targetAzimuth = 0.05;
-      os.targetPolar = 0.40;
-      os.targetDistance = 160;
-      os.target.set(16, 2, -14);
+      os.targetDistance = 125;
+      os.target.set(0, 5, -5);
     }
   }, []);
 
@@ -1266,7 +1084,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     const ft1SignTexture = generateFT1SignTexture();
     const ft2SignTexture = generateFT2SignTexture();
     const labtek1SignTexture = generateLabtek1SignTexture();
-    const sipilSignTexture = generateSipilSignTexture();
     const frontGridWindowTexture = generateFrontGridWindowTexture();
     const retainingWallTexture = generateRetainingWallTexture();
     const curbTexture = generateCurbTexture();
@@ -1386,133 +1203,26 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // 7c. Danau Retensi Timur (Air Animasi Glistening Water Sesuai Google Earth)
-    const pondGeo = new THREE.CylinderGeometry(24, 30, 0.45, 48);
-    const pondMat = new THREE.MeshPhysicalMaterial({
-      color: '#0284c7',
-      roughness: 0.03,
-      metalness: 0.95,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.03,
-      transparent: true,
-      opacity: 0.94,
-      envMapIntensity: 2.6
-    });
-    const pond = new THREE.Mesh(pondGeo, pondMat);
-    pond.position.set(96, 0.05, 12);
-    pond.scale.set(1.5, 1, 1.15);
-    scene.add(pond);
-    waterMeshRef.current = pond;
-
-    // 7d. Paving Herringbone PBR Koridor & Halaman
-    const pavingMat = new THREE.MeshPhysicalMaterial({
-      map: pavingDiff,
-      bumpMap: pavingBump,
-      bumpScale: 0.04,
-      roughness: 0.65,
-      metalness: 0.1,
-      envMapIntensity: 0.65
-    });
-
-    // Koridor Paving Utama Tengah
-    const mainStreetPaving = new THREE.Mesh(new THREE.PlaneGeometry(42, 136), pavingMat);
-    mainStreetPaving.rotation.x = -Math.PI / 2;
-    mainStreetPaving.position.set(2, -0.04, -12);
-    mainStreetPaving.receiveShadow = true;
-    scene.add(mainStreetPaving);
-
-    // Plaza Barat (Area LABTEK 1 & FT.1)
-    const westPlaza = new THREE.Mesh(new THREE.PlaneGeometry(68, 36), pavingMat);
-    westPlaza.rotation.x = -Math.PI / 2;
-    westPlaza.position.set(-26, -0.05, 0);
-    westPlaza.receiveShadow = true;
-    scene.add(westPlaza);
-
-    // Plaza Timur (Area Dekanat & Lab Sipil)
-    const eastPlaza = new THREE.Mesh(new THREE.PlaneGeometry(90, 50), pavingMat);
-    eastPlaza.rotation.x = -Math.PI / 2;
-    eastPlaza.position.set(44, -0.04, 25);
-    eastPlaza.receiveShadow = true;
-    scene.add(eastPlaza);
-
-    // 7e. Jembatan Kanopi Koridor Penghubung Biru
-    const bridgeCanopyGeo = new THREE.BoxGeometry(24, 0.45, 6);
-    const bridgeCanopy = new THREE.Mesh(bridgeCanopyGeo, pillarRoyalBlueMat);
-    bridgeCanopy.position.set(2, 4.2, 0);
-    bridgeCanopy.castShadow = true;
-    scene.add(bridgeCanopy);
-
-    [-8, 8].forEach((bx) => {
-      [-2.4, 2.4].forEach((bz) => {
-        const bp = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4.2, 0.5), pillarRoyalBlueMat);
-        bp.position.set(2 + bx, 2.1, bz);
-        bp.castShadow = true;
-        scene.add(bp);
-      });
-    });
-
-    // 7f. Jalan Aspal Depan & Area Parkir Utama Barat (Persis Google Earth Mugarsari)
-    const asphaltMat = new THREE.MeshPhysicalMaterial({
-      map: asphaltDiff,
-      roughness: 0.72,
-      metalness: 0.15,
-      clearcoat: 0.35, // Efek aspal terawat dengan sedikit kilau spekular
-      envMapIntensity: 0.5
-    });
-
-    // Area Parkir Barat Luas (Parkiran Mahasiswa & Dosen FT)
-    const westParkingMesh = new THREE.Mesh(new THREE.PlaneGeometry(46, 115), asphaltMat);
-    westParkingMesh.rotation.x = -Math.PI / 2;
-    westParkingMesh.position.set(-66, -0.08, -6);
-    westParkingMesh.receiveShadow = true;
-    scene.add(westParkingMesh);
-
-    // Kanopi Peneduh Parkir Motor Barat
-    const parkShedMat = new THREE.MeshStandardMaterial({ color: '#1e3a8a', metalness: 0.8, roughness: 0.25 });
-    const parkShedGeo = new THREE.BoxGeometry(36, 0.2, 5.5);
-    [-35, 10].forEach(sz => {
-      const shed = new THREE.Mesh(parkShedGeo, parkShedMat);
-      shed.position.set(-66, 3.2, sz);
-      shed.castShadow = true;
-      scene.add(shed);
-    });
-
-    // Jalan Aspal Akses Utama Depan
-    const frontRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(210, 18), asphaltMat);
-    frontRoadMesh.rotation.x = -Math.PI / 2;
-    frontRoadMesh.position.set(8, -0.1, 48);
-    frontRoadMesh.receiveShadow = true;
-    scene.add(frontRoadMesh);
-
-    // Jalan Akses Samping Timur Menuju Danau
-    const sideRoadMesh = new THREE.Mesh(new THREE.PlaneGeometry(16, 110), asphaltMat);
-    sideRoadMesh.rotation.x = -Math.PI / 2;
-    sideRoadMesh.position.set(96, -0.1, -12);
-    sideRoadMesh.receiveShadow = true;
-    scene.add(sideRoadMesh);
-    scene.add(sideRoadMesh);
-
-    // Talud Batu Kali & Kanstin
-    const retainingWallMat = new THREE.MeshStandardMaterial({ map: retainingWallTexture, roughness: 0.9 });
-    const curbMat = new THREE.MeshStandardMaterial({ map: curbTexture, roughness: 0.6 });
-
-    const wall1 = new THREE.Mesh(new THREE.BoxGeometry(70, 1.2, 0.8), retainingWallMat);
-    wall1.position.set(25, 0.45, 39.5);
-    wall1.castShadow = true;
-    scene.add(wall1);
-
-    const curb1 = new THREE.Mesh(new THREE.BoxGeometry(70, 0.25, 0.35), curbMat);
-    curb1.position.set(25, 1.15, 39.5);
-    scene.add(curb1);
-
-    const wallSide = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 54), retainingWallMat);
-    wallSide.position.set(51, 0.45, 14);
-    wallSide.castShadow = true;
-    scene.add(wallSide);
-
-    const curbSide = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.25, 54), curbMat);
-    curbSide.position.set(51, 1.15, 14);
-    scene.add(curbSide);
+    // Satellite plan from the user's Google Maps reference; physical building masses align to its footprints.
+    const mapCanvas = document.createElement('canvas');
+    mapCanvas.width = 1185;
+    mapCanvas.height = 1168;
+    const mapContext = mapCanvas.getContext('2d');
+    const mapTexture = new THREE.CanvasTexture(mapCanvas);
+    mapTexture.colorSpace = THREE.SRGBColorSpace;
+    const mapImage = new Image();
+    mapImage.onload = () => {
+      mapContext?.drawImage(mapImage, 0, 0, 1185, 1168);
+      mapTexture.needsUpdate = true;
+    };
+    mapImage.src = '/images/campus-siteplan-satellite.jpg';
+    const sitePlan = new THREE.Mesh(
+      new THREE.PlaneGeometry(110, 108.4),
+      new THREE.MeshBasicMaterial({ map: mapTexture })
+    );
+    sitePlan.rotation.x = -Math.PI / 2;
+    sitePlan.position.set(0, -0.08, 0);
+    scene.add(sitePlan);
 
     // 8. TIANG BENDERA INDONESIA MERAH PUTIH DENGAN GELOMBANG REALISTIS
     const flagGroup = new THREE.Group();
@@ -1861,8 +1571,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
         signMat = new THREE.MeshStandardMaterial({ map: ft2SignTexture, roughness: 0.35 });
       } else if (bldg.signType === 'labtek1') {
         signMat = new THREE.MeshStandardMaterial({ map: labtek1SignTexture, roughness: 0.35 });
-      } else if (bldg.signType === 'sipil') {
-        signMat = new THREE.MeshStandardMaterial({ map: sipilSignTexture, roughness: 0.35 });
       }
 
       if (signMat) {
@@ -1886,22 +1594,6 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
         const panelMesh = new THREE.Mesh(new THREE.PlaneGeometry(panelW, panelH), featurePanelMat);
         panelMesh.position.set(-14.5, 0.5 + floorHeight, bldg.depth / 2 + 0.18);
         bldgGroup.add(panelMesh);
-
-        // Emblem Logo Resmi Universitas Siliwangi Timbul 3D (Perisai Hijau & Harimau Maung Siliwangi Asli)
-        const logoBadgeTexture = new THREE.TextureLoader().load(UNSIL_LOGO_BASE64);
-        const logoBadgeMat = new THREE.MeshPhysicalMaterial({
-          map: logoBadgeTexture,
-          transparent: true,
-          roughness: 0.25,
-          metalness: 0.2,
-          clearcoat: 0.8,
-          envMapIntensity: 1.5
-        });
-        const logoBadgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 2.35), logoBadgeMat);
-        const logoPosX = -14.5 + panelW * (560 / 1024 - 0.5);
-        const logoPosY = 0.5 + floorHeight + panelH * (0.5 - 118 / 512);
-        logoBadgeMesh.position.set(logoPosX, logoPosY, bldg.depth / 2 + 0.24);
-        bldgGroup.add(logoBadgeMesh);
       }
 
       bldgGroup.add(floor2Group);
@@ -1934,6 +1626,31 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
 
       bldgGroup.add(roofGroup);
       buildingRoofsRef.current.set(bldg.id, roofGroup);
+
+      const displayName = buildingLabels[bldg.id] || buildings.find(building => building.id === bldg.id)?.shortName || bldg.shortName;
+      const labelCanvas = document.createElement('canvas');
+      labelCanvas.width = 768;
+      labelCanvas.height = 160;
+      const labelCtx = labelCanvas.getContext('2d');
+      if (labelCtx) {
+        labelCtx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        labelCtx.beginPath();
+        labelCtx.roundRect(8, 8, 752, 144, 22);
+        labelCtx.fill();
+        labelCtx.strokeStyle = '#dbeafe';
+        labelCtx.lineWidth = 4;
+        labelCtx.stroke();
+        labelCtx.fillStyle = '#ffffff';
+        labelCtx.font = '700 52px Arial, sans-serif';
+        labelCtx.textAlign = 'center';
+        labelCtx.textBaseline = 'middle';
+        labelCtx.fillText(displayName, 384, 80, 700);
+      }
+      const nameplate = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(labelCanvas), transparent: true, depthTest: false }));
+      nameplate.scale.set(Math.max(14, Math.min(26, displayName.length * 0.75)), 3.2, 1);
+      nameplate.position.set(0, bldg.height + bldg.roofHeight + 3.2, 0);
+      nameplate.renderOrder = 10;
+      bldgGroup.add(nameplate);
 
       // 5. Kanopi Teras Pintu Masuk
       if (bldg.hasFrontCanopy) {
@@ -2044,14 +1761,10 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
     };
 
     const trees = [
-      // Deretan pohon peneduh Parkiran Barat (Google Earth Mugarsari)
-      [-86, -50, 1.1], [-86, -30, 1.2], [-86, -10, 1.15], [-86, 12, 1.2], [-86, 32, 1.05],
-      [-50, -48, 0.95], [-50, -24, 1.0], [-50, 0, 0.95], [-50, 24, 1.0],
-      // Sekitar Danau Retensi Timur (Google Earth)
-      [84, -6, 1.2], [96, 4, 1.3], [108, 16, 1.25], [98, 28, 1.35], [82, 30, 1.1],
-      // Jalur Pedestrian & Taman Koridor
       [53, 30, 0.8], [53, 20, 0.85], [53, 10, 0.8], [53, 0, 0.85], [53, -10, 0.9], [53, -20, 0.95],
+      [-70, 22, 1.3], [-72, 0, 1.2], [-70, -22, 1.4],
       [-46, 14, 0.95], [-44, -14, 1.0], [4, 14, 0.85], [4, -14, 0.9],
+      [72, 24, 1.2], [82, 14, 1.3], [85, -2, 1.4], [78, -16, 1.1],
       [-45, 34, 0.9], [-22, 34, 0.85], [-2, 38, 0.85], [48, 38, 0.95],
       [-32, -56, 1.3], [-8, -56, 1.2], [18, -56, 1.35], [46, -56, 1.25]
     ];
@@ -2201,7 +1914,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       renderer.dispose();
       container.innerHTML = '';
     };
-  }, [isAutoRotate, onSelectBuilding, isDark]);
+  }, [isAutoRotate, onSelectBuilding, isDark, buildings, buildingLabels]);
 
   const CAMPUS_REAL_PHOTOS = [
     {
@@ -2237,327 +1950,47 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
       subtitle: 'Kawasan Lengkap Gedung Kuliah Terpadu & Laboratorium FT Kampus 2 Mugarsari',
       image: './images/gedung-labtek-ft1-unsil.jpg',
       presetKey: 'drone' as const,
-      description: 'Tata letak masterplan 7 massa bangunan fakultas dengan genteng keramik cokelat terakota dan danau retensi.'
+      description: 'Foto udara kawasan; area yang diberi lingkaran merah menjadi acuan model dua gedung.'
     }
   ];
 
   return (
     <div className="relative w-full bg-white dark:bg-slate-900 rounded-3xl border border-emerald-100 dark:border-slate-800 shadow-2xl overflow-hidden text-slate-800 dark:text-slate-100 transition-colors">
       
-      {/* 1. Header Toolbar dengan Unreal Engine 5 Badge */}
-      <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-900/70">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2.5 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 text-white shadow-md shadow-orange-500/25 flex items-center justify-center">
-              <Zap className="w-5 h-5 fill-white" />
-            </span>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                  <span>Visualisasi 3D Realistis Kawasan Fakultas Teknik</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-xs">
-                    UE5 Lumen PBR
-                  </span>
-                </h3>
-                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                  <span>Denah Interaktif: LABTEK 1 & FT.1</span>
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Rendering grafis Unreal Engine: Image-Based Lighting (IBL), 4K Virtual Soft Shadows, Clearcoat Glass & Paint, lanskap pegunungan, dan pencahayaan filmis ACES HDR.
-              </p>
-            </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+        <div><h3 className="text-sm font-bold text-slate-900 dark:text-white">Model kawasan kampus</h3><p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Semua gedung tetap terlihat; denah interaktif tersedia untuk dua gedung. Seret untuk memutar.</p></div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-lg border border-slate-200 p-1 dark:border-slate-700">
+            {([['front', 'Depan'], ['labtek_ft1', 'Isometrik'], ['drone', 'Atas']] as const).map(([preset, label]) => <button key={preset} type="button" onClick={() => applyCameraPreset(preset)} aria-pressed={cameraPreset === preset} className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${cameraPreset === preset ? 'bg-emerald-700 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>{label}</button>)}
           </div>
-        </div>
-
-        {/* Action Controls Toolbar */}
-        <div className="flex items-center gap-2 flex-wrap">
-          
-          {/* Preset Kamera */}
-          <div className="flex items-center gap-1 p-1 bg-slate-200/80 dark:bg-slate-800 rounded-xl text-xs">
-            <button
-              onClick={() => applyCameraPreset('front')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'front'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Tampak Depan Dekanat & Kanopi FAKULTAS TEKNIK (Sesuai Foto 1)"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Detail Depan</span>
-            </button>
-
-            <button
-              onClick={() => applyCameraPreset('road_side')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'road_side'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Akses Jalan Aspal Depan & Talud Batu Kali (Sesuai Foto 2)"
-            >
-              <Navigation className="w-3.5 h-3.5" />
-              <span>Jalan Akses</span>
-            </button>
-
-            <button
-              onClick={() => applyCameraPreset('courtyard')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'courtyard'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Sudut pandang jalan paving tengah (Persis Foto 3)"
-            >
-              <span>Koridor Tengah</span>
-            </button>
-
-            <button
-              onClick={() => applyCameraPreset('labtek_ft1')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'labtek_ft1'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Fokus ke Gedung LABTEK 1 & FT.1 (Area yang ditandai merah)"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Fokus LABTEK & FT.1</span>
-            </button>
-
-            <button
-              onClick={() => applyCameraPreset('drone')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'drone'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Sudut pandang udara seluruh kawasan persis seperti foto drone asli"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Foto Drone</span>
-            </button>
-
-            <button
-              onClick={() => applyCameraPreset('satellite')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1 ${
-                cameraPreset === 'satellite'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Sudut Pandang Satelit Google Earth Kampus 2 Mugarsari"
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span>Google Earth 🛰️</span>
-            </button>
-
-            <button
-              onClick={() => applyCameraPreset('iso')}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                cameraPreset === 'iso'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'
-              }`}
-              title="Sudut Isometrik Arsitektur"
-            >
-              Isometrik
-            </button>
+          <button type="button" onClick={() => setIsExploded(value => !value)} className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${isExploded ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'}`}><Layers className="mr-1.5 inline h-3.5 w-3.5"/>{isExploded ? 'Turunkan atap' : 'Lihat lantai'}</button>
+          <div className="flex items-center gap-1 rounded-lg border border-slate-200 p-1 dark:border-slate-700" aria-label="Tampilan cuaca dan waktu">
+            {([{ id: 'day', label: 'Siang', Icon: Sun }, { id: 'sunset', label: 'Senja', Icon: Sunset }, { id: 'night', label: 'Malam', Icon: Moon }] as const).map(({ id, label, Icon }) => (
+              <button key={id} type="button" onClick={() => setTimeOfDay(id)} aria-label={label} aria-pressed={timeOfDay === id} title={`Tampilan ${label.toLowerCase()}`} className={`rounded-md p-2 transition-colors ${timeOfDay === id ? 'bg-emerald-700 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}><Icon className="h-4 w-4"/></button>
+            ))}
           </div>
-
-          {/* Mode Potongan Lantai (Exploded) */}
-          <button
-            onClick={() => setIsExploded(!isExploded)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-              isExploded
-                ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30 ring-2 ring-emerald-500/20'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-emerald-50'
-            }`}
-            title="Angkat atap seluruh gedung untuk melihat potongan lantai"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{isExploded ? 'Tutup Atap' : 'Potongan Lantai 3D'}</span>
-          </button>
-
-          {/* Pencahayaan Dinamis */}
-          <div className="flex items-center p-1 bg-slate-200/80 dark:bg-slate-800 rounded-xl gap-0.5">
-            <button
-              onClick={() => setTimeOfDay('day')}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                timeOfDay === 'day' ? 'bg-amber-400 text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Siang Terik (Unreal Engine Ultra Sky)"
-            >
-              <Sun className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setTimeOfDay('sunset')}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                timeOfDay === 'sunset' ? 'bg-amber-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Golden Hour Sunset Sinematik"
-            >
-              <Sunset className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setTimeOfDay('night')}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                timeOfDay === 'night' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
-              }`}
-              title="Malam Hari dengan Lampu Jalan & Interior Menyala"
-            >
-              <Moon className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Auto Rotate Toggle */}
-          <button
-            onClick={() => setIsAutoRotate(!isAutoRotate)}
-            className={`p-2 rounded-xl border text-xs transition-all cursor-pointer ${
-              isAutoRotate
-                ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs'
-                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-            }`}
-            title={isAutoRotate ? 'Hentikan Putaran Otomatis' : 'Putar 3D Otomatis'}
-          >
-            <RotateCw className={`w-3.5 h-3.5 ${isAutoRotate ? 'animate-spin' : ''}`} />
-          </button>
-
-          {/* Tombol Bandingkan Foto Lapangan Asli */}
-          <button
-            onClick={() => setShowPhotoModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95"
-            title="Bandingkan langsung dengan 5 foto asli lapangan"
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Bandingkan Foto Asli</span>
-          </button>
+          <button type="button" onClick={() => setShowPhotoModal(true)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"><ImageIcon className="mr-1.5 inline h-3.5 w-3.5"/>Foto acuan</button>
         </div>
       </div>
 
-      {/* 2. WebGL 3D Canvas Viewport */}
+            {/* 2. WebGL 3D Canvas Viewport */}
       <div className="relative w-full h-[580px] sm:h-[680px] bg-slate-950 select-none overflow-hidden">
         
         {/* Kanvas Three.js */}
         <div ref={containerRef} className="w-full h-full touch-none" />
 
-        {/* 🎮 Unreal Engine 5 Realtime Performance Overlay (Kanan Bawah Viewport) */}
-        <div className="absolute top-4 right-4 z-20 hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-black/60 backdrop-blur-xl text-white text-[10px] font-bold border border-white/15 shadow-xl">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-300 uppercase tracking-wider font-black">LUMEN IBL</span>
-          </div>
-          <span className="opacity-40">|</span>
-          <span className="text-slate-300">4K VSM SHADOWS</span>
-          <span className="opacity-40">|</span>
-          <span className="text-amber-300">ACES FILMIC HDR</span>
+        <div className="absolute right-4 top-4 z-20 rounded-md border border-white/20 bg-slate-950/70 px-3 py-1.5 text-[11px] font-medium text-white backdrop-blur-sm">2 denah interaktif</div>
+        <div className="absolute left-4 top-4 z-20 flex max-h-[45%] max-w-[260px] flex-col gap-1.5 overflow-y-auto">
+          <div className="rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-semibold text-white shadow-lg backdrop-blur-sm">Gedung kampus</div>
+          {ALL_CAMPUS_BUILDINGS.map(building => {
+            const data = buildings.find(item => item.id === building.id);
+            const title = buildingLabels[building.id] || data?.shortName || building.shortName;
+            const isSelected = selectedCampusBuilding.id === building.id;
+            return <button key={building.id} type="button" onClick={() => { setSelectedCampusBuilding(building); if (building.hasFloorPlan) onSelectBuilding(building.id); }} className={`rounded-lg border px-3 py-2 text-left text-sm font-semibold shadow-lg backdrop-blur-sm transition-colors ${isSelected ? 'border-emerald-400 bg-emerald-700/95 text-white' : 'border-white/20 bg-slate-950/75 text-white hover:border-emerald-400 hover:bg-slate-900/90'}`}><span className="mr-2 text-emerald-300">{isSelected ? 'Aktif' : building.hasFloorPlan ? 'Denah' : 'Kampus'}</span>{title}</button>;
+          })}
         </div>
 
-        {/* 🏷️ Floating Building Pills di Kiri Atas */}
-        <div className="absolute top-4 left-4 z-20 flex flex-col gap-2 pointer-events-auto max-w-[280px]">
-          
-          <div className="px-3 py-1.5 rounded-xl bg-black/70 backdrop-blur-md text-white text-[11px] font-bold border border-white/20">
-            <span>Pilih Bangunan Kampus:</span>
-          </div>
-
-          {/* Gedung Dekanat FT (Fasad Depan Utama) */}
-          <button
-            onClick={() => {
-              const def = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'dekanat-ft')!;
-              setSelectedCampusBuilding(def);
-              applyCameraPreset('front');
-            }}
-            className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl backdrop-blur-md text-xs font-extrabold transition-all shadow-lg cursor-pointer border text-left ${
-              selectedCampusBuilding.id === 'dekanat-ft'
-                ? 'bg-blue-700 text-white border-blue-400 ring-2 ring-blue-400/40 translate-x-1'
-                : 'bg-white/95 dark:bg-slate-800/95 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700 hover:border-blue-400'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${selectedCampusBuilding.id === 'dekanat-ft' ? 'bg-amber-300 animate-ping' : 'bg-blue-500'}`} />
-              <div>
-                <span className="block font-bold">{buildingLabels['dekanat-ft'] || 'Gedung Dekanat FT'}</span>
-                <span className="text-[10px] font-normal opacity-80 block">SBSN 2022-2023 & Kanopi</span>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-900/80 text-blue-100 shrink-0">
-              Detail Depan
-            </span>
-          </button>
-
-          {/* LABTEK 1 (Denah Tersedia) */}
-          <button
-            onClick={() => {
-              const def = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'gedung-a')!;
-              setSelectedCampusBuilding(def);
-              onSelectBuilding('gedung-a');
-            }}
-            className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl backdrop-blur-md text-xs font-extrabold transition-all shadow-lg cursor-pointer border text-left ${
-              selectedCampusBuilding.id === 'gedung-a'
-                ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40 translate-x-1'
-                : 'bg-white/95 dark:bg-slate-800/95 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${selectedCampusBuilding.id === 'gedung-a' ? 'bg-white animate-ping' : 'bg-emerald-500'}`} />
-              <div>
-                <span className="block font-bold">{buildingLabels['gedung-a'] || 'Gedung LABTEK 1'}</span>
-                <span className="text-[10px] font-normal opacity-80 block">Labkom & Riset Terpadu</span>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-700/80 text-white shrink-0">
-              Denah 3D ✓
-            </span>
-          </button>
-
-          {/* FT.1 (Denah Tersedia) */}
-          <button
-            onClick={() => {
-              const def = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'gedung-b')!;
-              setSelectedCampusBuilding(def);
-              onSelectBuilding('gedung-b');
-            }}
-            className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl backdrop-blur-md text-xs font-extrabold transition-all shadow-lg cursor-pointer border text-left ${
-              selectedCampusBuilding.id === 'gedung-b'
-                ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40 translate-x-1'
-                : 'bg-white/95 dark:bg-slate-800/95 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${selectedCampusBuilding.id === 'gedung-b' ? 'bg-white animate-ping' : 'bg-emerald-500'}`} />
-              <div>
-                <span className="block font-bold">{buildingLabels['gedung-b'] || 'Gedung FT.1'}</span>
-                <span className="text-[10px] font-normal opacity-80 block">Informatika & SI</span>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-700/80 text-white shrink-0">
-              Denah 3D ✓
-            </span>
-          </button>
-
-          {/* Gedung FT.2 */}
-          <button
-            onClick={() => {
-              const def = ALL_CAMPUS_BUILDINGS.find(b => b.id === 'gedung-ft2')!;
-              setSelectedCampusBuilding(def);
-              applyCameraPreset('road_side');
-            }}
-            className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl backdrop-blur-md text-xs transition-all shadow-sm cursor-pointer border text-left ${
-              selectedCampusBuilding.id === 'gedung-ft2'
-                ? 'bg-sky-700 text-white border-sky-400 ring-2 ring-sky-400/30'
-                : 'bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-white'
-            }`}
-          >
-            <span className="font-semibold text-[11px]">{buildingLabels['gedung-ft2'] || 'Gedung FT.2 (Elektro)'}</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-              Eksterior
-            </span>
-          </button>
-
-        </div>
-
-        {/* 📋 Floating Bottom Inspector Card untuk Bangunan Terpilih */}
+                {/* 📋 Floating Bottom Inspector Card untuk Bangunan Terpilih */}
         <div className="absolute bottom-4 left-4 right-4 z-20 max-w-2xl mx-auto p-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-emerald-200 dark:border-slate-700 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-modal-spring">
           <div className="flex items-center gap-3">
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-extrabold shadow-md shrink-0 ${
@@ -2572,7 +2005,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">
-                  {buildingLabels[selectedCampusBuilding.id] || selectedCampusBuilding.name}
+                  {buildingLabels[selectedCampusBuilding.id] || buildings.find(building => building.id === selectedCampusBuilding.id)?.name || selectedCampusBuilding.name}
                 </h4>
                 {selectedCampusBuilding.hasFloorPlan ? (
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
@@ -2644,7 +2077,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
                   }}
                   className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                 >
-                  Buka LABTEK 1
+                  Buka {buildingLabels['gedung-a'] || 'LT 1'}
                 </button>
                 <button
                   onClick={() => {
@@ -2655,7 +2088,7 @@ export const Campus3DBuildingViewer: React.FC<Campus3DBuildingViewerProps> = ({
                   }}
                   className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                 >
-                  Buka FT.1
+                  Buka {buildingLabels['gedung-b'] || 'FT 1'}
                 </button>
               </div>
             )}
