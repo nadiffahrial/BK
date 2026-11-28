@@ -25,3 +25,7 @@ if (fs.existsSync(path.join(distSource, 'assets'))) {
   });
   console.log(`✔ Copied ${files.length} production assets to /assets`);
 }
+
+// Prevent GitHub Pages/Jekyll from processing or filtering the deployed files.
+fs.writeFileSync(path.join('dist', '.nojekyll'), '');
+console.log('✔ Created dist/.nojekyll');
